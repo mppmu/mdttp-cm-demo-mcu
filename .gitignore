@@ -1,0 +1,44 @@
+# File: .gitignore
+# Auth: M. Fras, Electronics Division, MPI for Physics, Munich
+# Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
+# Date: 08 Apr 2020
+# Rev.: 08 Apr 2020
+#
+# List of files to be ignored by git.
+#
+
+# This file itself.
+#.gitignore
+
+# Vi/Vim swap and backup files.
+.*.swp
+.*.swo
+*~
+
+# Other backup files.
+*.bac
+*.bak
+
+# Compiled firmware files.
+*.axf
+*.bin
+*.d
+*.o
+
+# Symbolic links.
+/Firmware/Projects/cm_mcu_hwtest/Common
+
+# Compiled TivaWare libraries.
+/Firmware/TivaWare/SW-EK-TM4C1294XL-2.1.4.178/driverlib/ccs/
+/Firmware/TivaWare/SW-EK-TM4C1294XL-2.1.4.178/driverlib/ewarm/
+/Firmware/TivaWare/SW-EK-TM4C1294XL-2.1.4.178/driverlib/gcc/
+/Firmware/TivaWare/SW-EK-TM4C1294XL-2.1.4.178/driverlib/rvmdk/
+/Firmware/TivaWare/SW-EK-TM4C1294XL-2.1.4.178/grlib/ccs/
+/Firmware/TivaWare/SW-EK-TM4C1294XL-2.1.4.178/grlib/ewarm/
+/Firmware/TivaWare/SW-EK-TM4C1294XL-2.1.4.178/grlib/gcc/
+/Firmware/TivaWare/SW-EK-TM4C1294XL-2.1.4.178/grlib/rvmdk/
+
+# Compiled python files.
+*.pyc
+__pycache__/
+
