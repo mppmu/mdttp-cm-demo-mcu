@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 08 Apr 2020
-// Rev.: 21 Apr 2020
+// Rev.: 24 Apr 2020
 //
 // Hardware test firmware running on the ATLAS MDT Trigger Processor (TP)
 // Command Module (CM) MCU.
@@ -20,6 +20,8 @@
 #include "driverlib/sysctl.h"
 #include "driverlib/uart.h"
 #include "utils/uartstdio.h"
+#include "hw/gpio/gpio.h"
+#include "hw/gpio/gpio_led.h"
 #include "hw/i2c/i2c.h"
 #include "hw/uart/uart.h"
 #include "uart_ui.h"
@@ -42,6 +44,7 @@ void __error__(char *pcFilename, uint32_t ui32Line)
 void Help(void);
 void Info(void);
 int DelayUs(char *pcCmd, char *pcParam, uint32_t ui32SysClock);
+int LedGetSet(char *pcCmd, char *pcParam);
 int I2CAccess(char *pcCmd, char *pcParam);
 void I2CAccessHelp(void);
 int I2CPortCheck(uint8_t ui8I2CPort, tI2C **psI2C);
@@ -108,6 +111,9 @@ int main(void)
         // Delay execution for a given number of microseconds.
         } else if (!strcasecmp(pcUartCmd, "delay")) {
             DelayUs(pcUartCmd, pcUartParam, ui32SysClock);
+        // GPIO LED based functions.
+        } else if (!strcasecmp(pcUartCmd, "led")) {
+            LedGetSet(pcUartCmd, pcUartParam);            
         // I2C based functions.
         } else if (!strcasecmp(pcUartCmd, "i2c")) {
             I2CAccess(pcUartCmd, pcUartParam);
@@ -134,6 +140,7 @@ void Help(void)
     UARTprintf("Available commands:\n");
     UARTprintf("  help                                Show this help text.\n");
     UARTprintf("  delay   MICROSECONDS                Delay execution.\n");
+    UARTprintf("  led     [VALUE]                     Get/Set the value of the user LEDs.\n");
     UARTprintf("  i2c     PORT SLV-ADR ACC NUM|DATA   I2C access (ACC bits: R/W, Sr, nP, Q).\n");
     UARTprintf("  i2c-det PORT [MODE]                 I2C detect devices (MODE: 0 = auto,\n");
     UARTprintf("                                          1 = quick command, 2 = read).\n");
@@ -173,6 +180,31 @@ int DelayUs(char *pcCmd, char *pcParam, uint32_t ui32SysClock)
     UARTprintf("%s.", UI_STR_OK);
 
     return 0;
+}
+
+
+
+// Get/Set the value of the user LEDs.
+int LedGetSet(char *pcCmd, char *pcParam)
+{
+    uint32_t ui32LedSet, ui32LedGet;
+
+    // Read the current value of the user LEDs if no parameter is given.
+    if (pcParam == NULL) {
+        UARTprintf("%s: Current LED value: 0x%02x", UI_STR_OK, GpioLedGet());
+        return 0;
+    }
+    ui32LedSet = strtoul(pcParam, (char **) NULL, 0);
+    GpioLedSet(ui32LedSet);
+    ui32LedGet = GpioLedGet();
+    if (ui32LedSet != ui32LedGet) {
+        UARTprintf("%s: Setting the LEDs to 0x%02x failed!", UI_STR_ERROR, ui32LedSet);
+        UARTprintf(" The LEDs were set to 0x%02x instead.", ui32LedGet);
+        return -1;
+    } else {
+        UARTprintf("%s: LEDs set to 0x%02x.", UI_STR_OK, GpioLedGet());
+        return 0;
+    }
 }
 
 

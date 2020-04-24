@@ -1,0 +1,51 @@
+# File: cmd_test.mcu
+# Auth: M. Fras, Electronics Division, MPI for Physics, Munich
+# Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
+# Date: 24 Apr 2020
+# Rev.: 24 Apr 2020
+#
+# MCU command file for testing all availabel MCU commands.
+#
+
+
+
+# Show help text.
+help
+
+# Delay execution.
+delay 100000            # Delay for 100,000 us.
+
+# I2C access.
+i2c 2 0x70 0x8          # Quick command.
+i2c 2 0x70 0x0 0x1      # Set pointer register of FireFly.
+
+# Detect I2C devices on port 0.
+i2c-det 0
+
+# Firmware information.
+info
+
+# Set the LEDs.
+led                     # Get the current value of the user LEDs.
+led 0x1                 # Set the user LEDs to 0x1.
+delay 100000
+led 0x2
+delay 100000
+led 0x4
+delay 100000
+led 0x8
+delay 100000
+led 0x0
+
+# UART access.
+uart-s 5 115200 0 1     # Set up the UART port 5: 115200 baud, no parity,
+                        # internal loopback mode enabled.
+uart 5 0 0x12 0x34 0x56 0x78    # Send data bytes.
+uart 5 1 2              # Read 2 data bytes.
+uart 5 1                # Read all data bytes.
+uart 5 1                # This will issue a warning, as no more data are
+                        # available.
+
+# Stop execution of this MCU command batch file.
+exit
+

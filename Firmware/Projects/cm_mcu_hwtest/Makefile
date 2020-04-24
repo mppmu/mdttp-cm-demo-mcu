@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 08 Apr 2020
-# Rev.: 09 Apr 2020
+# Rev.: 24 Apr 2020
 #
 # Makefile for the firmware running on the ATLAS MDT Trigger Processor (TP)
 # Command Module (CM) MCU.
@@ -27,12 +27,16 @@ SOURCE_FILES  = cm_mcu_hwtest.c                     \
                 cm_mcu_hwtest_io.c                  \
                 startup_gcc.c                       \
                 $(COMMON_LINK)/uart_ui.c            \
+                $(COMMON_LINK)/hw/gpio/gpio.c       \
+                $(COMMON_LINK)/hw/gpio/gpio_led.c   \
                 $(COMMON_LINK)/hw/i2c/i2c.c         \
                 $(COMMON_LINK)/hw/uart/uart.c       \
 
 HEADER_FILES  = cm_mcu_hwtest.h                     \
                 cm_mcu_hwtest_io.h                  \
                 $(COMMON_LINK)/uart_ui.h            \
+                $(COMMON_LINK)/hw/gpio/gpio.h       \
+                $(COMMON_LINK)/hw/gpio/gpio_led.h   \
                 $(COMMON_LINK)/hw/i2c/i2c.h         \
                 $(COMMON_LINK)/hw/uart/uart.h       \
 
@@ -72,6 +76,7 @@ VPATH += $(TIVAWARE)/utils
 IPATH  = $(TIVAWARE)
 IPATH += $(COMMON_LINK)
 IPATH += $(COMMON_LINK)/hw
+IPATH += $(COMMON_LINK)/hw/gpio
 IPATH += $(COMMON_LINK)/hw/i2c
 IPATH += $(COMMON_LINK)/hw/uart
 
