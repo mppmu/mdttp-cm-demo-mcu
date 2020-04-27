@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 08 Apr 2020
-// Rev.: 24 Apr 2020
+// Rev.: 27 Apr 2020
 //
 // Hardware test firmware running on the ATLAS MDT Trigger Processor (TP)
 // Command Module (CM) MCU.
@@ -21,7 +21,7 @@
 #include "driverlib/uart.h"
 #include "utils/uartstdio.h"
 #include "hw/gpio/gpio.h"
-#include "hw/gpio/gpio_led.h"
+#include "hw/gpio/gpio_pins.h"
 #include "hw/i2c/i2c.h"
 #include "hw/uart/uart.h"
 #include "uart_ui.h"
@@ -44,7 +44,8 @@ void __error__(char *pcFilename, uint32_t ui32Line)
 void Help(void);
 void Info(void);
 int DelayUs(char *pcCmd, char *pcParam, uint32_t ui32SysClock);
-int LedGetSet(char *pcCmd, char *pcParam);
+int GpioGetSet(char *pcCmd, char *pcParam);
+void GpioGetSetHelp(void);
 int I2CAccess(char *pcCmd, char *pcParam);
 void I2CAccessHelp(void);
 int I2CPortCheck(uint8_t ui8I2CPort, tI2C **psI2C);
@@ -111,9 +112,9 @@ int main(void)
         // Delay execution for a given number of microseconds.
         } else if (!strcasecmp(pcUartCmd, "delay")) {
             DelayUs(pcUartCmd, pcUartParam, ui32SysClock);
-        // GPIO LED based functions.
-        } else if (!strcasecmp(pcUartCmd, "led")) {
-            LedGetSet(pcUartCmd, pcUartParam);            
+        // GPIO based functions.
+        } else if (!strcasecmp(pcUartCmd, "gpio")) {
+            GpioGetSet(pcUartCmd, pcUartParam);            
         // I2C based functions.
         } else if (!strcasecmp(pcUartCmd, "i2c")) {
             I2CAccess(pcUartCmd, pcUartParam);
@@ -140,7 +141,7 @@ void Help(void)
     UARTprintf("Available commands:\n");
     UARTprintf("  help                                Show this help text.\n");
     UARTprintf("  delay   MICROSECONDS                Delay execution.\n");
-    UARTprintf("  led     [VALUE]                     Get/Set the value of the user LEDs.\n");
+    UARTprintf("  gpio    TYPE [VALUE]                Get/Set the value of a GPIO type.\n");
     UARTprintf("  i2c     PORT SLV-ADR ACC NUM|DATA   I2C access (ACC bits: R/W, Sr, nP, Q).\n");
     UARTprintf("  i2c-det PORT [MODE]                 I2C detect devices (MODE: 0 = auto,\n");
     UARTprintf("                                          1 = quick command, 2 = read).\n");
@@ -184,27 +185,94 @@ int DelayUs(char *pcCmd, char *pcParam, uint32_t ui32SysClock)
 
 
 
-// Get/Set the value of the user LEDs.
-int LedGetSet(char *pcCmd, char *pcParam)
+// Get/Set the value of a GPIO type.
+int GpioGetSet(char *pcCmd, char *pcParam)
 {
-    uint32_t ui32LedSet, ui32LedGet;
+    char *pcGpioType = pcParam;
+    bool bGpioRead;
+    uint32_t ui32GpioSet = 0, ui32GpioGet = 0;
 
-    // Read the current value of the user LEDs if no parameter is given.
-    if (pcParam == NULL) {
-        UARTprintf("%s: Current LED value: 0x%02x", UI_STR_OK, GpioLedGet());
-        return 0;
-    }
-    ui32LedSet = strtoul(pcParam, (char **) NULL, 0);
-    GpioLedSet(ui32LedSet);
-    ui32LedGet = GpioLedGet();
-    if (ui32LedSet != ui32LedGet) {
-        UARTprintf("%s: Setting the LEDs to 0x%02x failed!", UI_STR_ERROR, ui32LedSet);
-        UARTprintf(" The LEDs were set to 0x%02x instead.", ui32LedGet);
+    if (pcGpioType == NULL) {
+        UARTprintf("%s: GPIO type required after command `%s'.\n", UI_STR_ERROR, pcCmd);
+        GpioGetSetHelp();
         return -1;
-    } else {
-        UARTprintf("%s: LEDs set to 0x%02x.", UI_STR_OK, GpioLedGet());
-        return 0;
     }
+    pcParam = strtok(NULL, UI_STR_DELIMITER);
+    // Read the current value of the user GPIO pins if no parameter is given.
+    if (pcParam == NULL) {
+        bGpioRead = true;
+    } else {
+        bGpioRead = false;
+        ui32GpioSet = strtol(pcParam, (char **) NULL, 0);
+    }
+    // GPIO type.
+    if (!strcasecmp(pcGpioType, "help")) {
+        GpioGetSetHelp();
+        return 0;
+    } else if (!strcasecmp(pcGpioType, "sm-pwr-en")) {
+        if (bGpioRead) ui32GpioGet = GpioGet_SmPowerEna();
+        else {
+            UARTprintf("%s: GPIO %s is read-only!", UI_STR_WARNING, pcGpioType);
+            return 1;
+        }
+    } else if (!strcasecmp(pcGpioType, "cm-ready")) {
+        if (bGpioRead) ui32GpioGet =  GpioGet_CmReady();
+        else GpioSet_CmReady(ui32GpioSet);
+    } else if (!strcasecmp(pcGpioType, "led-status")) {
+        if (bGpioRead) ui32GpioGet = GpioGet_LedCmStatus();
+        else GpioSet_LedCmStatus(ui32GpioSet);
+    } else if (!strcasecmp(pcGpioType, "led-user")) {
+        if (bGpioRead) ui32GpioGet = GpioGet_LedMcuUser();
+        else GpioSet_LedMcuUser(ui32GpioSet);
+    } else if (!strcasecmp(pcGpioType, "mux-hs-sel")) {
+        if (bGpioRead) ui32GpioGet = GpioGet_MuxSel();
+        else GpioSet_MuxSel(ui32GpioSet);
+    } else if (!strcasecmp(pcGpioType, "mux-hs-pd")) {
+        if (bGpioRead) ui32GpioGet =  GpioGet_MuxPD();
+        else GpioSet_MuxPD(ui32GpioSet);
+    } else if (!strcasecmp(pcGpioType, "clk-sel")) {
+        if (bGpioRead) ui32GpioGet = GpioGet_ClockSel();
+        else GpioSet_ClockSel(ui32GpioSet);
+    } else if (!strcasecmp(pcGpioType, "power")) {
+        if (bGpioRead) ui32GpioGet = GpioGet_PowerCtrl();
+        else GpioSet_PowerCtrl(ui32GpioSet);
+    } else if (!strcasecmp(pcGpioType, "kup")) {
+        if (bGpioRead) ui32GpioGet = GpioGet_KupCtrlStat();
+        else GpioSet_KupCtrlStat(ui32GpioSet);
+    } else if (!strcasecmp(pcGpioType, "zup")) {
+        if (bGpioRead) ui32GpioGet = GpioGet_ZupCtrlStat();
+        else GpioSet_ZupCtrlStat(ui32GpioSet);
+    } else if (!strcasecmp(pcGpioType, "spare")) {
+        if (bGpioRead) ui32GpioGet = GpioGet_SpareKupZup();
+        else GpioSet_SpareKupZup(ui32GpioSet);
+    } else {
+        UARTprintf("%s: Unknown GPIO type `%s'!\n", UI_STR_ERROR, pcGpioType);
+        GpioGetSetHelp();
+        return -1;
+    }
+    if (bGpioRead) UARTprintf("%s: Current GPIO %s value: 0x%02x", UI_STR_OK, pcGpioType, ui32GpioGet);
+    else UARTprintf("%s: GPIO %s set to 0x%02x.", UI_STR_OK, pcGpioType, ui32GpioGet);
+    return 0;
+}
+
+
+
+// Show help on GPIO command.
+void GpioGetSetHelp(void)
+{
+    UARTprintf("Available GPIO types:\n");
+    UARTprintf("  help                                Show this help text.\n");
+    UARTprintf("  sm-pwr-en                           SM power enable driven to CM.\n");
+    UARTprintf("  cm-ready                            CM ready signal driven to SM.\n");
+    UARTprintf("  led-status                          CM status LEDs.\n");
+    UARTprintf("  led-user                            User LEDs.\n");
+    UARTprintf("  mux-hs-sel                          High speed signal multiplexer selection.\n");
+    UARTprintf("  mux-hs-pd                           High speed signal multiplexer power down.\n");
+    UARTprintf("  clk-sel                             Clock selection.\n");
+    UARTprintf("  power                               Switch on/off power domains.\n");
+    UARTprintf("  kup                                 Control/status of the KU15P.\n");
+    UARTprintf("  zup                                 Control/status of the ZU11EG.\n");
+    UARTprintf("  spare                               Spare signals routed to KU15P / ZU11EG.");
 }
 
 
