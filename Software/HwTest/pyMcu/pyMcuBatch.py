@@ -102,10 +102,6 @@ def exec_batch(serialDevice, batchFileName, stopOnError, verbosity):
             if not lineElements:
                 continue
             mcuCmd = lineElements[0]
-            if len(lineElements) >= 2:
-                mcuCmdArg0 = lineElements[1]
-            else:
-                mcuCmdArg0 = ""
             # Check if the current command is a delay command.
             if mcuCmd == batchFileCmdDelay:
                 if len(lineElements) < 2:
