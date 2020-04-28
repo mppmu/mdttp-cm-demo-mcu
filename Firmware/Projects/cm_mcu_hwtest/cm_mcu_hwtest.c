@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 08 Apr 2020
-// Rev.: 27 Apr 2020
+// Rev.: 28 Apr 2020
 //
 // Hardware test firmware running on the ATLAS MDT Trigger Processor (TP)
 // Command Module (CM) MCU.
@@ -67,6 +67,9 @@ int main(void)
 
     // Setup the system clock.
     ui32SysClock = MAP_SysCtlClockFreqSet(SYSTEM_CLOCK_SETTINGS, SYSTEM_CLOCK_FREQ);
+
+    // Initialize all GPIO pins.
+    GpioInit_All();
 
     // Initialize the I2C masters.
     for (int i = 0; i < I2C_MASTER_NUM; i++) {
@@ -189,7 +192,7 @@ int DelayUs(char *pcCmd, char *pcParam, uint32_t ui32SysClock)
 int GpioGetSet(char *pcCmd, char *pcParam)
 {
     char *pcGpioType = pcParam;
-    bool bGpioRead;
+    bool bGpioWrite;
     uint32_t ui32GpioSet = 0, ui32GpioGet = 0;
 
     if (pcGpioType == NULL) {
@@ -200,9 +203,9 @@ int GpioGetSet(char *pcCmd, char *pcParam)
     pcParam = strtok(NULL, UI_STR_DELIMITER);
     // Read the current value of the user GPIO pins if no parameter is given.
     if (pcParam == NULL) {
-        bGpioRead = true;
+        bGpioWrite = true;
     } else {
-        bGpioRead = false;
+        bGpioWrite = false;
         ui32GpioSet = strtol(pcParam, (char **) NULL, 0);
     }
     // GPIO type.
@@ -210,48 +213,65 @@ int GpioGetSet(char *pcCmd, char *pcParam)
         GpioGetSetHelp();
         return 0;
     } else if (!strcasecmp(pcGpioType, "sm-pwr-en")) {
-        if (bGpioRead) ui32GpioGet = GpioGet_SmPowerEna();
-        else {
+        if (bGpioWrite) {
             UARTprintf("%s: GPIO %s is read-only!", UI_STR_WARNING, pcGpioType);
             return 1;
         }
+        ui32GpioGet = GpioGet_SmPowerEna();
     } else if (!strcasecmp(pcGpioType, "cm-ready")) {
-        if (bGpioRead) ui32GpioGet =  GpioGet_CmReady();
-        else GpioSet_CmReady(ui32GpioSet);
+        if (bGpioWrite) GpioSet_CmReady(ui32GpioSet);
+        ui32GpioGet =  GpioGet_CmReady();
     } else if (!strcasecmp(pcGpioType, "led-status")) {
-        if (bGpioRead) ui32GpioGet = GpioGet_LedCmStatus();
-        else GpioSet_LedCmStatus(ui32GpioSet);
+        if (bGpioWrite) GpioSet_LedCmStatus(ui32GpioSet);
+        ui32GpioGet = GpioGet_LedCmStatus();
     } else if (!strcasecmp(pcGpioType, "led-user")) {
-        if (bGpioRead) ui32GpioGet = GpioGet_LedMcuUser();
-        else GpioSet_LedMcuUser(ui32GpioSet);
+        if (bGpioWrite) GpioSet_LedMcuUser(ui32GpioSet);
+        ui32GpioGet = GpioGet_LedMcuUser();
     } else if (!strcasecmp(pcGpioType, "mux-hs-sel")) {
-        if (bGpioRead) ui32GpioGet = GpioGet_MuxSel();
-        else GpioSet_MuxSel(ui32GpioSet);
+        if (bGpioWrite) GpioSet_MuxSel(ui32GpioSet);
+        ui32GpioGet = GpioGet_MuxSel();
     } else if (!strcasecmp(pcGpioType, "mux-hs-pd")) {
-        if (bGpioRead) ui32GpioGet =  GpioGet_MuxPD();
-        else GpioSet_MuxPD(ui32GpioSet);
-    } else if (!strcasecmp(pcGpioType, "clk-sel")) {
-        if (bGpioRead) ui32GpioGet = GpioGet_ClockSel();
-        else GpioSet_ClockSel(ui32GpioSet);
+        if (bGpioWrite) GpioSet_MuxPD(ui32GpioSet);
+        ui32GpioGet =  GpioGet_MuxPD();
+    } else if (!strcasecmp(pcGpioType, "mux-clk-sel")) {
+        if (bGpioWrite) GpioSet_ClockSel(ui32GpioSet);
+        ui32GpioGet = GpioGet_ClockSel();
     } else if (!strcasecmp(pcGpioType, "power")) {
-        if (bGpioRead) ui32GpioGet = GpioGet_PowerCtrl();
-        else GpioSet_PowerCtrl(ui32GpioSet);
+        if (bGpioWrite) GpioSet_PowerCtrl(ui32GpioSet);
+        ui32GpioGet = GpioGet_PowerCtrl();
     } else if (!strcasecmp(pcGpioType, "kup")) {
-        if (bGpioRead) ui32GpioGet = GpioGet_KupCtrlStat();
-        else GpioSet_KupCtrlStat(ui32GpioSet);
+        if (bGpioWrite) GpioSet_KupCtrlStat(ui32GpioSet);
+        ui32GpioGet = GpioGet_KupCtrlStat();
     } else if (!strcasecmp(pcGpioType, "zup")) {
-        if (bGpioRead) ui32GpioGet = GpioGet_ZupCtrlStat();
-        else GpioSet_ZupCtrlStat(ui32GpioSet);
+        if (bGpioWrite) GpioSet_ZupCtrlStat(ui32GpioSet);
+        ui32GpioGet = GpioGet_ZupCtrlStat();
+    } else if (!strcasecmp(pcGpioType, "reset")) {
+        if (bGpioWrite) GpioSet_Reset(ui32GpioSet);
+        ui32GpioGet = GpioGet_Reset();
+    } else if (!strcasecmp(pcGpioType, "pe-int")) {
+        if (bGpioWrite) {
+            UARTprintf("%s: GPIO %s is read-only!", UI_STR_WARNING, pcGpioType);
+            return 1;
+        }
+        ui32GpioGet = GpioGet_PEInt();
     } else if (!strcasecmp(pcGpioType, "spare")) {
-        if (bGpioRead) ui32GpioGet = GpioGet_SpareKupZup();
-        else GpioSet_SpareKupZup(ui32GpioSet);
+        if (bGpioWrite) GpioSet_SpareKupZup(ui32GpioSet);
+        ui32GpioGet = GpioGet_SpareKupZup();
     } else {
         UARTprintf("%s: Unknown GPIO type `%s'!\n", UI_STR_ERROR, pcGpioType);
         GpioGetSetHelp();
         return -1;
     }
-    if (bGpioRead) UARTprintf("%s: Current GPIO %s value: 0x%02x", UI_STR_OK, pcGpioType, ui32GpioGet);
-    else UARTprintf("%s: GPIO %s set to 0x%02x.", UI_STR_OK, pcGpioType, ui32GpioGet);
+    if (bGpioWrite) {
+        if (ui32GpioGet == ui32GpioSet) {
+            UARTprintf("%s: GPIO %s set to 0x%02x.", UI_STR_OK, pcGpioType, ui32GpioGet);
+        } else {
+            UARTprintf("%s: Setting GPIO %s to 0x%02x failed!", UI_STR_ERROR, pcGpioType, ui32GpioSet);
+            UARTprintf(" It was set to 0x%02x instead.", ui32GpioGet);
+        }
+    } else {
+        UARTprintf("%s: Current GPIO %s value: 0x%02x", UI_STR_OK, pcGpioType, ui32GpioGet);
+    }
     return 0;
 }
 
@@ -268,10 +288,12 @@ void GpioGetSetHelp(void)
     UARTprintf("  led-user                            User LEDs.\n");
     UARTprintf("  mux-hs-sel                          High speed signal multiplexer selection.\n");
     UARTprintf("  mux-hs-pd                           High speed signal multiplexer power down.\n");
-    UARTprintf("  clk-sel                             Clock selection.\n");
+    UARTprintf("  mux-clk-sel                         Clock multiplexer selection.\n");
     UARTprintf("  power                               Switch on/off power domains.\n");
     UARTprintf("  kup                                 Control/status of the KU15P.\n");
     UARTprintf("  zup                                 Control/status of the ZU11EG.\n");
+    UARTprintf("  reset                               Reset for muxes and I2C port expanders.\n");
+    UARTprintf("  pe-int                              Interrupt of I2C port expanders.\n");
     UARTprintf("  spare                               Spare signals routed to KU15P / ZU11EG.");
 }
 

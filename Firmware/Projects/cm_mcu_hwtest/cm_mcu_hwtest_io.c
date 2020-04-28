@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 09 Apr 2020
-// Rev.: 11 Apr 2020
+// Rev.: 28 Apr 2020
 //
 // IO peripheral definitions of the firmware running on the ATLAS MDT Trigger
 // Processor (TP) Command Module (CM) MCU.
