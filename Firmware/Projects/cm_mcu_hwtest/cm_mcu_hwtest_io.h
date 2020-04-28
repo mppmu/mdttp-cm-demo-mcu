@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 09 Apr 2020
-// Rev.: 11 Apr 2020
+// Rev.: 28 Apr 2020
 //
 // Header file for the IO peripheral definitions of the firmware running on the
 // ATLAS MDT Trigger Processor (TP) Command Module (CM) MCU.
@@ -15,6 +15,7 @@
 
 
 
+#include "hw/adc/adc.h"
 #include "hw/i2c/i2c.h"
 #include "hw/uart/uart.h"
 #include "Common/uart_ui.h"
@@ -30,6 +31,13 @@
 extern tUartUi g_sUartUi1;
 extern tUartUi g_sUartUi3;
 extern tUartUi g_sUartUi5;
+
+// ADC.
+extern tADC g_sAdc_KUP_MGTAVCC_ADC_AUX_TEMP;
+extern tADC g_sAdc_KUP_MGTAVTT_TEMP;
+extern tADC g_sAdc_KUP_DDR4_IO_EXP_MISC_TEMP;
+extern tADC g_sAdc_ZUP_MGTAVCC_MGTAVTT_TEMP;
+extern tADC g_sAdc_ZUP_DDR4_IO_ETH_USB_SD_LDO_TEMP;
 
 // I2C masters.
 extern tI2C g_psI2C[I2C_MASTER_NUM];

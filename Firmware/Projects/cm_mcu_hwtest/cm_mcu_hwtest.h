@@ -19,7 +19,7 @@
 // Firmware parameters.
 // ******************************************************************
 #define FW_NAME                     "cm_mcu_hwtest"
-#define FW_VERSION                  "0.0.6"
+#define FW_VERSION                  "0.0.7"
 #define FW_RELEASEDATE              "28 Apr 2020"
 
 
@@ -47,6 +47,9 @@
 // ******************************************************************
 // Hardware settings.
 // ******************************************************************
+
+// Show temperatures as raw hexadecimal ADC values.
+#define TEMP_RAW_ADC_HEX
 
 // I2C parameters.
 #define I2C_MASTER_NUM              10

@@ -13,6 +13,7 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include "inc/hw_memmap.h"
+#include "driverlib/adc.h"
 #include "driverlib/gpio.h"
 #include "driverlib/i2c.h"
 #include "driverlib/pin_map.h"
@@ -78,6 +79,68 @@ tUartUi g_sUartUi5 = {
     0,                      // ui32SrcClock
     115200,                 // ui32Baud
     5                       // ui32Port
+};
+
+
+
+// ******************************************************************
+// ADC.
+// ******************************************************************
+
+// KUP_MGTAVCC_ADC_AUX_TEMP: PK2/AIN18, pin 20
+tADC g_sAdc_KUP_MGTAVCC_ADC_AUX_TEMP = {
+    SYSCTL_PERIPH_ADC0,
+    SYSCTL_PERIPH_GPIOK,
+    GPIO_PORTK_BASE,
+    GPIO_PIN_2,
+    ADC0_BASE,
+    0,                      // ui32SequenceNum
+    0,                      // ui32Step
+    ADC_CTL_CH18 | ADC_CTL_IE | ADC_CTL_END
+};
+// KUP_MGTAVTT_TEMP: PK3/AIN19, pin 21
+tADC g_sAdc_KUP_MGTAVTT_TEMP = {
+    SYSCTL_PERIPH_ADC0,
+    SYSCTL_PERIPH_GPIOK,
+    GPIO_PORTK_BASE,
+    GPIO_PIN_3,
+    ADC0_BASE,
+    1,                      // ui32SequenceNum
+    0,                      // ui32Step
+    ADC_CTL_CH19 | ADC_CTL_IE | ADC_CTL_END
+};
+// KUP_DDR4_IO_EXP_MISC_TEMP: PE3/AIN0, pin 12
+tADC g_sAdc_KUP_DDR4_IO_EXP_MISC_TEMP = {
+    SYSCTL_PERIPH_ADC0,
+    SYSCTL_PERIPH_GPIOE,
+    GPIO_PORTE_BASE,
+    GPIO_PIN_3,
+    ADC0_BASE,
+    2,                      // ui32SequenceNum
+    0,                      // ui32Step
+    ADC_CTL_CH0 | ADC_CTL_IE | ADC_CTL_END
+};
+// ZUP_MGTAVCC_MGTAVTT_TEMP: PK0/AIN16, pin 18
+tADC g_sAdc_ZUP_MGTAVCC_MGTAVTT_TEMP = {
+    SYSCTL_PERIPH_ADC1,
+    SYSCTL_PERIPH_GPIOK,
+    GPIO_PORTK_BASE,
+    GPIO_PIN_0,
+    ADC1_BASE,
+    0,                      // ui32SequenceNum
+    0,                      // ui32Step
+    ADC_CTL_CH16 | ADC_CTL_IE | ADC_CTL_END
+};
+// ZUP_DDR4_IO_ETH_USB_SD_LDO_TEMP: PK1/AIN17, pin 19
+tADC g_sAdc_ZUP_DDR4_IO_ETH_USB_SD_LDO_TEMP = {
+    SYSCTL_PERIPH_ADC1,
+    SYSCTL_PERIPH_GPIOK,
+    GPIO_PORTK_BASE,
+    GPIO_PIN_1,
+    ADC1_BASE,
+    1,                      // ui32SequenceNum
+    0,                      // ui32Step
+    ADC_CTL_CH17 | ADC_CTL_IE | ADC_CTL_END
 };
 
 
@@ -165,7 +228,7 @@ tI2C g_psI2C[I2C_MASTER_NUM] = {
         100                     // ui32Timeout
     },
     {
-        // I2C master 4: TEMP_MON (Temperture monitoring).
+        // I2C master 4: TEMP_MON (Temperature monitoring).
         // GPIO Pins:
         // - SCL: PG6, 55
         // - SDA: PG7, 56

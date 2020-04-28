@@ -20,6 +20,7 @@
 #include "driverlib/sysctl.h"
 #include "driverlib/uart.h"
 #include "utils/uartstdio.h"
+#include "hw/adc/adc.h"
 #include "hw/gpio/gpio.h"
 #include "hw/gpio/gpio_pins.h"
 #include "hw/i2c/i2c.h"
@@ -50,6 +51,7 @@ int I2CAccess(char *pcCmd, char *pcParam);
 void I2CAccessHelp(void);
 int I2CPortCheck(uint8_t ui8I2CPort, tI2C **psI2C);
 int I2CDetect(char *pcCmd, char *pcParam);
+int TemperatureAnalog(char *pcCmd, char *pcParam);
 int UartAccess(char *pcCmd, char *pcParam);
 int UartPortCheck(uint8_t ui8UartPort, tUART **psUart);
 int UartSetup(char *pcCmd, char *pcParam);
@@ -67,6 +69,15 @@ int main(void)
 
     // Setup the system clock.
     ui32SysClock = MAP_SysCtlClockFreqSet(SYSTEM_CLOCK_SETTINGS, SYSTEM_CLOCK_FREQ);
+
+    // Initialize the ADCs.
+    AdcReset(&g_sAdc_KUP_MGTAVCC_ADC_AUX_TEMP);
+    AdcInit(&g_sAdc_KUP_MGTAVCC_ADC_AUX_TEMP);
+    AdcInit(&g_sAdc_KUP_MGTAVTT_TEMP);
+    AdcInit(&g_sAdc_KUP_DDR4_IO_EXP_MISC_TEMP);
+    AdcReset(&g_sAdc_ZUP_MGTAVCC_MGTAVTT_TEMP);
+    AdcInit(&g_sAdc_ZUP_MGTAVCC_MGTAVTT_TEMP);
+    AdcInit(&g_sAdc_ZUP_DDR4_IO_ETH_USB_SD_LDO_TEMP);
 
     // Initialize all GPIO pins.
     GpioInit_All();
@@ -123,6 +134,9 @@ int main(void)
             I2CAccess(pcUartCmd, pcUartParam);
         } else if (!strcasecmp(pcUartCmd, "i2c-det")) {
             I2CDetect(pcUartCmd, pcUartParam);
+        // Analog temperature functions.
+        } else if (!strcasecmp(pcUartCmd, "temp-a")) {
+            TemperatureAnalog(pcUartCmd, pcUartParam);
         // UART based functions.
         } else if (!strcasecmp(pcUartCmd, "uart")) {
             UartAccess(pcUartCmd, pcUartParam);
@@ -149,6 +163,7 @@ void Help(void)
     UARTprintf("  i2c-det PORT [MODE]                 I2C detect devices (MODE: 0 = auto,\n");
     UARTprintf("                                          1 = quick command, 2 = read).\n");
     UARTprintf("  info                                Show information about this firmware.\n");
+    UARTprintf("  temp-a  [COUNT]                     Read analog temperatures.\n");
     UARTprintf("  uart    PORT R/W NUM|DATA           UART access (R/W: 0 = write, 1 = read).\n");
     UARTprintf("  uart-s  PORT BAUD [PARITY] [LOOP]   Set up the UART port.");
 }
@@ -480,6 +495,61 @@ int I2CDetect(char *pcCmd, char *pcParam)
     return 0;
 }
 
+
+
+// Read analog temperatures.
+int TemperatureAnalog(char *pcCmd, char *pcParam)
+{
+    uint32_t ui32Adc;
+    int iCnt;
+    // Convert voltag to temperature. See datasheet of the LTM4644 device,
+    // section "temperature monitoring".
+    // T = -(V_G0 - V_D) / (dV_D / dT)
+    // T = -(1200mV - voltage) / (-2 mV/K)
+    // Voltage [mV] = (3300 / 0xfff) * ADV counts
+    #ifndef TEMP_RAW_ADC_HEX
+    float fAdc2Temp = (1200 - (3300 / 0xfff)) / 2.0;
+    #endif
+
+    if (pcParam == NULL) {
+        iCnt = 1;
+    } else {
+        iCnt = strtoul(pcParam, (char **) NULL, 0) & 0xffffff;
+    }
+
+    for (int i = 0; i < iCnt; i++) {
+        UARTprintf("%s: ", UI_STR_OK);
+        #ifdef TEMP_RAW_ADC_HEX
+        ui32Adc = AdcConvert(&g_sAdc_KUP_MGTAVCC_ADC_AUX_TEMP);
+        UARTprintf("KUP MGTAVCC/ADC/AUX: 0x%03x", ui32Adc);
+        ui32Adc = AdcConvert(&g_sAdc_KUP_MGTAVTT_TEMP);
+        UARTprintf(", KUP MGTAVTT: 0x%03x", ui32Adc);
+        ui32Adc = AdcConvert(&g_sAdc_KUP_DDR4_IO_EXP_MISC_TEMP);
+        UARTprintf(", KUP DDR4/IO/Exp. Con./Misc.: 0x%03x", ui32Adc);
+        ui32Adc = AdcConvert(&g_sAdc_ZUP_MGTAVCC_MGTAVTT_TEMP);
+        UARTprintf(", ZUP MGTAVCC/MGTAVTT: 0x%03x", ui32Adc);
+        ui32Adc = AdcConvert(&g_sAdc_ZUP_DDR4_IO_ETH_USB_SD_LDO_TEMP);
+        UARTprintf(", ZUP DDR4/IO/LDO/Misc.: 0x%03x", ui32Adc);
+        #else
+        ui32Adc = AdcConvert(&g_sAdc_KUP_MGTAVCC_ADC_AUX_TEMP);
+        UARTprintf("KUP MGTAVCC/ADC/AUX: %d degC", (int) (fAdc2Temp * ui32Adc) - 273.15);
+        ui32Adc = AdcConvert(&g_sAdc_KUP_MGTAVTT_TEMP);
+        UARTprintf(", KUP MGTAVTT: %d degC", (int) (fAdc2Temp * ui32Adc) - 273.15);
+        ui32Adc = AdcConvert(&g_sAdc_KUP_DDR4_IO_EXP_MISC_TEMP);
+        UARTprintf(", KUP DDR4/IO/Exp. Con./Misc.: %d degC", (int) (fAdc2Temp * ui32Adc) - 273.15);
+        ui32Adc = AdcConvert(&g_sAdc_ZUP_MGTAVCC_MGTAVTT_TEMP);
+        UARTprintf(", ZUP MGTAVCC/MGTAVTT: %d degC", (int) (fAdc2Temp * ui32Adc) - 273.15);
+        ui32Adc = AdcConvert(&g_sAdc_ZUP_DDR4_IO_ETH_USB_SD_LDO_TEMP);
+        UARTprintf(", ZUP DDR4/IO/LDO/Misc.: %d degC", (int) (fAdc2Temp * ui32Adc) - 273.15);
+        #endif
+        if (i < iCnt - 1) {
+            SysCtlDelay(1000000);
+            UARTprintf("\n");
+        }
+    }
+
+    return 0;
+}
 
 
 // UART access.
