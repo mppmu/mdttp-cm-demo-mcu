@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 24 Apr 2020
-// Rev.: 28 Apr 2020
+// Rev.: 29 Apr 2020
 //
 // Header file for the GPIO pin definitions and functions for the TI Tiva
 // TM4C1290 MCU on the ATLAS MDT Trigger Processor (TP) Command Module (CM).
@@ -20,7 +20,8 @@
 #define GPIO_DEFAULT_LED_CM_STATUS  0x0
 #define GPIO_DEFAULT_LED_CM_USER    0x00
 #define GPIO_DEFAULT_MUX_SEL        0x2
-#define GPIO_DEFAULT_MUX_PD         0x0
+// Hint: The power down (PD) pin of the multiplexers is active low.
+#define GPIO_DEFAULT_MUX_PD         0x7
 #define GPIO_DEFAULT_CLOCK_SEL      0x00
 #define GPIO_DEFAULT_POWER_CTRL     0x00
 #define GPIO_DEFAULT_KUP_CTRL_STAT  0x1
