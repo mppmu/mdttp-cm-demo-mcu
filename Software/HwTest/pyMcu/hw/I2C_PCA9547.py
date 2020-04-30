@@ -42,6 +42,7 @@ class I2C_PCA9547:
     def set_channel(self, channel):
         self.i2cDevice.debugLevel = self.debugLevel
         channel &= 0x0f
+        channel |= 0x08     # Set the enable bit.
         # Debug info.
         if self.debugLevel >= 2:
             print(self.prefixDebug + "Setting the {0:s} channel to 0x{1:02x}.".format(self.deviceName, channel), end='')
@@ -93,5 +94,5 @@ class I2C_PCA9547:
             if ret:
                 print(self.prefixError + "Reading of data returned error code {0:d}.".format(ret))
             return -1, 0xff
-        return 0, ret
+        return 0, data
 
