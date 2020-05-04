@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 24 Apr 2020
-# Rev.: 24 Apr 2020
+# Rev.: 04 May 2020
 #
 # MCU command file for testing all availabel MCU commands.
 #
@@ -26,16 +26,16 @@ i2c-det 0
 info
 
 # Set the LEDs.
-led                     # Get the current value of the user LEDs.
-led 0x1                 # Set the user LEDs to 0x1.
+gpio led                # Get the current value of the user LEDs.
+gpio led 0x1            # Set the user LEDs to 0x1.
 delay 100000
-led 0x2
+gpio led 0x2
 delay 100000
-led 0x4
+gpio led 0x4
 delay 100000
-led 0x8
+gpio led 0x8
 delay 100000
-led 0x0
+gpio led 0x0
 
 # UART access.
 uart-s 5 115200 0 1     # Set up the UART port 5: 115200 baud, no parity,
