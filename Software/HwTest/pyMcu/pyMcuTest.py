@@ -32,6 +32,7 @@ import time
 import McuI2C
 import McuSerial
 import McuUart
+import I2C_MCP9808
 import I2C_PCA9547
 import I2C_Si53xx
 import I2C_TCA6424A
@@ -47,6 +48,7 @@ testI2C                 = False
 testI2C_IC55_PCA9547PW  = False
 testI2C_IC54_Si5341     = False
 testI2C_TCA6424A        = False
+testI2C_MCP9808         = False
 testMcuSerial_1         = False
 # Set the tests to true that you want to run.
 testFwInfo              = True
@@ -55,6 +57,7 @@ testI2C                 = True
 testI2C_IC55_PCA9547PW  = True
 testI2C_IC54_Si5341     = True
 testI2C_TCA6424A        = True
+testI2C_MCP9808         = True
 testMcuSerial_1         = True
 
 
@@ -182,6 +185,47 @@ def run_test(serialDevice, verbosity):
         print("IC105 (TCA6424A) logic levels: 0x{0:06x}".format(i2cDevice_IC105_TCA6424A.read_input()[1]))
         print("IC106 (TCA6424A) logic levels: 0x{0:06x}".format(i2cDevice_IC106_TCA6424A.read_input()[1]))
         print("IC107 (TCA6424A) logic levels: 0x{0:06x}".format(i2cDevice_IC107_TCA6424A.read_input()[1]))
+
+
+
+    # I2C test of all MCP9808 digital temperature sensor ICs.
+    if testI2C_MCP9808:
+        # IC34 (MCP9808): I2C port 4, slave address 0x18
+        i2cDevice_IC34_MCP9808 = I2C_MCP9808.I2C_MCP9808(mcuI2C[4], 0x18, "IC34 (MCP9808)")
+        i2cDevice_IC34_MCP9808.debugLevel = verbosity
+        # IC35 (MCP9808): I2C port 4, slave address 0x19
+        i2cDevice_IC35_MCP9808 = I2C_MCP9808.I2C_MCP9808(mcuI2C[4], 0x19, "IC35 (MCP9808)")
+        i2cDevice_IC35_MCP9808.debugLevel = verbosity
+        # IC36 (MCP9808): I2C port 4, slave address 0x1a
+        i2cDevice_IC36_MCP9808 = I2C_MCP9808.I2C_MCP9808(mcuI2C[4], 0x1a, "IC36 (MCP9808)")
+        i2cDevice_IC36_MCP9808.debugLevel = verbosity
+        # IC37 (MCP9808): I2C port 4, slave address 0x1b
+        i2cDevice_IC37_MCP9808 = I2C_MCP9808.I2C_MCP9808(mcuI2C[4], 0x1b, "IC37 (MCP9808)")
+        i2cDevice_IC37_MCP9808.debugLevel = verbosity
+        # IC38 (MCP9808): I2C port 4, slave address 0x1c
+        i2cDevice_IC38_MCP9808 = I2C_MCP9808.I2C_MCP9808(mcuI2C[4], 0x1c, "IC38 (MCP9808)")
+        i2cDevice_IC38_MCP9808.debugLevel = verbosity
+        # Set up the configuration registers.
+        i2cDevice_IC34_MCP9808.write_config(0x0000)
+        i2cDevice_IC35_MCP9808.write_config(0x0000)
+        i2cDevice_IC36_MCP9808.write_config(0x0000)
+        i2cDevice_IC37_MCP9808.write_config(0x0000)
+        i2cDevice_IC38_MCP9808.write_config(0x0000)
+        # Set up the resolution registers.
+        i2cDevice_IC34_MCP9808.write_resolution(0x0003)
+        i2cDevice_IC35_MCP9808.write_resolution(0x0003)
+        i2cDevice_IC36_MCP9808.write_resolution(0x0003)
+        i2cDevice_IC37_MCP9808.write_resolution(0x0003)
+        i2cDevice_IC38_MCP9808.write_resolution(0x0003)
+        # Read manufacturer and device ID.
+        print("IC34 (MCP9808) manufacturer ID: 0x{0:04x}".format(i2cDevice_IC34_MCP9808.read_manufacturer_id()[1]))
+        print("IC34 (MCP9808) device ID: 0x{0:04x}".format(i2cDevice_IC34_MCP9808.read_device_id()[1]))
+        # Read temperatures.
+        print("IC34 (MCP9808) temperature: {0:8.4f} degC".format(i2cDevice_IC34_MCP9808.read_temperature()[1]))
+        print("IC35 (MCP9808) temperature: {0:8.4f} degC".format(i2cDevice_IC35_MCP9808.read_temperature()[1]))
+        print("IC36 (MCP9808) temperature: {0:8.4f} degC".format(i2cDevice_IC36_MCP9808.read_temperature()[1]))
+        print("IC37 (MCP9808) temperature: {0:8.4f} degC".format(i2cDevice_IC37_MCP9808.read_temperature()[1]))
+        print("IC38 (MCP9808) temperature: {0:8.4f} degC".format(i2cDevice_IC38_MCP9808.read_temperature()[1]))
 
 
 
