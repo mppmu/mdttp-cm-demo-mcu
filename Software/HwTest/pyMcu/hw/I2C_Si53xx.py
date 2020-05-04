@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 29 Apr 2020
-# Rev.: 30 Apr 2020
+# Rev.: 04 May 2020
 #
 # Python class for communicating with Silicon Labs Si5341/40 and Si5345/44/42
 # devices.
@@ -21,8 +21,8 @@ class I2C_Si53xx:
     # Message prefixes and separators.
     prefixDetails       = " - "
     separatorDetails    = " - "
-    prefixError         = "ERROR: {0:s}: ".format(__file__)
     prefixDebug         = "DEBUG: {0:s}: ".format(__file__)
+    prefixError         = "ERROR: {0:s}: ".format(__file__)
 
     # Debug configuration.
     debugLevel = 0                 # Debug verbosity.
@@ -38,6 +38,8 @@ class I2C_Si53xx:
         self.deviceName = deviceName
         self.i2cDevice = I2CDevice.I2CDevice(self.mcuI2C, self.slaveAddr, self.deviceName)
         self.i2cDevice.debugLevel = self.debugLevel
+        self.prefixDebugDevice = self.prefixDebug + self.deviceName + ": "
+        self.prefixErrorDevice = self.prefixError + self.deviceName + ": "
 
 
 
@@ -46,11 +48,11 @@ class I2C_Si53xx:
     def config_file(self, fileRegMapName):
         # Check if fileRegMapName is a file.
         if not os.path.isfile(fileRegMapName):
-            print(self.prefixError + "The {0:s} register map file `{1:s}' is not a file!".format(self.deviceName, fileRegMapName))
+            print(self.prefixErrorDevice + "The register map file `{0:s}' is not a file!".format(fileRegMapName))
             return -1
         # Check if the register map file is readable.
         if not os.access(fileRegMapName, os.R_OK):
-            print(self.prefixError + "Cannot open the {0:s} register map file `{1:s}'!".format(self.deviceName, fileRegMapName))
+            print(self.prefixErrorDevice + "Cannot open the register map file `{0:s}'!".format(fileRegMapName))
             return -1
 
         fileRegMapLineCount = 0
@@ -59,9 +61,9 @@ class I2C_Si53xx:
             for fileRegMapLine in fileRegMap:
                 fileRegMapLineCount += 1
                 if self.debugLevel >= 3:
-                    print(self.prefixDebug + "Processing line {0:d} of the {1:s} register map file `{2:s}':".\
-                        format(fileRegMapLineCount, self.deviceName, fileRegMapName))
-                    print(self.prefixDebug + fileRegMapLine.strip('\n\r'))
+                    print(self.prefixDebugDevice + "Processing line {0:d} of the register map file `{1:s}':".\
+                        format(fileRegMapLineCount, fileRegMapName))
+                    print(self.prefixDebugDevice + fileRegMapLine.strip('\n\r'))
                 # Strip all leading and trailing white spaces, tabs, line feeds and carriage returns.
                 lineStripped = fileRegMapLine.strip(' \t\n\r')
                 # Remove comments.
@@ -77,12 +79,12 @@ class I2C_Si53xx:
                     continue
                 # Convert hexadecimal values from ??h to 0x??.
                 lineElements = list("0x" + el.strip("h") if el.find("h") >= 0 else el for el in lineElements)
-                # Convert to intergers.
+                # Convert to integers.
                 lineData = [int(i, 0) for i in lineElements]
                 ret = self.i2cDevice.write(lineData)
                 if ret:
-                    print(self.prefixError + "Error sending data of register map file `{0:s}' to the {1:s}! Line number: {2:d}, Data: {3:s}".\
-                        format(fileRegMapName, self.deviceName, fileRegMapLineCount, lineCommentRemoved))
+                    print(self.prefixErrorDevice + "Error sending data of register map file `{0:s}'! Line number: {1:d}, Data: {2:s}".\
+                        format(fileRegMapName, fileRegMapLineCount, lineCommentRemoved))
                     return -1
         return 0
 

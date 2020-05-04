@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 30 Apr 2020
-# Rev.: 30 Apr 2020
+# Rev.: 04 May 2020
 #
 # Python class implementing generic hardware access for I2C devices.
 #
@@ -18,8 +18,8 @@ class I2CDevice:
     # Message prefixes and separators.
     prefixDetails       = " - "
     separatorDetails    = " - "
-    prefixError         = "ERROR: {0:s}: ".format(__file__)
     prefixDebug         = "DEBUG: {0:s}: ".format(__file__)
+    prefixError         = "ERROR: {0:s}: ".format(__file__)
 
     # Debug configuration.
     debugLevel = 0                 # Debug verbosity.
@@ -31,6 +31,8 @@ class I2CDevice:
         self.mcuI2C = mcuI2C
         self.slaveAddr = slaveAddr
         self.deviceName = deviceName
+        self.prefixDebugDevice = self.prefixDebug + self.deviceName + ": "
+        self.prefixErrorDevice = self.prefixError + self.deviceName + ": "
         self.errorCount = 0
         self.accessRead = 0
         self.accessWrite = 0
@@ -42,7 +44,7 @@ class I2CDevice:
     # Write data to the I2C device.
     def write(self, dataWr):
         if self.debugLevel >= 3:
-            print(self.prefixDebug + "Writing data to the {0:s}.".format(self.deviceName), end='')
+            print(self.prefixDebugDevice + "Writing data.", end='')
             print(self.prefixDetails + "Data:", end='')
             for datum in dataWr:
                 print(" 0x{0:02x}".format(datum), end='')
@@ -50,7 +52,7 @@ class I2CDevice:
         ret = self.mcuI2C.ms_write(self.slaveAddr, dataWr)
         if ret:
             self.errorCount += 1
-            print(self.prefixError + "Error writing data to the {0:s}!".format(self.deviceName), end='')
+            print(self.prefixErrorDevice + "Error writing data!", end='')
             self.print_details()
             return ret
         self.accessWrite += 1
@@ -62,19 +64,19 @@ class I2CDevice:
     # Read data from the I2C device.
     def read(self, cnt):
         if self.debugLevel >= 3:
-            print(self.prefixDebug + "Reading data from the {0:s}.".format(self.deviceName), end='')
+            print(self.prefixDebugDevice + "Reading data.", end='')
             self.print_details()
         ret, dataRd = self.mcuI2C.ms_read(self.slaveAddr, cnt)
         if ret or len(dataRd) <= 0:
             self.errorCount += 1
-            print(self.prefixError + "Error reading data from the {0:s}!".format(self.deviceName), end='')
+            print(self.prefixErrorDevice + "Error reading data!", end='')
             self.print_details()
-            print(self.prefixError + "Error code: {0:d}: ".format(ret))
+            print(self.prefixErrorDevice + "Error code: {0:d}: ".format(ret))
             return ret, dataRd
         self.accessRead += 1
         self.bytesRead += len(dataRd)
         if self.debugLevel >= 3:
-            print(self.prefixDebug + "Data read:", end='')
+            print(self.prefixDebugDevice + "Data read:", end='')
             for datum in dataRd:
                 print(" 0x{0:02x}".format(datum), end='')
             print()
@@ -86,7 +88,7 @@ class I2CDevice:
     # and PMBus read access.
     def write_read(self, dataWr, readCnt):
         if self.debugLevel >= 3:
-            print(self.prefixDebug + "Writing data to the {0:s}.".format(self.deviceName), end='')
+            print(self.prefixDebugDevice + "Writing data.", end='')
             print(self.prefixDetails + "Data:", end='')
             for datum in dataWr:
                 print(" 0x{0:02x}".format(datum), end='')
@@ -95,27 +97,27 @@ class I2CDevice:
         ret = self.mcuI2C.ms_write_adv(self.slaveAddr, dataWr, False, False)
         if ret:
             self.errorCount += 1
-            print(self.prefixError + "Error writing data to the {0:s}!".format(self.deviceName), end='')
+            print(self.prefixErrorDevice + "Error writing data!", end='')
             self.print_details()
             return ret
         self.accessWrite += 1
         self.bytesWritten += len(dataWr)
         # Read access with repeated start.
         if self.debugLevel >= 3:
-            print(self.prefixDebug + "Reading data from the {0:s} with repeated start.".format(self.deviceName), end='')
+            print(self.prefixDebugDevice + "Reading data  with repeated start.", end='')
             self.print_details()
         # Repeated start, generate stop condition after write.
         ret, dataRd = self.mcuI2C.ms_read_adv(self.slaveAddr, readCnt, True, True)
         if ret or len(dataRd) <= 0:
             self.errorCount += 1
-            print(self.prefixError + "Error reading data from the {0:s}!".format(self.deviceName), end='')
+            print(self.prefixErrorDevice + "Error reading data!", end='')
             self.print_details()
-            print(self.prefixError + "Error code: {0:d}: ".format(ret))
+            print(self.prefixErrorDevice + "Error code: {0:d}: ".format(ret))
             return ret, dataRd
         self.accessRead += 1
         self.bytesRead += len(dataRd)
         if self.debugLevel >= 3:
-            print(self.prefixDebug + "Data read:", end='')
+            print(self.prefixDebugDevice + "Data read:", end='')
             for datum in dataRd:
                 print(" 0x{0:02x}".format(datum), end='')
             print()
@@ -132,7 +134,7 @@ class I2CDevice:
             print(self.separatorDetails + "Error count: {0:d}".format(self.errorCount), end='')
         if self.debugLevel >= 2:
             print(self.separatorDetails + "Read access count: {0:d}".format(self.accessRead), end='')
-            print(self.separatorDetails + "Write access countn: {0:d}".format(self.accessWrite), end='')
+            print(self.separatorDetails + "Write access count: {0:d}".format(self.accessWrite), end='')
         if self.debugLevel >= 2:
             print(self.separatorDetails + "Bytes read: {0:d}".format(self.bytesRead), end='')
             print(self.separatorDetails + "Bytes written: {0:d}".format(self.bytesWritten), end='')

@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 30 Apr 2020
-# Rev.: 30 Apr 2020
+# Rev.: 04 May 2020
 #
 # Python script to test hardware features of the TI Tiva TM4C1290 MCU on the
 # ATLAS MDT Trigger Processor (TP) Command Module (CM) over a serial port
@@ -34,6 +34,7 @@ import McuSerial
 import McuUart
 import I2C_PCA9547
 import I2C_Si53xx
+import I2C_TCA6424A
 
 
 
@@ -45,6 +46,7 @@ testMcuSerial_0         = False
 testI2C                 = False
 testI2C_IC55_PCA9547PW  = False
 testI2C_IC54_Si5341     = False
+testI2C_TCA6424A        = False
 testMcuSerial_1         = False
 # Set the tests to true that you want to run.
 testFwInfo              = True
@@ -52,6 +54,7 @@ testMcuSerial_0         = True
 testI2C                 = True
 testI2C_IC55_PCA9547PW  = True
 testI2C_IC54_Si5341     = True
+testI2C_TCA6424A        = True
 testMcuSerial_1         = True
 
 
@@ -86,10 +89,6 @@ def run_test(serialDevice, verbosity):
     for i in range(0, 10):
         mcuI2C.append(McuI2C.McuI2C(mcuSer, i))
         mcuI2C[i].debugLevel = verbosity
-    # IC55 (PCA9547PW): I2C port 3, slave address 0x70
-    i2cDevice_IC55_PCA9547PW = I2C_PCA9547.I2C_PCA9547(mcuI2C[3], 0x70, "IC55 (PCA9547PW)")
-    # IC54 (Si5341A): I2C port 3, slave address 0x74
-    i2cDevice_IC54_Si5341A = I2C_Si53xx.I2C_Si53xx(mcuI2C[3], 0x74, "IC54 (Si5341A)")
 
 
 
@@ -131,8 +130,11 @@ def run_test(serialDevice, verbosity):
 
 
 
-    # I2C test the IC55 (PCA9547PW).
+    # I2C test of IC55 (PCA9547PW, I2C multiplexer).
     if testI2C_IC55_PCA9547PW:
+        # IC55 (PCA9547PW): I2C port 3, slave address 0x70
+        i2cDevice_IC55_PCA9547PW = I2C_PCA9547.I2C_PCA9547(mcuI2C[3], 0x70, "IC55 (PCA9547PW)")
+        i2cDevice_IC55_PCA9547PW.debugLevel = verbosity
         print("I2C test of IC55 (PCA9547PW) on I2C port {0:d}.".format(i2cDevice_IC55_PCA9547PW.mcuI2C.port))
         i2cDevice_IC55_PCA9547PW.set_channel(0)
         print("Active multiplexer channel: {0:d}".format(i2cDevice_IC55_PCA9547PW.get_channel()[1]))
@@ -147,9 +149,39 @@ def run_test(serialDevice, verbosity):
 
     # I2C test of IC54 (Si5341A).
     if testI2C_IC54_Si5341:
+        # IC54 (Si5341A): I2C port 3, slave address 0x74
+        i2cDevice_IC54_Si5341A = I2C_Si53xx.I2C_Si53xx(mcuI2C[3], 0x74, "IC54 (Si5341A)")
+        i2cDevice_IC54_Si5341A.debugLevel = verbosity
         print("I2C test of IC54 (Si5341A) on I2C port {0:d}.".format(i2cDevice_IC54_Si5341A.mcuI2C.port))
         i2cDevice_IC54_Si5341A.config_file("config/IC54_RegMap.txt")
         print(separatorTests)
+
+
+
+    # I2C test of all TCA6424A I/O expander ICs (IC104..IC107).
+    if testI2C_TCA6424A:
+        # IC104 (TCA6424A): I2C port 9, slave address 0x22
+        i2cDevice_IC104_TCA6424A = I2C_TCA6424A.I2C_TCA6424A(mcuI2C[9], 0x22, "IC104 (TCA6424A)")
+        i2cDevice_IC104_TCA6424A.debugLevel = verbosity
+        # IC105 (TCA6424A): I2C port 9, slave address 0x23
+        i2cDevice_IC105_TCA6424A = I2C_TCA6424A.I2C_TCA6424A(mcuI2C[9], 0x23, "IC105 (TCA6424A)")
+        i2cDevice_IC105_TCA6424A.debugLevel = verbosity
+        # IC106 (TCA6424A): I2C port 8, slave address 0x22
+        i2cDevice_IC106_TCA6424A = I2C_TCA6424A.I2C_TCA6424A(mcuI2C[8], 0x22, "IC106 (TCA6424A)")
+        i2cDevice_IC106_TCA6424A.debugLevel = verbosity
+        # IC107 (TCA6424A): I2C port 8, slave address 0x23
+        i2cDevice_IC107_TCA6424A = I2C_TCA6424A.I2C_TCA6424A(mcuI2C[8], 0x23, "IC107 (TCA6424A)")
+        i2cDevice_IC107_TCA6424A.debugLevel = verbosity
+        # Configure all ports as inputs.
+        i2cDevice_IC104_TCA6424A.write_config(0xffffff)
+        i2cDevice_IC105_TCA6424A.write_config(0xffffff)
+        i2cDevice_IC106_TCA6424A.write_config(0xffffff)
+        i2cDevice_IC107_TCA6424A.write_config(0xffffff)
+        # Read the logic levels of all ports.
+        print("IC104 (TCA6424A) logic levels: 0x{0:06x}".format(i2cDevice_IC104_TCA6424A.read_input()[1]))
+        print("IC105 (TCA6424A) logic levels: 0x{0:06x}".format(i2cDevice_IC105_TCA6424A.read_input()[1]))
+        print("IC106 (TCA6424A) logic levels: 0x{0:06x}".format(i2cDevice_IC106_TCA6424A.read_input()[1]))
+        print("IC107 (TCA6424A) logic levels: 0x{0:06x}".format(i2cDevice_IC107_TCA6424A.read_input()[1]))
 
 
 
