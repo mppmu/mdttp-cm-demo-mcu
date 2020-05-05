@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 04 May 2020
-# Rev.: 04 May 2020
+# Rev.: 05 May 2020
 #
 # Python class for communicating with the MCP9808 digital temperature sensor
 # IC.
@@ -54,7 +54,7 @@ class I2C_MCP9808:
 
 
 
-    # Return the name of a pointer register.
+    # Return the name of a register pointer.
     @classmethod
     def pointer_to_name(cls, pointer):
         if pointer == 0x00:
@@ -108,11 +108,11 @@ class I2C_MCP9808:
             self.i2cDevice.print_details()
             return -1, 0xffff
         # Calculate the value.
-        value  = (0xff & dataRd[0]) << 8    # Data byte 0: MSB.
-        value |=  0xff & dataRd[1]          # Data byte 1: LSB.
+        value  = (dataRd[0] & 0xff) << 8    # Data byte 0: MSB.
+        value |=  dataRd[1] & 0xff          # Data byte 1: LSB.
         # Debug info.
         if self.debugLevel >= 2:
-            print(self.prefixDebugDevice + "Read the value of the {0:s}, pointer address 0x{1:02x}: 0x{2:02x}.".format(regName, pointer, value), end='')
+            print(self.prefixDebugDevice + "Read the value of the {0:s}, pointer address 0x{1:02x}: 0x{2:04x}.".format(regName, pointer, value), end='')
             self.i2cDevice.print_details()
         return 0, value
 

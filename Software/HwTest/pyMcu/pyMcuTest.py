@@ -30,6 +30,7 @@ import McuI2C
 import McuSerial
 import McuUart
 import I2C_MCP9808
+import I2C_MCP9903
 import I2C_PCA9547
 import I2C_Si53xx
 import I2C_TCA6424A
@@ -46,6 +47,7 @@ testI2C_IC55_PCA9547PW  = False
 testI2C_IC54_Si5341     = False
 testI2C_TCA6424A        = False
 testI2C_MCP9808         = False
+testI2C_IC39_MCP9903    = False
 testMcuSerial_1         = False
 # Set the tests to true that you want to run.
 testFwInfo              = True
@@ -55,6 +57,7 @@ testI2C_IC55_PCA9547PW  = True
 testI2C_IC54_Si5341     = True
 testI2C_TCA6424A        = True
 testI2C_MCP9808         = True
+testI2C_IC39_MCP9903    = True
 testMcuSerial_1         = True
 
 
@@ -214,15 +217,34 @@ def run_test(serialDevice, verbosity):
         i2cDevice_IC36_MCP9808.write_resolution(0x0003)
         i2cDevice_IC37_MCP9808.write_resolution(0x0003)
         i2cDevice_IC38_MCP9808.write_resolution(0x0003)
-        # Read manufacturer and device ID.
+        # Read the manufacturer and device ID.
         print("IC34 (MCP9808) manufacturer ID: 0x{0:04x}".format(i2cDevice_IC34_MCP9808.read_manufacturer_id()[1]))
         print("IC34 (MCP9808) device ID: 0x{0:04x}".format(i2cDevice_IC34_MCP9808.read_device_id()[1]))
-        # Read temperatures.
+        # Read the temperatures.
         print("IC34 (MCP9808) temperature: {0:8.4f} degC".format(i2cDevice_IC34_MCP9808.read_temperature()[1]))
         print("IC35 (MCP9808) temperature: {0:8.4f} degC".format(i2cDevice_IC35_MCP9808.read_temperature()[1]))
         print("IC36 (MCP9808) temperature: {0:8.4f} degC".format(i2cDevice_IC36_MCP9808.read_temperature()[1]))
         print("IC37 (MCP9808) temperature: {0:8.4f} degC".format(i2cDevice_IC37_MCP9808.read_temperature()[1]))
         print("IC38 (MCP9808) temperature: {0:8.4f} degC".format(i2cDevice_IC38_MCP9808.read_temperature()[1]))
+
+
+
+    # I2C test of IC39, MCP9903 multi-channel low-temperature remote diode sensor IC.
+    if testI2C_IC39_MCP9903:
+        # IC39 (MCP9903): I2C port 4, slave address 0x5c
+        i2cDevice_IC39_MCP9903 = I2C_MCP9903.I2C_MCP9903(mcuI2C[4], 0x5c, "IC39 (MCP9903)")
+        i2cDevice_IC39_MCP9903.debugLevel = verbosity
+        # Set up the configuration registers.
+        i2cDevice_IC39_MCP9903.write_config_0(0x00)
+        i2cDevice_IC39_MCP9903.write_config_1(0x00)
+        # Read the product ID, the manufacturer ID and the revision.
+        print("IC39 (MCP9903) product ID: 0x{0:02x}".format(i2cDevice_IC39_MCP9903.read_product_id()[1]))
+        print("IC39 (MCP9903) manufacturer ID: 0x{0:02x}".format(i2cDevice_IC39_MCP9903.read_manufacturer_id()[1]))
+        print("IC39 (MCP9903) revision: 0x{0:02x}".format(i2cDevice_IC39_MCP9903.read_revision()[1]))
+        # Read the temperatures.
+        print("IC39 (MCP9903) internal diode temperature: {0:7.3f} degC".format(i2cDevice_IC39_MCP9903.read_temp_int()[1]))
+        print("IC39 (MCP9903) external diode 1 temperature: {0:7.3f} degC".format(i2cDevice_IC39_MCP9903.read_temp_ext_1()[1]))
+        print("IC39 (MCP9903) external diode 2 temperature: {0:7.3f} degC".format(i2cDevice_IC39_MCP9903.read_temp_ext_2()[1]))
 
 
 
