@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 08 Apr 2020
-// Rev.: 29 Apr 2020
+// Rev.: 08 May 2020
 //
 // Header file of the firmware running on the ATLAS MDT Trigger Processor (TP)
 // Command Module (CM) MCU.
@@ -19,15 +19,19 @@
 // Firmware parameters.
 // ******************************************************************
 #define FW_NAME                     "cm_mcu_hwtest"
-#define FW_VERSION                  "0.0.7"
-#define FW_RELEASEDATE              "29 Apr 2020"
+#define FW_VERSION                  "0.1.0"
+#define FW_RELEASEDATE              "08 May 2020"
 
 
 
 // ******************************************************************
 // System clock settings.
 // ******************************************************************
-#define SYSTEM_CLOCK_SETTINGS       (SYSCTL_XTAL_25MHZ | SYSCTL_OSC_MAIN | SYSCTL_USE_PLL | SYSCTL_CFG_VCO_480)
+// Use an external 25 MHz crystal or oscillator.
+//#define SYSTEM_CLOCK_SETTINGS       (SYSCTL_XTAL_25MHZ | SYSCTL_OSC_MAIN | SYSCTL_USE_PLL | SYSCTL_CFG_VCO_480)
+// CAUTION: No external crystal is installed on the Command Module!
+//          => Only the internal oscillator can be used.
+#define SYSTEM_CLOCK_SETTINGS       (SYSCTL_OSC_INT | SYSCTL_USE_PLL | SYSCTL_CFG_VCO_480)
 #define SYSTEM_CLOCK_FREQ           120000000
 
 
