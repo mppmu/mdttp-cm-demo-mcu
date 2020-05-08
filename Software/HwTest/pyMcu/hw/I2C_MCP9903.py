@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 05 May 2020
-# Rev.: 05 May 2020
+# Rev.: 08 May 2020
 #
 # Python class for communicating with the MCP9903 multi-channel low-temperature
 # remote diode sensor IC.
@@ -27,7 +27,7 @@ class I2C_MCP9903:
     debugLevel          = 0     # Debug verbosity.
 
     # Hardware parameters.
-    hwAdrMin            = 0
+    hwAdrMin            = 0x00
     hwAdrMax            = 0xff
 
 

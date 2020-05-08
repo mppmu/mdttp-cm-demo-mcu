@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 28 Apr 2020
-# Rev.: 04 May 2020
+# Rev.: 08 May 2020
 #
 # Python class for communicating with the PCA9547 8-channel I2C-bus multiplexer
 # IC.
@@ -27,8 +27,8 @@ class I2C_PCA9547:
     debugLevel          = 0     # Debug verbosity.
 
     # Hardware parameters.
-    hwChannelMin        = 0x0   # Lowest hardware channel number.
-    hwChannelMax        = 0xf   # Highest hardware channel number.
+    hwChannelMin        = 0x00  # Lowest hardware channel number.
+    hwChannelMax        = 0x0f  # Highest hardware channel number.
 
 
 

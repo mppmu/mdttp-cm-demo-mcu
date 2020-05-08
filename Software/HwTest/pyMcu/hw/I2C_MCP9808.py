@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 04 May 2020
-# Rev.: 05 May 2020
+# Rev.: 08 May 2020
 #
 # Python class for communicating with the MCP9808 digital temperature sensor
 # IC.
@@ -27,8 +27,8 @@ class I2C_MCP9808:
     debugLevel          = 0     # Debug verbosity.
 
     # Hardware parameters.
-    hwPointerMin        = 0
-    hwPointerMax        = 8
+    hwPointerMin        = 0x00
+    hwPointerMax        = 0x08
 
 
 

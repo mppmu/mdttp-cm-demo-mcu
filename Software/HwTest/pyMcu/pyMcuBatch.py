@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 24 Apr 2020
-# Rev.: 05 May 2020
+# Rev.: 08 May 2020
 #
 # Python script to load and execute a batch of MCU commands from a file on the
 # TI Tiva TM4C1290 MCU on the ATLAS MDT Trigger Processor (TP) Command Module
@@ -16,7 +16,7 @@
 # Append hardware classes folder to Python path.
 import os
 import sys
-sys.path.append(os.path.relpath(os.path.dirname(__file__) + '/hw'))
+sys.path.append(os.path.relpath(os.path.join(os.path.dirname(__file__), 'hw')))
 
 
 
