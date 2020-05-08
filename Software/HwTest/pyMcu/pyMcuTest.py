@@ -29,6 +29,7 @@ import time
 import McuI2C
 import McuSerial
 import McuUart
+import I2C_DS28CM00
 import I2C_MCP9808
 import I2C_MCP9903
 import I2C_PCA9547
@@ -39,11 +40,15 @@ import I2C_TCA6424A
 
 # Message prefixes and separators.
 separatorTests          = "-----"
+prefixDebug             = "DEBUG: {0:s}: ".format(__file__)
+prefixError             = "ERROR: {0:s}: ".format(__file__)
 
 # Select tests to run.
+# Preset all to false.
 testFwInfo              = False
 testMcuSerial_0         = False
 testI2C                 = False
+testI2C_IC114_DS28CM00  = False
 testI2C_IC55_PCA9547PW  = False
 testI2C_IC54_Si5341     = False
 testI2C_TCA6424A        = False
@@ -54,6 +59,7 @@ testMcuSerial_1         = False
 testFwInfo              = True
 testMcuSerial_0         = True
 testI2C                 = True
+testI2C_IC114_DS28CM00  = True
 testI2C_IC55_PCA9547PW  = True
 testI2C_IC54_Si5341     = True
 testI2C_TCA6424A        = True
@@ -130,6 +136,22 @@ def run_test(serialDevice, verbosity):
         for datum in data:
             print(" 0x{0:02x}".format(datum), end='')
         print()
+        print(separatorTests)
+
+
+
+    # I2C test of IC114 (DS28CM00, silicon serial number IC).
+    if testI2C_IC114_DS28CM00:
+        # IC114 (DS28CM00): I2C port 4, slave address 0x50.
+        i2cDevice_IC114_DS28CM00 = I2C_DS28CM00.I2C_DS28CM00(mcuI2C[4], 0x50, "IC114 (DS28CM00)")
+        i2cDevice_IC114_DS28CM00.debugLevel = verbosity
+        print("I2C test of IC114 (DS28CM00) on I2C port {0:d}.".format(i2cDevice_IC114_DS28CM00.mcuI2C.port))
+        ret, deviceFamilyCode, serialNumber, crc, crcError = i2cDevice_IC114_DS28CM00.read_all()
+        print("Device family code: 0x{0:02x}".format(deviceFamilyCode))
+        print("Serial number: 0x{0:12x}".format(serialNumber))
+        print("CRC: 0x{0:02x}".format(crc))
+        if crcError:
+            print(prefixError + "CRC error detected!")
         print(separatorTests)
 
 
