@@ -2,7 +2,7 @@
  * Auth: M. Fras, Electronics Division, MPI for Physics, Munich
  * Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
  * Date: 08 Apr 2020
- * Rev.: 08 Apr 2020
+ * Rev.: 11 May 2020
  *
  * Linker configuration file of the firmware running on the ATLAS MDT Trigger
  * Processor (TP) Command Module (CM) MCU.
@@ -12,7 +12,7 @@
 
 MEMORY
 {
-    FLASH (rx) : ORIGIN = 0x00004000, LENGTH = 0x000fc000
+    FLASH (rx) : ORIGIN = 0x00000000, LENGTH = 0x00100000
     SRAM (rwx) : ORIGIN = 0x20000000, LENGTH = 0x00040000
 }
 
