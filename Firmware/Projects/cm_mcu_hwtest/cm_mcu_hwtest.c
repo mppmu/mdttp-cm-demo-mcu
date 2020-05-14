@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 08 Apr 2020
-// Rev.: 28 Apr 2020
+// Rev.: 14 May 2020
 //
 // Hardware test firmware running on the ATLAS MDT Trigger Processor (TP)
 // Command Module (CM) MCU.
@@ -218,9 +218,9 @@ int GpioGetSet(char *pcCmd, char *pcParam)
     pcParam = strtok(NULL, UI_STR_DELIMITER);
     // Read the current value of the user GPIO pins if no parameter is given.
     if (pcParam == NULL) {
-        bGpioWrite = true;
-    } else {
         bGpioWrite = false;
+    } else {
+        bGpioWrite = true;
         ui32GpioSet = strtol(pcParam, (char **) NULL, 0);
     }
     // GPIO type.
