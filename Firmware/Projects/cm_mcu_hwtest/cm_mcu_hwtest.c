@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 08 Apr 2020
-// Rev.: 14 May 2020
+// Rev.: 15 May 2020
 //
 // Hardware test firmware running on the ATLAS MDT Trigger Processor (TP)
 // Command Module (CM) MCU.
@@ -20,6 +20,7 @@
 #include "driverlib/sysctl.h"
 #include "driverlib/uart.h"
 #include "utils/uartstdio.h"
+#include "utils/ustdlib.h"
 #include "hw/adc/adc.h"
 #include "hw/gpio/gpio.h"
 #include "hw/gpio/gpio_pins.h"
@@ -52,6 +53,8 @@ void I2CAccessHelp(void);
 int I2CPortCheck(uint8_t ui8I2CPort, tI2C **psI2C);
 int I2CDetect(char *pcCmd, char *pcParam);
 int TemperatureAnalog(char *pcCmd, char *pcParam);
+float Adc2Temp(uint32_t ui32Adc);
+char *Adc2TempStr(uint32_t ui32Adc);
 int UartAccess(char *pcCmd, char *pcParam);
 int UartPortCheck(uint8_t ui8UartPort, tUART **psUart);
 int UartSetup(char *pcCmd, char *pcParam);
@@ -502,14 +505,6 @@ int TemperatureAnalog(char *pcCmd, char *pcParam)
 {
     uint32_t ui32Adc;
     int iCnt;
-    // Convert voltag to temperature. See datasheet of the LTM4644 device,
-    // section "temperature monitoring".
-    // T = -(V_G0 - V_D) / (dV_D / dT)
-    // T = -(1200mV - voltage) / (-2 mV/K)
-    // Voltage [mV] = (3300 / 0xfff) * ADV counts
-    #ifndef TEMP_RAW_ADC_HEX
-    float fAdc2Temp = (1200 - (3300 / 0xfff)) / 2.0;
-    #endif
 
     if (pcParam == NULL) {
         iCnt = 1;
@@ -531,16 +526,17 @@ int TemperatureAnalog(char *pcCmd, char *pcParam)
         ui32Adc = AdcConvert(&g_sAdc_ZUP_DDR4_IO_ETH_USB_SD_LDO_TEMP);
         UARTprintf(", ZUP DDR4/IO/LDO/Misc.: 0x%03x", ui32Adc);
         #else
+        char cTempStr[16];
         ui32Adc = AdcConvert(&g_sAdc_KUP_MGTAVCC_ADC_AUX_TEMP);
-        UARTprintf("KUP MGTAVCC/ADC/AUX: %d degC", (int) (fAdc2Temp * ui32Adc) - 273.15);
+        UARTprintf("KUP MGTAVCC/ADC/AUX: %s degC", (int) Adc2TempStr(ui32Adc));
         ui32Adc = AdcConvert(&g_sAdc_KUP_MGTAVTT_TEMP);
-        UARTprintf(", KUP MGTAVTT: %d degC", (int) (fAdc2Temp * ui32Adc) - 273.15);
+        UARTprintf(", KUP MGTAVTT: %s degC", (int) Adc2TempStr(ui32Adc));
         ui32Adc = AdcConvert(&g_sAdc_KUP_DDR4_IO_EXP_MISC_TEMP);
-        UARTprintf(", KUP DDR4/IO/Exp. Con./Misc.: %d degC", (int) (fAdc2Temp * ui32Adc) - 273.15);
+        UARTprintf(", KUP DDR4/IO/Exp. Con./Misc.: %s degC", (int) Adc2TempStr(ui32Adc));
         ui32Adc = AdcConvert(&g_sAdc_ZUP_MGTAVCC_MGTAVTT_TEMP);
-        UARTprintf(", ZUP MGTAVCC/MGTAVTT: %d degC", (int) (fAdc2Temp * ui32Adc) - 273.15);
+        UARTprintf(", ZUP MGTAVCC/MGTAVTT: %s degC", (int) Adc2TempStr(ui32Adc));
         ui32Adc = AdcConvert(&g_sAdc_ZUP_DDR4_IO_ETH_USB_SD_LDO_TEMP);
-        UARTprintf(", ZUP DDR4/IO/LDO/Misc.: %d degC", (int) (fAdc2Temp * ui32Adc) - 273.15);
+        UARTprintf(", ZUP DDR4/IO/LDO/Misc.: %s degC", (int) Adc2TempStr(ui32Adc));
         #endif
         if (i < iCnt - 1) {
             SysCtlDelay(1000000);
@@ -550,6 +546,39 @@ int TemperatureAnalog(char *pcCmd, char *pcParam)
 
     return 0;
 }
+
+
+
+// Calculate temperature value in degC from ADC counts.
+float Adc2Temp(uint32_t ui32Adc)
+{
+    // Convert voltag to temperature. See datasheet of the LTM4644 device,
+    // section "temperature monitoring".
+    // T = -(V_G0 - V_D) / (dV_D / dT)
+    // T = -(1200mV - voltage) / (-2 mV/K)
+    // Voltage [mV] = (3300 / 0xfff) * ADC counts
+
+    float fVolt = ((float) 3300 / 0xfff) * ui32Adc;
+    float fTempDegK = ((float) 1200 - fVolt) / 2;
+    float fTempDegC = fTempDegK - 273.15;
+
+    return fTempDegC;
+}
+
+
+
+// Calculate temperature value from ADC counts and format it into a string.
+char *Adc2TempStr(uint32_t ui32Adc)
+{
+    static char pcTempStr[24];
+    float fTemp;
+
+    fTemp = Adc2Temp(ui32Adc);
+    usprintf(pcTempStr, "%3d.%02d", (int) fTemp, (int) abs((fTemp - (int) fTemp) * 100));
+
+    return pcTempStr;
+}
+
 
 
 // UART access.

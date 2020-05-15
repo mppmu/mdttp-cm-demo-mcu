@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 09 Apr 2020
-// Rev.: 28 Apr 2020
+// Rev.: 15 May 2020
 //
 // IO peripheral definitions of the firmware running on the ATLAS MDT Trigger
 // Processor (TP) Command Module (CM) MCU.
@@ -167,7 +167,7 @@ tI2C g_psI2C[I2C_MASTER_NUM] = {
         0,                      // ui32I2CClk
         false,                  // false = 100 kbps; true = 400 kbps
         I2C_MASTER_INT_ARB_LOST | I2C_MASTER_INT_STOP | I2C_MASTER_INT_START |
-        I2C_MASTER_INT_NACK | I2C_MASTER_INT_TIMEOUT | I2C_MASTER_INT_DATA,
+            I2C_MASTER_INT_NACK | I2C_MASTER_INT_TIMEOUT | I2C_MASTER_INT_DATA,
         100                     // ui32Timeout
     },
     {
@@ -186,7 +186,7 @@ tI2C g_psI2C[I2C_MASTER_NUM] = {
         0,                      // ui32I2CClk
         false,                  // false = 100 kbps; true = 400 kbps
         I2C_MASTER_INT_ARB_LOST | I2C_MASTER_INT_STOP | I2C_MASTER_INT_START |
-        I2C_MASTER_INT_NACK | I2C_MASTER_INT_TIMEOUT | I2C_MASTER_INT_DATA,
+            I2C_MASTER_INT_NACK | I2C_MASTER_INT_TIMEOUT | I2C_MASTER_INT_DATA,
         100                     // ui32Timeout
     },
     {
@@ -205,7 +205,7 @@ tI2C g_psI2C[I2C_MASTER_NUM] = {
         0,                      // ui32I2CClk
         false,                  // false = 100 kbps; true = 400 kbps
         I2C_MASTER_INT_ARB_LOST | I2C_MASTER_INT_STOP | I2C_MASTER_INT_START |
-        I2C_MASTER_INT_NACK | I2C_MASTER_INT_TIMEOUT | I2C_MASTER_INT_DATA,
+            I2C_MASTER_INT_NACK | I2C_MASTER_INT_TIMEOUT | I2C_MASTER_INT_DATA,
         100                     // ui32Timeout
     },
     {
@@ -224,7 +224,7 @@ tI2C g_psI2C[I2C_MASTER_NUM] = {
         0,                      // ui32I2CClk
         false,                  // false = 100 kbps; true = 400 kbps
         I2C_MASTER_INT_ARB_LOST | I2C_MASTER_INT_STOP | I2C_MASTER_INT_START |
-        I2C_MASTER_INT_NACK | I2C_MASTER_INT_TIMEOUT | I2C_MASTER_INT_DATA,
+            I2C_MASTER_INT_NACK | I2C_MASTER_INT_TIMEOUT | I2C_MASTER_INT_DATA,
         100                     // ui32Timeout
     },
     {
@@ -243,7 +243,7 @@ tI2C g_psI2C[I2C_MASTER_NUM] = {
         0,                      // ui32I2CClk
         false,                  // false = 100 kbps; true = 400 kbps
         I2C_MASTER_INT_ARB_LOST | I2C_MASTER_INT_STOP | I2C_MASTER_INT_START |
-        I2C_MASTER_INT_NACK | I2C_MASTER_INT_TIMEOUT | I2C_MASTER_INT_DATA,
+            I2C_MASTER_INT_NACK | I2C_MASTER_INT_TIMEOUT | I2C_MASTER_INT_DATA,
         100                     // ui32Timeout
     },
     {
@@ -262,7 +262,7 @@ tI2C g_psI2C[I2C_MASTER_NUM] = {
         0,                      // ui32I2CClk
         false,                  // false = 100 kbps; true = 400 kbps
         I2C_MASTER_INT_ARB_LOST | I2C_MASTER_INT_STOP | I2C_MASTER_INT_START |
-        I2C_MASTER_INT_NACK | I2C_MASTER_INT_TIMEOUT | I2C_MASTER_INT_DATA,
+            I2C_MASTER_INT_NACK | I2C_MASTER_INT_TIMEOUT | I2C_MASTER_INT_DATA,
         100                     // ui32Timeout
     },
     {
@@ -281,7 +281,7 @@ tI2C g_psI2C[I2C_MASTER_NUM] = {
         0,                      // ui32I2CClk
         false,                  // false = 100 kbps; true = 400 kbps
         I2C_MASTER_INT_ARB_LOST | I2C_MASTER_INT_STOP | I2C_MASTER_INT_START |
-        I2C_MASTER_INT_NACK | I2C_MASTER_INT_TIMEOUT | I2C_MASTER_INT_DATA,
+            I2C_MASTER_INT_NACK | I2C_MASTER_INT_TIMEOUT | I2C_MASTER_INT_DATA,
         100                     // ui32Timeout
     },
     {
@@ -293,14 +293,14 @@ tI2C g_psI2C[I2C_MASTER_NUM] = {
         SYSCTL_PERIPH_GPIOD,
         GPIO_PORTD_BASE,
         GPIO_PIN_0,             // SCL
-        GPIO_PIN_0,             // SDA
+        GPIO_PIN_1,             // SDA
         GPIO_PD0_I2C7SCL,       // SCL
         GPIO_PD1_I2C7SDA,       // SDA
         I2C7_BASE,
         0,                      // ui32I2CClk
         false,                  // false = 100 kbps; true = 400 kbps
         I2C_MASTER_INT_ARB_LOST | I2C_MASTER_INT_STOP | I2C_MASTER_INT_START |
-        I2C_MASTER_INT_NACK | I2C_MASTER_INT_TIMEOUT | I2C_MASTER_INT_DATA,
+            I2C_MASTER_INT_NACK | I2C_MASTER_INT_TIMEOUT | I2C_MASTER_INT_DATA,
         100                     // ui32Timeout
     },
     {
@@ -319,7 +319,7 @@ tI2C g_psI2C[I2C_MASTER_NUM] = {
         0,                      // ui32I2CClk
         false,                  // false = 100 kbps; true = 400 kbps
         I2C_MASTER_INT_ARB_LOST | I2C_MASTER_INT_STOP | I2C_MASTER_INT_START |
-        I2C_MASTER_INT_NACK | I2C_MASTER_INT_TIMEOUT | I2C_MASTER_INT_DATA,
+            I2C_MASTER_INT_NACK | I2C_MASTER_INT_TIMEOUT | I2C_MASTER_INT_DATA,
         100                     // ui32Timeout
     },
     {
@@ -338,7 +338,7 @@ tI2C g_psI2C[I2C_MASTER_NUM] = {
         0,                    // ui32I2CClk
         false,                // false = 100 kbps; true = 400 kbps
         I2C_MASTER_INT_ARB_LOST | I2C_MASTER_INT_STOP | I2C_MASTER_INT_START |
-        I2C_MASTER_INT_NACK | I2C_MASTER_INT_TIMEOUT | I2C_MASTER_INT_DATA,
+            I2C_MASTER_INT_NACK | I2C_MASTER_INT_TIMEOUT | I2C_MASTER_INT_DATA,
         100                   // ui32Timeout
     }
 };
