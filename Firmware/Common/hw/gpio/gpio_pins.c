@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 24 Apr 2020
-// Rev.: 28 Apr 2020
+// Rev.: 20 May 2020
 //
 // GPIO pin definitions and functions for the TI Tiva TM4C1290 MCU on the ATLAS
 // MDT Trigger Processor (TP) Command Module (CM).
@@ -352,7 +352,7 @@ tGPIO g_sGpio_MuxSel1 = {
     false,                  // bInput: false = output, true = input
     0                       // ui32IntType
 };
-// LTTC_MUX_SEL: PC4, 25
+// LTTC_MUX1_SEL: PC4, 25
 tGPIO g_sGpio_MuxSel2 = {
     SYSCTL_PERIPH_GPIOC,
     GPIO_PORTC_BASE,
@@ -414,7 +414,7 @@ tGPIO g_sGpio_MuxPD1 = {
     false,                  // bInput: false = output, true = input
     0                       // ui32IntType
 };
-// LTTC_MUX_PD: PC5, 24
+// LTTC_MUX1_PD: PC5, 24
 tGPIO g_sGpio_MuxPD2 = {
     SYSCTL_PERIPH_GPIOC,
     GPIO_PORTC_BASE,
@@ -501,7 +501,7 @@ tGPIO g_sGpio_ClockSel3 = {
 tGPIO g_sGpio_ClockSel4 = {
     SYSCTL_PERIPH_GPION,
     GPIO_PORTN_BASE,
-    GPIO_PIN_0,             // ui8Pins
+    GPIO_PIN_1,             // ui8Pins
     GPIO_STRENGTH_2MA,      // ui32Strength
     GPIO_PIN_TYPE_STD,      // ui32PinType
     false,                  // bInput: false = output, true = input
@@ -678,7 +678,8 @@ tGPIO g_sGpio_KupCtrlStat0 = {
     GPIO_PORTK_BASE,
     GPIO_PIN_6,             // ui8Pins
     GPIO_STRENGTH_2MA,      // ui32Strength
-    GPIO_PIN_TYPE_STD,      // ui32PinType
+    GPIO_PIN_TYPE_STD,      // ui32PinType; Pin connected via Levelshifter, 
+                            // so no open drain required
     false,                  // bInput: false = output, true = input
     0                       // ui32IntType
 };
@@ -698,8 +699,8 @@ tGPIO g_sGpio_KupCtrlStat2 = {
     GPIO_PORTK_BASE,
     GPIO_PIN_5,             // ui8Pins
     GPIO_STRENGTH_2MA,      // ui32Strength
-    GPIO_PIN_TYPE_STD,      // ui32PinType
-    true,                   // bInput: false = output, true = input
+    GPIO_PIN_TYPE_OD,       // ui32PinType
+    false,                  // bInput: false = output, true = input
     0                       // ui32IntType
 };
 
@@ -713,6 +714,7 @@ void GpioInit_KupCtrlStat(void)
 void GpioSet_KupCtrlStat(uint32_t ui32Val)
 {
     GpioOutputSetBool(&g_sGpio_KupCtrlStat0, (bool) (ui32Val & 0x01));
+    GpioOutputSetBool(&g_sGpio_KupCtrlStat2, (bool) (ui32Val & 0x04));
 }
 
 uint32_t GpioGet_KupCtrlStat(void)
@@ -732,17 +734,17 @@ uint32_t GpioGet_KupCtrlStat(void)
 // Control/status of the ZU11EG.
 // ******************************************************************
 
-// ZUP_PS_PROG_B_3V3: PP0, 118
+// ZUP_PS_PROG_B: PP0, 118
 tGPIO g_sGpio_ZupCtrlStat0 = {
     SYSCTL_PERIPH_GPIOP,
     GPIO_PORTP_BASE,
     GPIO_PIN_0,             // ui8Pins
     GPIO_STRENGTH_2MA,      // ui32Strength
-    GPIO_PIN_TYPE_STD,      // ui32PinType
+    GPIO_PIN_TYPE_OD,       // ui32PinType
     false,                  // bInput: false = output, true = input
     0                       // ui32IntType
 };
-// ZUP_PS_DONE_3V3: PP2, 103
+// ZUP_PS_DONE: PP2, 103
 tGPIO g_sGpio_ZupCtrlStat1 = {
     SYSCTL_PERIPH_GPIOP,
     GPIO_PORTP_BASE,
@@ -752,14 +754,14 @@ tGPIO g_sGpio_ZupCtrlStat1 = {
     true,                   // bInput: false = output, true = input
     0                       // ui32IntType
 };
-// ZUP_PS_INIT_B_3V3: PP1, 119
+// ZUP_PS_INIT_B: PP1, 119
 tGPIO g_sGpio_ZupCtrlStat2 = {
     SYSCTL_PERIPH_GPIOP,
     GPIO_PORTP_BASE,
     GPIO_PIN_1,             // ui8Pins
     GPIO_STRENGTH_2MA,      // ui32Strength
-    GPIO_PIN_TYPE_STD,      // ui32PinType
-    true,                   // bInput: false = output, true = input
+    GPIO_PIN_TYPE_OD,       // ui32PinType
+    false,                  // bInput: false = output, true = input
     0                       // ui32IntType
 };
 // ZUP_PS_nPOR: PP3, 104
@@ -786,7 +788,7 @@ tGPIO g_sGpio_ZupCtrlStat4 = {
 tGPIO g_sGpio_ZupCtrlStat5 = {
     SYSCTL_PERIPH_GPIOP,
     GPIO_PORTP_BASE,
-    GPIO_PIN_0,             // ui8Pins
+    GPIO_PIN_5,             // ui8Pins
     GPIO_STRENGTH_2MA,      // ui32Strength
     GPIO_PIN_TYPE_STD,      // ui32PinType
     true,                   // bInput: false = output, true = input
@@ -806,6 +808,7 @@ void GpioInit_ZupCtrlStat(void)
 void GpioSet_ZupCtrlStat(uint32_t ui32Val)
 {
     GpioOutputSetBool(&g_sGpio_ZupCtrlStat0, (bool) (ui32Val & 0x01));
+    GpioOutputSetBool(&g_sGpio_ZupCtrlStat2, (bool) (ui32Val & 0x04));
     GpioOutputSetBool(&g_sGpio_ZupCtrlStat3, (bool) (ui32Val & 0x08));
 }
 
@@ -891,14 +894,14 @@ tGPIO g_sGpio_PEInt = {
 
 void GpioInit_PEInt(void)
 {
-    GpioInit(&g_sGpio_SmPwerEna);
+    GpioInit(&g_sGpio_PEInt);
 }
 
 uint32_t GpioGet_PEInt(void)
 {
     uint32_t ui32Val = 0;
 
-    ui32Val |= (GpioInputGetBool(&g_sGpio_SmPwerEna) & 0x1) << 0;
+    ui32Val |= (GpioInputGetBool(&g_sGpio_PEInt) & 0x1) << 0;
 
     return ui32Val;
 }

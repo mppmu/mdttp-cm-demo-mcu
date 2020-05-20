@@ -19,8 +19,8 @@
 // Firmware parameters.
 // ******************************************************************
 #define FW_NAME                     "cm_mcu_hwtest"
-#define FW_VERSION                  "0.1.2"
-#define FW_RELEASEDATE              "15 May 2020"
+#define FW_VERSION                  "0.1.3"
+#define FW_RELEASEDATE              "20 May 2020"
 
 
 
