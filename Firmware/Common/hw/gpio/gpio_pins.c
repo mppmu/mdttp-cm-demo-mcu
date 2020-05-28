@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 24 Apr 2020
-// Rev.: 20 May 2020
+// Rev.: 29 May 2020
 //
 // GPIO pin definitions and functions for the TI Tiva TM4C1290 MCU on the ATLAS
 // MDT Trigger Processor (TP) Command Module (CM).
@@ -678,29 +678,29 @@ tGPIO g_sGpio_KupCtrlStat0 = {
     GPIO_PORTK_BASE,
     GPIO_PIN_6,             // ui8Pins
     GPIO_STRENGTH_2MA,      // ui32Strength
-    GPIO_PIN_TYPE_STD,      // ui32PinType; Pin connected via Levelshifter, 
+    GPIO_PIN_TYPE_OD,       // ui32PinType; Pin connected via Levelshifter,
                             // so no open drain required
     false,                  // bInput: false = output, true = input
     0                       // ui32IntType
 };
-// KUP_DONE_3V3: PK7, 59
-tGPIO g_sGpio_KupCtrlStat1 = {
-    SYSCTL_PERIPH_GPIOK,
-    GPIO_PORTK_BASE,
-    GPIO_PIN_7,             // ui8Pins
-    GPIO_STRENGTH_2MA,      // ui32Strength
-    GPIO_PIN_TYPE_STD,      // ui32PinType
-    true,                   // bInput: false = output, true = input
-    0                       // ui32IntType
-};
 // KUP_INIT_B_3V3: PK5, 61
-tGPIO g_sGpio_KupCtrlStat2 = {
+tGPIO g_sGpio_KupCtrlStat1 = {
     SYSCTL_PERIPH_GPIOK,
     GPIO_PORTK_BASE,
     GPIO_PIN_5,             // ui8Pins
     GPIO_STRENGTH_2MA,      // ui32Strength
     GPIO_PIN_TYPE_OD,       // ui32PinType
     false,                  // bInput: false = output, true = input
+    0                       // ui32IntType
+};
+// KUP_DONE_3V3: PK7, 59
+tGPIO g_sGpio_KupCtrlStat2 = {
+    SYSCTL_PERIPH_GPIOK,
+    GPIO_PORTK_BASE,
+    GPIO_PIN_7,             // ui8Pins
+    GPIO_STRENGTH_2MA,      // ui32Strength
+    GPIO_PIN_TYPE_STD,      // ui32PinType
+    true,                   // bInput: false = output, true = input
     0                       // ui32IntType
 };
 
@@ -734,8 +734,18 @@ uint32_t GpioGet_KupCtrlStat(void)
 // Control/status of the ZU11EG.
 // ******************************************************************
 
-// ZUP_PS_PROG_B: PP0, 118
+// ZUP_PS_PROG_B: PP1, 119
 tGPIO g_sGpio_ZupCtrlStat0 = {
+    SYSCTL_PERIPH_GPIOP,
+    GPIO_PORTP_BASE,
+    GPIO_PIN_1,             // ui8Pins
+    GPIO_STRENGTH_2MA,      // ui32Strength
+    GPIO_PIN_TYPE_OD,       // ui32PinType
+    false,                  // bInput: false = output, true = input
+    0                       // ui32IntType
+};
+// ZUP_PS_INIT_B: PP0, 118
+tGPIO g_sGpio_ZupCtrlStat1 = {
     SYSCTL_PERIPH_GPIOP,
     GPIO_PORTP_BASE,
     GPIO_PIN_0,             // ui8Pins
@@ -745,23 +755,13 @@ tGPIO g_sGpio_ZupCtrlStat0 = {
     0                       // ui32IntType
 };
 // ZUP_PS_DONE: PP2, 103
-tGPIO g_sGpio_ZupCtrlStat1 = {
+tGPIO g_sGpio_ZupCtrlStat2 = {
     SYSCTL_PERIPH_GPIOP,
     GPIO_PORTP_BASE,
     GPIO_PIN_2,             // ui8Pins
     GPIO_STRENGTH_2MA,      // ui32Strength
     GPIO_PIN_TYPE_STD,      // ui32PinType
     true,                   // bInput: false = output, true = input
-    0                       // ui32IntType
-};
-// ZUP_PS_INIT_B: PP1, 119
-tGPIO g_sGpio_ZupCtrlStat2 = {
-    SYSCTL_PERIPH_GPIOP,
-    GPIO_PORTP_BASE,
-    GPIO_PIN_1,             // ui8Pins
-    GPIO_STRENGTH_2MA,      // ui32Strength
-    GPIO_PIN_TYPE_OD,       // ui32PinType
-    false,                  // bInput: false = output, true = input
     0                       // ui32IntType
 };
 // ZUP_PS_nPOR: PP3, 104
