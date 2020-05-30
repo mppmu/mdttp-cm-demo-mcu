@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 30 Apr 2020
-# Rev.: 08 May 2020
+# Rev.: 30 May 2020
 #
 # Python script to test hardware features of the TI Tiva TM4C1290 MCU on the
 # ATLAS MDT Trigger Processor (TP) Command Module (CM) over a serial port
@@ -94,7 +94,7 @@ def run_test(serialDevice, verbosity):
 
 
     # Define the MCU peripherals.
-    # I2C busses.
+    # I2C buses.
     mcuI2C = []
     for i in range(0, 10):
         mcuI2C.append(McuI2C.McuI2C(mcuSer, i))
@@ -113,7 +113,7 @@ def run_test(serialDevice, verbosity):
 
     # Read the MCU serial port info.
     if testMcuSerial_0:
-        print("MCU serial port {0:s} info:".format(mcuSer.ser.port))
+        print("MCU serial port '{0:s}' info:".format(mcuSer.ser.port))
         mcuSerial_print_info(mcuSer)
         print(separatorTests)
 
@@ -273,7 +273,7 @@ def run_test(serialDevice, verbosity):
 
     # Read the MCU serial port info.
     if testMcuSerial_1:
-        print("MCU serial port {0:s} info:".format(mcuSer.ser.port))
+        print("MCU serial port '{0:s}' info:".format(mcuSer.ser.port))
         mcuSerial_print_info(mcuSer)
         print(separatorTests)
 

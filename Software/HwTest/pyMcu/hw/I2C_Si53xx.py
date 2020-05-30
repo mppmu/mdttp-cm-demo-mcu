@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 29 Apr 2020
-# Rev.: 04 May 2020
+# Rev.: 30 May 2020
 #
 # Python class for communicating with Silicon Labs Si5341/40 and Si5345/44/42
 # devices.
@@ -76,6 +76,9 @@ class I2C_Si53xx:
                 lineElements = list(el.strip(' \t\n\r') for el in lineElements)
                 # Ignore lines without data.
                 if not lineElements:
+                    continue
+                # Ignore lines with content "Address,Data".
+                if lineElements[0].lower() == "address":
                     continue
                 # Convert hexadecimal values from ??h to 0x??.
                 lineElements = list("0x" + el.strip("h") if el.find("h") >= 0 else el for el in lineElements)
