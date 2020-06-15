@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 29 May 2020
-# Rev.: 30 May 2020
+# Rev.: 15 Jun 2020
 #
 # Python script to initialize the ATLAS MDT Trigger Processor (TP) Command
 # Module (CM) via the TI Tiva TM4C1290 MCU.
@@ -25,10 +25,12 @@ import time
 
 
 # Hardware classes.
+import McuGpio
 import McuI2C
 import McuSerial
 import McuUart
 import I2C_DS28CM00
+import I2C_LTC2977
 import I2C_MCP9808
 import I2C_MCP9903
 import I2C_PCA9547
@@ -41,6 +43,11 @@ import I2C_TCA6424A
 separatorTests          = "-----"
 prefixDebug             = "DEBUG: {0:s}: ".format(__file__)
 prefixError             = "ERROR: {0:s}: ".format(__file__)
+
+
+
+# Hardware parameters.
+hwGpioTypePower         = "power"
 
 
 
@@ -64,50 +71,103 @@ def mcuSerial_print_info():
 # ===================================================================
 
 # Power on the clocks, SPF+, expansion connector, 12 Pin header and sensors.
-def power_on_misc():
-    pass
+def power_on_clk_misc():
+    # Switch on the power run pins connected to LTC2977 ICs.
+    i2cDevice_IC52_Ltc2977 = I2C_LTC2977.I2C_LTC2977(mcuI2C[0], 0x61, "IC52 (LTC2977)")
+    i2cDevice_IC52_Ltc2977.debugLevel = verbosity
+    i2cDevice_IC52_Ltc2977.power_on_all()
 
 
 
 # Power on the KU15P FPGA.
 def power_on_kup():
-    pass
+    # Switch on the power run pins connected to the MCU.
+    mcuGpio = McuGpio.McuGpio(mcuSer)
+    mcuGpio.bits_set(hwGpioTypePower, 0x07)
+    # Switch on the power run pins connected to LTC2977 ICs.
+    i2cDevice_IC26_Ltc2977 = I2C_LTC2977.I2C_LTC2977(mcuI2C[1], 0x5c, "IC26 (LTC2977)")
+    i2cDevice_IC26_Ltc2977.debugLevel = verbosity
+    i2cDevice_IC26_Ltc2977.power_on_all()
+    i2cDevice_IC27_Ltc2977 = I2C_LTC2977.I2C_LTC2977(mcuI2C[1], 0x5d, "IC27 (LTC2977)")
+    i2cDevice_IC27_Ltc2977.debugLevel = verbosity
+    i2cDevice_IC27_Ltc2977.power_on_all()
+
 
 
 
 # Power on the ZU11EG SoC.
 def power_on_zup():
-    pass
+    # Switch on the power run pins connected to the MCU.
+    mcuGpio = McuGpio.McuGpio(mcuSer)
+    mcuGpio.bits_set(hwGpioTypePower, 0x38)
+    # Switch on the power run pins connected to LTC2977 ICs.
+    i2cDevice_IC49_Ltc2977 = I2C_LTC2977.I2C_LTC2977(mcuI2C[0], 0x5e, "IC49 (LTC2977)")
+    i2cDevice_IC49_Ltc2977.debugLevel = verbosity
+    i2cDevice_IC49_Ltc2977.power_on_all()
+    i2cDevice_IC50_Ltc2977 = I2C_LTC2977.I2C_LTC2977(mcuI2C[0], 0x5f, "IC50 (LTC2977)")
+    i2cDevice_IC50_Ltc2977.debugLevel = verbosity
+    i2cDevice_IC50_Ltc2977.power_on_all()
+    i2cDevice_IC51_Ltc2977 = I2C_LTC2977.I2C_LTC2977(mcuI2C[0], 0x60, "IC51 (LTC2977)")
+    i2cDevice_IC51_Ltc2977.debugLevel = verbosity
+    i2cDevice_IC51_Ltc2977.power_on_all()
 
 
 
 # Power on the FireFly optical transceivers.
 def power_on_firefly():
-    pass
+    # Switch on the power run pins connected to the MCU.
+    mcuGpio = McuGpio.McuGpio(mcuSer)
+    mcuGpio.bits_set(hwGpioTypePower, 0xc0)
 
 
 
 # Power off the clocks, SPF+, expansion connector, 12 Pin header and sensors.
-def power_off_misc():
-    pass
+def power_off_clk_misc():
+    # Switch off the power run pins connected to LTC2977 ICs.
+    i2cDevice_IC52_Ltc2977 = I2C_LTC2977.I2C_LTC2977(mcuI2C[0], 0x61, "IC52 (LTC2977)")
+    i2cDevice_IC52_Ltc2977.debugLevel = verbosity
+    i2cDevice_IC52_Ltc2977.power_off_all()
 
 
 
 # Power off the KU15P FPGA.
 def power_off_kup():
-    pass
+    # Switch off the power run pins connected to the MCU.
+    mcuGpio = McuGpio.McuGpio(mcuSer)
+    mcuGpio.bits_clr(hwGpioTypePower, 0x07)
+    # Switch off the power run pins connected to LTC2977 ICs.
+    i2cDevice_IC26_Ltc2977 = I2C_LTC2977.I2C_LTC2977(mcuI2C[1], 0x5c, "IC26 (LTC2977)")
+    i2cDevice_IC26_Ltc2977.debugLevel = verbosity
+    i2cDevice_IC26_Ltc2977.power_off_all()
+    i2cDevice_IC27_Ltc2977 = I2C_LTC2977.I2C_LTC2977(mcuI2C[1], 0x5d, "IC27 (LTC2977)")
+    i2cDevice_IC27_Ltc2977.debugLevel = verbosity
+    i2cDevice_IC27_Ltc2977.power_off_all()
 
 
 
 # Power off the ZU11EG SoC.
 def power_off_zup():
-    pass
+    # Switch off the power run pins connected to the MCU.
+    mcuGpio = McuGpio.McuGpio(mcuSer)
+    mcuGpio.bits_clr(hwGpioTypePower, 0x38)
+    # Switch off the power run pins connected to LTC2977 ICs.
+    i2cDevice_IC49_Ltc2977 = I2C_LTC2977.I2C_LTC2977(mcuI2C[0], 0x5e, "IC49 (LTC2977)")
+    i2cDevice_IC49_Ltc2977.debugLevel = verbosity
+    i2cDevice_IC49_Ltc2977.power_off_all()
+    i2cDevice_IC50_Ltc2977 = I2C_LTC2977.I2C_LTC2977(mcuI2C[0], 0x5f, "IC50 (LTC2977)")
+    i2cDevice_IC50_Ltc2977.debugLevel = verbosity
+    i2cDevice_IC50_Ltc2977.power_off_all()
+    i2cDevice_IC51_Ltc2977 = I2C_LTC2977.I2C_LTC2977(mcuI2C[0], 0x60, "IC51 (LTC2977)")
+    i2cDevice_IC51_Ltc2977.debugLevel = verbosity
+    i2cDevice_IC51_Ltc2977.power_off_all()
 
 
 
 # Power off the FireFly optical transceivers.
 def power_off_firefly():
-    pass
+    # Switch off the power run pins connected to the MCU.
+    mcuGpio = McuGpio.McuGpio(mcuSer)
+    mcuGpio.bits_clr(hwGpioTypePower, 0xc0)
 
 
 
@@ -137,56 +197,67 @@ def init_clock_device_file(i2cDevice, muxChannel, regMapFile):
 def init_clocks():
     # IC54 (Si5341A): I2C port 3, slave address 0x74
     i2cDevice_IC54_Si5341A = I2C_Si53xx.I2C_Si53xx(mcuI2C[3], 0x74, "IC54 (Si5341A)")
+    i2cDevice_IC54_Si5341A = verbosity
     regMapFile = os.path.join("config", "clock", "IC54_h74_240M-Registers.txt")
     init_clock_device_file(i2cDevice_IC54_Si5341A, 0, regMapFile)
 
     # IC56 (Si5345A): I2C port 3, slave address 0x68, I2C mux port 0
     i2cDevice_IC56_Si5345A = I2C_Si53xx.I2C_Si53xx(mcuI2C[3], 0x68, "IC56 (Si5345A)")
+    i2cDevice_IC56_Si5345A = verbosity
     regMapFile = os.path.join("config", "clock", "IC56_h68_IN0-240M_O-240M-Registers.txt")
     init_clock_device_file(i2cDevice_IC56_Si5345A, 0, regMapFile)
 
     # IC60 (Si5345A): I2C port 3, slave address 0x6B, I2C mux port 0
     i2cDevice_IC60_Si5345A = I2C_Si53xx.I2C_Si53xx(mcuI2C[3], 0x6b, "IC60 (Si5345A)")
+    i2cDevice_IC60_Si5345A = verbosity
     regMapFile = os.path.join("config", "clock", "IC60_h6B_IN0-240M_O-240M-Registers.txt")
     init_clock_device_file(i2cDevice_IC60_Si5345A, 0, regMapFile)
 
     # IC61 (Si5342A): I2C port 3, slave address 0x68, I2C mux port 1
     i2cDevice_IC61_Si5342A = I2C_Si53xx.I2C_Si53xx(mcuI2C[3], 0x68, "IC61 (Si5342A)")
+    i2cDevice_IC61_Si5342A = verbosity
     regMapFile = os.path.join("config", "clock", "IC61_h68_IN0-240M_O-240M-Registers.txt")
     init_clock_device_file(i2cDevice_IC61_Si5342A, 1, regMapFile)
 
     # IC62 (Si5345A): I2C port 3, slave address 0x69, I2C mux port 1
     i2cDevice_IC62_Si5345A = I2C_Si53xx.I2C_Si53xx(mcuI2C[3], 0x69, "IC62 (Si5345A)")
+    i2cDevice_IC62_Si5345A = verbosity
     regMapFile = os.path.join("config", "clock", "IC62_h69_IN0-240M_O-240M-Registers.txt")
     init_clock_device_file(i2cDevice_IC62_Si5345A, 1, regMapFile)
 
     # IC63 (Si5345A): I2C port 3, slave address 0x6A, I2C mux port 1
     i2cDevice_IC63_Si5345A = I2C_Si53xx.I2C_Si53xx(mcuI2C[3], 0x6a, "IC63 (Si5345A)")
+    i2cDevice_IC63_Si5345A = verbosity
     regMapFile = os.path.join("config", "clock", "IC63_h6A_IN0-240M_O-240M-Registers.txt")
     init_clock_device_file(i2cDevice_IC63_Si5345A, 1, regMapFile)
 
     # IC81 (Si5342A): I2C port 3, slave address 0x6B, I2C mux port 1
     i2cDevice_IC81_Si5342A = I2C_Si53xx.I2C_Si53xx(mcuI2C[3], 0x6b, "IC81 (Si5342A)")
+    i2cDevice_IC81_Si5342A = verbosity
     regMapFile = os.path.join("config", "clock", "IC81_h6B_IN0-240M_O-240M-Registers.txt")
     init_clock_device_file(i2cDevice_IC81_Si5342A, 1, regMapFile)
 
     # IC82 (Si5344A): I2C port 3, slave address 0x6A, I2C mux port 0
     i2cDevice_IC82_Si5344A = I2C_Si53xx.I2C_Si53xx(mcuI2C[3], 0x6a, "IC82 (Si5344A)")
+    i2cDevice_IC82_Si5344A = verbosity
     regMapFile = os.path.join("config", "clock", "IC82_h6A_IN0-240M_O-240M-Registers.txt")
     init_clock_device_file(i2cDevice_IC82_Si5344A, 0, regMapFile)
 
     # IC83 (Si5342A): I2C port 3, slave address 0x68, I2C mux port 2
     i2cDevice_IC83_Si5342A = I2C_Si53xx.I2C_Si53xx(mcuI2C[3], 0x68, "IC83 (Si5342A)")
+    i2cDevice_IC83_Si5342A = verbosity
     regMapFile = os.path.join("config", "clock", "IC83_h68_IN0-240M_O-240M-Registers.txt")
     init_clock_device_file(i2cDevice_IC83_Si5342A, 2, regMapFile)
 
     # IC84 (Si5345A): I2C port 3, slave address 0x69, I2C mux port 2
     i2cDevice_IC84_Si5345A = I2C_Si53xx.I2C_Si53xx(mcuI2C[3], 0x69, "IC84 (Si5345A)")
+    i2cDevice_IC84_Si5345A = verbosity
     regMapFile = os.path.join("config", "clock", "IC84_h69_IN0-240M_O-240M-Registers.txt")
     init_clock_device_file(i2cDevice_IC84_Si5345A, 2, regMapFile)
 
     # IC85 (Si5345A): I2C port 3, slave address 0x6A, I2C mux port 2
     i2cDevice_IC85_Si5345A = I2C_Si53xx.I2C_Si53xx(mcuI2C[3], 0x6a, "IC85 (Si5345A)")
+    i2cDevice_IC85_Si5345A = verbosity
     regMapFile = os.path.join("config", "clock", "IC85_h6A_IN0-240M_O-240M-Registers.txt")
     init_clock_device_file(i2cDevice_IC85_Si5345A, 2, regMapFile)
 
@@ -224,7 +295,7 @@ if __name__ == "__main__":
         mcuI2C[i].debugLevel = verbosity
 
     # Initialize the hardware test.
-    power_on_misc()
+    power_on_clk_misc()
     power_on_kup()
     power_on_zup()
     power_on_firefly()
