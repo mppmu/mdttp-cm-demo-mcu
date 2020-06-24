@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 24 Apr 2020
-// Rev.: 29 May 2020
+// Rev.: 24 Jun 2020
 //
 // GPIO pin definitions and functions for the TI Tiva TM4C1290 MCU on the ATLAS
 // MDT Trigger Processor (TP) Command Module (CM).
@@ -50,6 +50,8 @@ void GpioInit_All(void)
     GpioInit_PEInt();
     GpioInit_SpareKupZup();
     GpioSet_SpareKupZup(GPIO_DEFAULT_SPARE_KUP_ZUP);
+    GpioInit_Reserved();
+    GpioSet_Reserved(GPIO_DEFAULT_RESERVED);
 }
 
 
@@ -400,7 +402,7 @@ tGPIO g_sGpio_MuxPD0 = {
     GPIO_PORTA_BASE,
     GPIO_PIN_3,             // ui8Pins
     GPIO_STRENGTH_2MA,      // ui32Strength
-    GPIO_PIN_TYPE_STD,      // ui32PinType
+    GPIO_PIN_TYPE_OD,       // ui32PinType
     false,                  // bInput: false = output, true = input
     0                       // ui32IntType
 };
@@ -410,7 +412,7 @@ tGPIO g_sGpio_MuxPD1 = {
     GPIO_PORTA_BASE,
     GPIO_PIN_5,             // ui8Pins
     GPIO_STRENGTH_2MA,      // ui32Strength
-    GPIO_PIN_TYPE_STD,      // ui32PinType
+    GPIO_PIN_TYPE_OD,       // ui32PinType
     false,                  // bInput: false = output, true = input
     0                       // ui32IntType
 };
@@ -420,7 +422,7 @@ tGPIO g_sGpio_MuxPD2 = {
     GPIO_PORTC_BASE,
     GPIO_PIN_5,             // ui8Pins
     GPIO_STRENGTH_2MA,      // ui32Strength
-    GPIO_PIN_TYPE_STD,      // ui32PinType
+    GPIO_PIN_TYPE_OD,       // ui32PinType
     false,                  // bInput: false = output, true = input
     0                       // ui32IntType
 };
@@ -678,8 +680,7 @@ tGPIO g_sGpio_KupCtrlStat0 = {
     GPIO_PORTK_BASE,
     GPIO_PIN_6,             // ui8Pins
     GPIO_STRENGTH_2MA,      // ui32Strength
-    GPIO_PIN_TYPE_OD,       // ui32PinType; Pin connected via Levelshifter,
-                            // so no open drain required
+    GPIO_PIN_TYPE_OD,       // ui32PinType
     false,                  // bInput: false = output, true = input
     0                       // ui32IntType
 };
@@ -714,7 +715,7 @@ void GpioInit_KupCtrlStat(void)
 void GpioSet_KupCtrlStat(uint32_t ui32Val)
 {
     GpioOutputSetBool(&g_sGpio_KupCtrlStat0, (bool) (ui32Val & 0x01));
-    GpioOutputSetBool(&g_sGpio_KupCtrlStat2, (bool) (ui32Val & 0x04));
+    GpioOutputSetBool(&g_sGpio_KupCtrlStat1, (bool) (ui32Val & 0x02));
 }
 
 uint32_t GpioGet_KupCtrlStat(void)
@@ -722,7 +723,7 @@ uint32_t GpioGet_KupCtrlStat(void)
     uint32_t ui32Val = 0;
 
     ui32Val |= (GpioOutputGetBool(&g_sGpio_KupCtrlStat0) & 0x1) << 0;
-    ui32Val |= (GpioInputGetBool(&g_sGpio_KupCtrlStat1) & 0x1) << 1;
+    ui32Val |= (GpioOutputGetBool(&g_sGpio_KupCtrlStat1) & 0x1) << 1;
     ui32Val |= (GpioInputGetBool(&g_sGpio_KupCtrlStat2) & 0x1) << 2;
 
     return ui32Val;
@@ -770,7 +771,7 @@ tGPIO g_sGpio_ZupCtrlStat3 = {
     GPIO_PORTP_BASE,
     GPIO_PIN_3,             // ui8Pins
     GPIO_STRENGTH_2MA,      // ui32Strength
-    GPIO_PIN_TYPE_STD,      // ui32PinType
+    GPIO_PIN_TYPE_OD,       // ui32PinType
     false,                  // bInput: false = output, true = input
     0                       // ui32IntType
 };
@@ -808,7 +809,7 @@ void GpioInit_ZupCtrlStat(void)
 void GpioSet_ZupCtrlStat(uint32_t ui32Val)
 {
     GpioOutputSetBool(&g_sGpio_ZupCtrlStat0, (bool) (ui32Val & 0x01));
-    GpioOutputSetBool(&g_sGpio_ZupCtrlStat2, (bool) (ui32Val & 0x04));
+    GpioOutputSetBool(&g_sGpio_ZupCtrlStat1, (bool) (ui32Val & 0x02));
     GpioOutputSetBool(&g_sGpio_ZupCtrlStat3, (bool) (ui32Val & 0x08));
 }
 
@@ -817,7 +818,7 @@ uint32_t GpioGet_ZupCtrlStat(void)
     uint32_t ui32Val = 0;
 
     ui32Val |= (GpioOutputGetBool(&g_sGpio_ZupCtrlStat0) & 0x1) << 0;
-    ui32Val |= (GpioInputGetBool(&g_sGpio_ZupCtrlStat1) & 0x1) << 1;
+    ui32Val |= (GpioOutputGetBool(&g_sGpio_ZupCtrlStat1) & 0x1) << 1;
     ui32Val |= (GpioInputGetBool(&g_sGpio_ZupCtrlStat2) & 0x1) << 2;
     ui32Val |= (GpioOutputGetBool(&g_sGpio_ZupCtrlStat3) & 0x1) << 3;
     ui32Val |= (GpioInputGetBool(&g_sGpio_ZupCtrlStat4) & 0x1) << 4;
@@ -1029,6 +1030,70 @@ uint32_t GpioGet_SpareKupZup(void)
     ui32Val |= (GpioOutputGetBool(&g_sGpio_SpareZup1) & 0x1) << 5;
     ui32Val |= (GpioOutputGetBool(&g_sGpio_SpareZup2) & 0x1) << 6;
     ui32Val |= (GpioOutputGetBool(&g_sGpio_SpareZup3) & 0x1) << 7;
+
+    return ui32Val;
+}
+
+
+
+// ******************************************************************
+// Reserved Signals
+// ******************************************************************
+
+// Reserved 0: PH1, 30
+tGPIO g_sGpio_Reserved0 = {
+    SYSCTL_PERIPH_GPIOH,
+    GPIO_PORTH_BASE,
+    GPIO_PIN_1,             // ui8Pins
+    GPIO_STRENGTH_2MA,      // ui32Strength
+    GPIO_PIN_TYPE_OD,       // ui32PinType
+    false,                  // bInput: false = output, true = input
+    0                       // ui32IntType
+};
+
+// Reserved 1: PH2, 31
+tGPIO g_sGpio_Reserved1 = {
+    SYSCTL_PERIPH_GPIOH,
+    GPIO_PORTH_BASE,
+    GPIO_PIN_2,             // ui8Pins
+    GPIO_STRENGTH_2MA,      // ui32Strength
+    GPIO_PIN_TYPE_OD,       // ui32PinType
+    false,                  // bInput: false = output, true = input
+    0                       // ui32IntType
+};
+
+// Reserved 2: PH3, 32
+tGPIO g_sGpio_Reserved2 = {
+    SYSCTL_PERIPH_GPIOH,
+    GPIO_PORTH_BASE,
+    GPIO_PIN_3,             // ui8Pins
+    GPIO_STRENGTH_2MA,      // ui32Strength
+    GPIO_PIN_TYPE_OD,       // ui32PinType
+    false,                  // bInput: false = output, true = input
+    0                       // ui32IntType
+};
+
+void GpioInit_Reserved(void)
+{
+    GpioInit(&g_sGpio_Reserved0);
+    GpioInit(&g_sGpio_Reserved1);
+    GpioInit(&g_sGpio_Reserved2);
+}
+
+void GpioSet_Reserved(uint32_t ui32Val)
+{
+    GpioOutputSetBool(&g_sGpio_Reserved0, (bool) (ui32Val & 0x01));
+    GpioOutputSetBool(&g_sGpio_Reserved1, (bool) (ui32Val & 0x02));
+    GpioOutputSetBool(&g_sGpio_Reserved2, (bool) (ui32Val & 0x04));
+}
+
+uint32_t GpioGet_Reserved(void)
+{
+    uint32_t ui32Val = 0;
+
+    ui32Val |= (GpioOutputGetBool(&g_sGpio_Reserved0) & 0x1) << 0;
+    ui32Val |= (GpioOutputGetBool(&g_sGpio_Reserved1) & 0x1) << 1;
+    ui32Val |= (GpioOutputGetBool(&g_sGpio_Reserved2) & 0x1) << 2;
 
     return ui32Val;
 }

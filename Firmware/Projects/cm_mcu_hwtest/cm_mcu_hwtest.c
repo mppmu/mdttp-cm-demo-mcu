@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 08 Apr 2020
-// Rev.: 15 May 2020
+// Rev.: 24 Jun 2020
 //
 // Hardware test firmware running on the ATLAS MDT Trigger Processor (TP)
 // Command Module (CM) MCU.
@@ -59,6 +59,8 @@ int UartAccess(char *pcCmd, char *pcParam);
 int UartPortCheck(uint8_t ui8UartPort, tUART **psUart);
 int UartSetup(char *pcCmd, char *pcParam);
 void UartSetupHelp(void);
+int Power_ZUP(char *pcCmd, char *pcParam);
+int Power_KUP(char *pcCmd, char *pcParam);
 
 
 
@@ -145,6 +147,10 @@ int main(void)
             UartAccess(pcUartCmd, pcUartParam);
         } else if (!strcasecmp(pcUartCmd, "uart-s")) {
             UartSetup(pcUartCmd, pcUartParam);
+        } else if (!strcasecmp(pcUartCmd, "zup-power")) {
+            Power_ZUP(pcUartCmd, pcUartParam);
+        } else if (!strcasecmp(pcUartCmd, "kup-power")) {
+            Power_KUP(pcUartCmd, pcUartParam);            
         // Unknown command.
         } else {
             UARTprintf("ERROR: Unknown command `%s'.", pcUartCmd);
@@ -168,7 +174,9 @@ void Help(void)
     UARTprintf("  info                                Show information about this firmware.\n");
     UARTprintf("  temp-a  [COUNT]                     Read analog temperatures.\n");
     UARTprintf("  uart    PORT R/W NUM|DATA           UART access (R/W: 0 = write, 1 = read).\n");
-    UARTprintf("  uart-s  PORT BAUD [PARITY] [LOOP]   Set up the UART port.");
+    UARTprintf("  uart-s  PORT BAUD [PARITY] [LOOP]   Set up the UART port.\n");
+    UARTprintf("  zup-power MODE                      Power up/down ZUP (MODE: 0 = down, 1 = up)\n");
+    UARTprintf("  kup-power MODE                      Power up/down KUP (MODE: 0 = down, 1 = up)");
 }
 
 
@@ -266,6 +274,9 @@ int GpioGetSet(char *pcCmd, char *pcParam)
     } else if (!strcasecmp(pcGpioType, "reset")) {
         if (bGpioWrite) GpioSet_Reset(ui32GpioSet);
         ui32GpioGet = GpioGet_Reset();
+    } else if (!strcasecmp(pcGpioType, "reserved")) {
+        if (bGpioWrite) GpioSet_Reserved(ui32GpioSet);
+        ui32GpioGet = GpioGet_Reserved();        
     } else if (!strcasecmp(pcGpioType, "pe-int")) {
         if (bGpioWrite) {
             UARTprintf("%s: GPIO %s is read-only!", UI_STR_WARNING, pcGpioType);
@@ -311,6 +322,7 @@ void GpioGetSetHelp(void)
     UARTprintf("  kup                                 Control/status of the KU15P.\n");
     UARTprintf("  zup                                 Control/status of the ZU11EG.\n");
     UARTprintf("  reset                               Reset for muxes and I2C port expanders.\n");
+    UARTprintf("  reserved                            Reserved pins\n");
     UARTprintf("  pe-int                              Interrupt of I2C port expanders.\n");
     UARTprintf("  spare                               Spare signals routed to KU15P / ZU11EG.");
 }
@@ -779,5 +791,151 @@ void UartSetupHelp(void)
     UARTprintf("UART loopback options:\n");
     UARTprintf("  0: No loopback.\n");
     UARTprintf("  1: Enable internal loopback mode.\n");
+}
+
+
+
+// Power Up/Down ZUP
+int Power_ZUP(char *pcCmd, char *pcParam)
+{
+    char *paramType = pcParam;
+    uint32_t ui32GpioSet = 0, ui32GpioGet = 0;
+    uint8_t on_off = 0;
+
+    if (paramType == NULL) {
+        UARTprintf("%s: Parameter 1 or 0 required after command `%s'.\n", UI_STR_ERROR, pcCmd);
+        return -1;
+    }
+    else {
+      on_off = (uint8_t) strtoul(paramType, (char **) NULL, 0) & 0xff;
+    }
+
+    // GPIO type.
+    if (on_off == 0) {
+    // Power down peripheral first
+      ui32GpioGet = GpioGet_Reserved();
+      if ((ui32GpioGet & 0x02) == 0) // KUP is off
+        ui32GpioSet = ui32GpioGet & (~0x05); // power down clock domain too
+      else    
+        ui32GpioSet = ui32GpioGet & (~0x01); // power down only ZUP domain
+      GpioSet_Reserved(ui32GpioSet);
+      ui32GpioGet = GpioGet_Reserved();
+      if (ui32GpioGet != ui32GpioSet) {
+        UARTprintf("%s: Could not power down ZUP\n", UI_STR_ERROR);
+        return -1;
+      }    
+    // then power down Core
+      ui32GpioGet = GpioGet_PowerCtrl();
+      ui32GpioSet = ui32GpioGet & (~0x08);
+      GpioSet_PowerCtrl(ui32GpioSet);
+      ui32GpioGet = GpioGet_PowerCtrl();
+      if (ui32GpioGet != ui32GpioSet) {
+        UARTprintf("%s: Could not power down ZUP\n", UI_STR_ERROR);
+        return -1;
+      }
+    }
+    else {
+    // Power up Core first
+      ui32GpioGet = GpioGet_PowerCtrl();
+      ui32GpioSet = ui32GpioGet | 0x08;
+      GpioSet_PowerCtrl(ui32GpioSet);
+      ui32GpioGet = GpioGet_PowerCtrl();
+      if (ui32GpioGet != ui32GpioSet) {
+        UARTprintf("%s: Could not power up ZUP\n", UI_STR_ERROR);
+        return -1;
+      }
+    // then power up peripheral 
+      ui32GpioGet = GpioGet_Reserved();
+      // turn on ZUP and Clock domain, otherwise you will get PGOOD error      
+      ui32GpioSet = ui32GpioGet | 0x05;
+      GpioSet_Reserved(ui32GpioSet);
+      ui32GpioGet = GpioGet_Reserved();
+      if (ui32GpioGet != ui32GpioSet) {
+        UARTprintf("%s: Could not power up ZUP\n", UI_STR_ERROR);
+        return -1;
+      }          
+    }    
+    return 0;
+}
+
+// Power Up/Down KUP
+int Power_KUP(char *pcCmd, char *pcParam)
+{
+    char *paramType = pcParam;
+    uint32_t ui32GpioSet = 0, ui32GpioGet = 0;
+    uint8_t on_off = 0;
+
+    if (paramType == NULL) {
+        UARTprintf("%s: Parameter 1 or 0 required after command `%s'.\n", UI_STR_ERROR, pcCmd);
+        return -1;
+    }
+    else {
+      on_off = (uint8_t) strtoul(paramType, (char **) NULL, 0) & 0xff;
+    }
+
+    // GPIO type.
+    if (on_off == 0) {
+    // Power down P3V3_IO first
+      ui32GpioGet = GpioGet_PowerCtrl();
+      ui32GpioSet = ui32GpioGet & (~0x02);
+      GpioSet_PowerCtrl(ui32GpioSet);
+      ui32GpioGet = GpioGet_PowerCtrl();
+      if (ui32GpioGet != ui32GpioSet) {
+        UARTprintf("%s: Could not power down ZUP\n", UI_STR_ERROR);
+        return -1;
+      }    
+    // then power down peripheral
+      ui32GpioGet = GpioGet_Reserved();
+      if ((ui32GpioGet & 0x01) == 0) // ZUP is off
+        ui32GpioSet = ui32GpioGet & (~0x06); // power down clock domain too
+      else
+        ui32GpioSet = ui32GpioGet & (~0x02); // power down only KUP domain
+      GpioSet_Reserved(ui32GpioSet);
+      ui32GpioGet = GpioGet_Reserved();
+      if (ui32GpioGet != ui32GpioSet) {
+        UARTprintf("%s: Could not power down ZUP\n", UI_STR_ERROR);
+        return -1;
+      }    
+    // then power down Core
+      ui32GpioGet = GpioGet_PowerCtrl();
+      ui32GpioSet = ui32GpioGet & (~0x01);
+      GpioSet_PowerCtrl(ui32GpioSet);
+      ui32GpioGet = GpioGet_PowerCtrl();
+      if (ui32GpioGet != ui32GpioSet) {
+        UARTprintf("%s: Could not power down ZUP\n", UI_STR_ERROR);
+        return -1;
+      }
+    }
+    else {
+    // Power up Core first
+      ui32GpioGet = GpioGet_PowerCtrl();
+      ui32GpioSet = ui32GpioGet | 0x01;
+      GpioSet_PowerCtrl(ui32GpioSet);
+      ui32GpioGet = GpioGet_PowerCtrl();
+      if (ui32GpioGet != ui32GpioSet) {
+        UARTprintf("%s: Could not power up ZUP\n", UI_STR_ERROR);
+        return -1;
+      }
+    // then power up peripheral 
+      ui32GpioGet = GpioGet_Reserved();
+      // turn on KUP and Clock domain, otherwise you will get PGOOD error  
+      ui32GpioSet = ui32GpioGet | 0x06;
+      GpioSet_Reserved(ui32GpioSet);
+      ui32GpioGet = GpioGet_Reserved();
+      if (ui32GpioGet != ui32GpioSet) {
+        UARTprintf("%s: Could not power up ZUP\n", UI_STR_ERROR);
+        return -1;
+      }
+    // then power down P3V3_IO
+      ui32GpioGet = GpioGet_PowerCtrl();
+      ui32GpioSet = ui32GpioGet | 0x02;
+      GpioSet_PowerCtrl(ui32GpioSet);
+      ui32GpioGet = GpioGet_PowerCtrl();
+      if (ui32GpioGet != ui32GpioSet) {
+        UARTprintf("%s: Could not power down ZUP\n", UI_STR_ERROR);
+        return -1;
+      }       
+    }    
+    return 0;
 }
 
