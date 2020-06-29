@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 24 Apr 2020
-// Rev.: 24 Jun 2020
+// Rev.: 29 Jun 2020
 //
 // GPIO pin definitions and functions for the TI Tiva TM4C1290 MCU on the ATLAS
 // MDT Trigger Processor (TP) Command Module (CM).
@@ -129,8 +129,18 @@ uint32_t GpioGet_CmReady(void)
 // Command Module status LEDs.
 // ******************************************************************
 
-// KUP_DOMAIN_PG: PN4, 111
+// CLK_DOMAIN_PG: PQ0, 5
 tGPIO g_sGpio_LedCmStatus0 = {
+    SYSCTL_PERIPH_GPIOQ,
+    GPIO_PORTQ_BASE,
+    GPIO_PIN_0,             // ui8Pins
+    GPIO_STRENGTH_2MA,      // ui32Strength
+    GPIO_PIN_TYPE_STD,      // ui32PinType
+    false,                  // bInput: false = output, true = input
+    0                       // ui32IntType
+};
+// KUP_DOMAIN_PG: PN4, 111
+tGPIO g_sGpio_LedCmStatus1 = {
     SYSCTL_PERIPH_GPION,
     GPIO_PORTN_BASE,
     GPIO_PIN_4,             // ui8Pins
@@ -140,20 +150,10 @@ tGPIO g_sGpio_LedCmStatus0 = {
     0                       // ui32IntType
 };
 // ZUP_DOMAIN_PG: PN5, 112
-tGPIO g_sGpio_LedCmStatus1 = {
+tGPIO g_sGpio_LedCmStatus2 = {
     SYSCTL_PERIPH_GPION,
     GPIO_PORTN_BASE,
     GPIO_PIN_5,             // ui8Pins
-    GPIO_STRENGTH_2MA,      // ui32Strength
-    GPIO_PIN_TYPE_STD,      // ui32PinType
-    false,                  // bInput: false = output, true = input
-    0                       // ui32IntType
-};
-// CLK_DOMAIN_PG: PQ0, 5
-tGPIO g_sGpio_LedCmStatus2 = {
-    SYSCTL_PERIPH_GPIOQ,
-    GPIO_PORTQ_BASE,
-    GPIO_PIN_0,             // ui8Pins
     GPIO_STRENGTH_2MA,      // ui32Strength
     GPIO_PIN_TYPE_STD,      // ui32PinType
     false,                  // bInput: false = output, true = input

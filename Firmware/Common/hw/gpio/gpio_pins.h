@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 24 Apr 2020
-// Rev.: 24 Jun 2020
+// Rev.: 29 Jun 2020
 //
 // Header file for the GPIO pin definitions and functions for the TI Tiva
 // TM4C1290 MCU on the ATLAS MDT Trigger Processor (TP) Command Module (CM).
@@ -28,7 +28,7 @@
 #define GPIO_DEFAULT_ZUP_CTRL_STAT  0xB     // ZUP_PS_PROG_B, ZUP_PS_INIT_B, ZUP_PS_DONE, ZUP_PS_nPOR, ZUP_PS_ERR_STATUS, ZUP_PS_ERR_OUT
 #define GPIO_DEFAULT_RESET          0x3
 #define GPIO_DEFAULT_SPARE_KUP_ZUP  0x00
-#define GPIO_DEFAULT_RESERVED       0x00
+#define GPIO_DEFAULT_RESERVED       0x00    // PWR_CLK, PWR_KU15P, PWR_ZU11EG
 
 
 
