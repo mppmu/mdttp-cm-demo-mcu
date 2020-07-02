@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 29 Apr 2020
-# Rev.: 30 May 2020
+# Rev.: 03 Jul 2020
 #
 # Python class for communicating with Silicon Labs Si5341/40 and Si5345/44/42
 # devices.
@@ -84,7 +84,16 @@ class I2C_Si53xx:
                 lineElements = list("0x" + el.strip("h") if el.find("h") >= 0 else el for el in lineElements)
                 # Convert to integers.
                 lineData = [int(i, 0) for i in lineElements]
-                ret = self.i2cDevice.write(lineData)
+                # Extract page, register address and data from lineData.
+                # For details, see "AN926: Reading and Writing Registers with
+                # SPI and I2C", "an926-reading-writing-registers-spi-i2c.pdf".
+                pageByte = (lineData[0] >> 8) & 0xff
+                adrByte = lineData[0] & 0xff
+                dataByte = lineData[1] & 0xff
+                # Set the page register with the upper byte of the 2-byte address.
+                ret = self.i2cDevice.write([0x01, pageByte])
+                # Send second byte of the addresse and the data byte.
+                ret = self.i2cDevice.write([adrByte, dataByte])
                 if ret:
                     print(self.prefixErrorDevice + "Error sending data of register map file `{0:s}'! Line number: {1:d}, Data: {2:s}".\
                         format(fileRegMapName, fileRegMapLineCount, lineCommentRemoved))

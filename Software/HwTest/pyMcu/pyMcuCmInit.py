@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 29 May 2020
-# Rev.: 15 Jun 2020
+# Rev.: 03 Jul 2020
 #
 # Python script to initialize the ATLAS MDT Trigger Processor (TP) Command
 # Module (CM) via the TI Tiva TM4C1290 MCU.
@@ -197,67 +197,67 @@ def init_clock_device_file(i2cDevice, muxChannel, regMapFile):
 def init_clocks():
     # IC54 (Si5341A): I2C port 3, slave address 0x74
     i2cDevice_IC54_Si5341A = I2C_Si53xx.I2C_Si53xx(mcuI2C[3], 0x74, "IC54 (Si5341A)")
-    i2cDevice_IC54_Si5341A = verbosity
+    i2cDevice_IC54_Si5341A.debugLevel = verbosity
     regMapFile = os.path.join("config", "clock", "IC54_h74_240M-Registers.txt")
     init_clock_device_file(i2cDevice_IC54_Si5341A, 0, regMapFile)
 
     # IC56 (Si5345A): I2C port 3, slave address 0x68, I2C mux port 0
     i2cDevice_IC56_Si5345A = I2C_Si53xx.I2C_Si53xx(mcuI2C[3], 0x68, "IC56 (Si5345A)")
-    i2cDevice_IC56_Si5345A = verbosity
+    i2cDevice_IC56_Si5345A.debugLevel = verbosity
     regMapFile = os.path.join("config", "clock", "IC56_h68_IN0-240M_O-240M-Registers.txt")
     init_clock_device_file(i2cDevice_IC56_Si5345A, 0, regMapFile)
 
     # IC60 (Si5345A): I2C port 3, slave address 0x6B, I2C mux port 0
     i2cDevice_IC60_Si5345A = I2C_Si53xx.I2C_Si53xx(mcuI2C[3], 0x6b, "IC60 (Si5345A)")
-    i2cDevice_IC60_Si5345A = verbosity
+    i2cDevice_IC60_Si5345A.debugLevel = verbosity
     regMapFile = os.path.join("config", "clock", "IC60_h6B_IN0-240M_O-240M-Registers.txt")
     init_clock_device_file(i2cDevice_IC60_Si5345A, 0, regMapFile)
 
     # IC61 (Si5342A): I2C port 3, slave address 0x68, I2C mux port 1
     i2cDevice_IC61_Si5342A = I2C_Si53xx.I2C_Si53xx(mcuI2C[3], 0x68, "IC61 (Si5342A)")
-    i2cDevice_IC61_Si5342A = verbosity
+    i2cDevice_IC61_Si5342A.debugLevel = verbosity
     regMapFile = os.path.join("config", "clock", "IC61_h68_IN0-240M_O-240M-Registers.txt")
     init_clock_device_file(i2cDevice_IC61_Si5342A, 1, regMapFile)
 
     # IC62 (Si5345A): I2C port 3, slave address 0x69, I2C mux port 1
     i2cDevice_IC62_Si5345A = I2C_Si53xx.I2C_Si53xx(mcuI2C[3], 0x69, "IC62 (Si5345A)")
-    i2cDevice_IC62_Si5345A = verbosity
+    i2cDevice_IC62_Si5345A.debugLevel = verbosity
     regMapFile = os.path.join("config", "clock", "IC62_h69_IN0-240M_O-240M-Registers.txt")
     init_clock_device_file(i2cDevice_IC62_Si5345A, 1, regMapFile)
 
     # IC63 (Si5345A): I2C port 3, slave address 0x6A, I2C mux port 1
     i2cDevice_IC63_Si5345A = I2C_Si53xx.I2C_Si53xx(mcuI2C[3], 0x6a, "IC63 (Si5345A)")
-    i2cDevice_IC63_Si5345A = verbosity
+    i2cDevice_IC63_Si5345A.debugLevel = verbosity
     regMapFile = os.path.join("config", "clock", "IC63_h6A_IN0-240M_O-240M-Registers.txt")
     init_clock_device_file(i2cDevice_IC63_Si5345A, 1, regMapFile)
 
     # IC81 (Si5342A): I2C port 3, slave address 0x6B, I2C mux port 1
     i2cDevice_IC81_Si5342A = I2C_Si53xx.I2C_Si53xx(mcuI2C[3], 0x6b, "IC81 (Si5342A)")
-    i2cDevice_IC81_Si5342A = verbosity
+    i2cDevice_IC81_Si5342A.debugLevel = verbosity
     regMapFile = os.path.join("config", "clock", "IC81_h6B_IN0-240M_O-240M-Registers.txt")
     init_clock_device_file(i2cDevice_IC81_Si5342A, 1, regMapFile)
 
     # IC82 (Si5344A): I2C port 3, slave address 0x6A, I2C mux port 0
     i2cDevice_IC82_Si5344A = I2C_Si53xx.I2C_Si53xx(mcuI2C[3], 0x6a, "IC82 (Si5344A)")
-    i2cDevice_IC82_Si5344A = verbosity
+    i2cDevice_IC82_Si5344A.debugLevel = verbosity
     regMapFile = os.path.join("config", "clock", "IC82_h6A_IN0-240M_O-240M-Registers.txt")
     init_clock_device_file(i2cDevice_IC82_Si5344A, 0, regMapFile)
 
     # IC83 (Si5342A): I2C port 3, slave address 0x68, I2C mux port 2
     i2cDevice_IC83_Si5342A = I2C_Si53xx.I2C_Si53xx(mcuI2C[3], 0x68, "IC83 (Si5342A)")
-    i2cDevice_IC83_Si5342A = verbosity
+    i2cDevice_IC83_Si5342A.debugLevel = verbosity
     regMapFile = os.path.join("config", "clock", "IC83_h68_IN0-240M_O-240M-Registers.txt")
     init_clock_device_file(i2cDevice_IC83_Si5342A, 2, regMapFile)
 
     # IC84 (Si5345A): I2C port 3, slave address 0x69, I2C mux port 2
     i2cDevice_IC84_Si5345A = I2C_Si53xx.I2C_Si53xx(mcuI2C[3], 0x69, "IC84 (Si5345A)")
-    i2cDevice_IC84_Si5345A = verbosity
+    i2cDevice_IC84_Si5345A.debugLevel = verbosity
     regMapFile = os.path.join("config", "clock", "IC84_h69_IN0-240M_O-240M-Registers.txt")
     init_clock_device_file(i2cDevice_IC84_Si5345A, 2, regMapFile)
 
     # IC85 (Si5345A): I2C port 3, slave address 0x6A, I2C mux port 2
     i2cDevice_IC85_Si5345A = I2C_Si53xx.I2C_Si53xx(mcuI2C[3], 0x6a, "IC85 (Si5345A)")
-    i2cDevice_IC85_Si5345A = verbosity
+    i2cDevice_IC85_Si5345A.debugLevel = verbosity
     regMapFile = os.path.join("config", "clock", "IC85_h6A_IN0-240M_O-240M-Registers.txt")
     init_clock_device_file(i2cDevice_IC85_Si5345A, 2, regMapFile)
 
@@ -295,10 +295,10 @@ if __name__ == "__main__":
         mcuI2C[i].debugLevel = verbosity
 
     # Initialize the hardware test.
-    power_on_clk_misc()
-    power_on_kup()
-    power_on_zup()
-    power_on_firefly()
+#    power_on_clk_misc()
+#    power_on_kup()
+#    power_on_zup()
+#    power_on_firefly()
     init_clocks()
 
     # Print MCU serial port info.
