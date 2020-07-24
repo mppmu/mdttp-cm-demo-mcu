@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 28 Apr 2020
-# Rev.: 08 May 2020
+# Rev.: 24 Jul 2020
 #
 # Python class for communicating with the PCA9547 8-channel I2C-bus multiplexer
 # IC.
@@ -112,5 +112,5 @@ class I2C_PCA9547:
             if ret:
                 print(self.prefixErrorDevice + "Reading of data returned error code {0:d}.".format(ret))
             return -1, 0xff
-        return 0, data
+        return 0, data[0]
 

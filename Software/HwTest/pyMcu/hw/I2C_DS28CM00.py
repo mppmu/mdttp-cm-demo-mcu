@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 08 May 2020
-# Rev.: 08 May 2020
+# Rev.: 24 Jul 2020
 #
 # Python class for communicating with the DS28CM00 silicon serial number IC.
 #
@@ -101,7 +101,7 @@ class I2C_DS28CM00:
             self.i2cDevice.print_details()
             print(self.prefixErrorDevice + "Error code: {0:d}: ".format(ret))
             return -1, 0xff
-        if len(dataRd) != 2:
+        if len(dataRd) != 1:
             print(self.prefixErrorDevice + "Error reading the value of the {0:s}, register address 0x{1:02x}: Incorrect amount of data received!".\
                 format(regName, regAdr), end='')
             self.i2cDevice.print_details()

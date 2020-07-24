@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 30 Apr 2020
-# Rev.: 30 May 2020
+# Rev.: 24 Jul 2020
 #
 # Python script to test hardware features of the TI Tiva TM4C1290 MCU on the
 # ATLAS MDT Trigger Processor (TP) Command Module (CM) over a serial port
@@ -145,10 +145,10 @@ def run_test(serialDevice, verbosity):
         # IC114 (DS28CM00): I2C port 4, slave address 0x50.
         i2cDevice_IC114_DS28CM00 = I2C_DS28CM00.I2C_DS28CM00(mcuI2C[4], 0x50, "IC114 (DS28CM00)")
         i2cDevice_IC114_DS28CM00.debugLevel = verbosity
-        print("I2C test of IC114 (DS28CM00) on I2C port {0:d}.".format(i2cDevice_IC114_DS28CM00.mcuI2C.port))
+        print("I2C test of {0:s} on I2C port {1:d}.".format(i2cDevice_IC114_DS28CM00.deviceName, i2cDevice_IC114_DS28CM00.mcuI2C.port))
         ret, deviceFamilyCode, serialNumber, crc, crcError = i2cDevice_IC114_DS28CM00.read_all()
         print("Device family code: 0x{0:02x}".format(deviceFamilyCode))
-        print("Serial number: 0x{0:12x}".format(serialNumber))
+        print("Serial number: 0x{0:012x}".format(serialNumber))
         print("CRC: 0x{0:02x}".format(crc))
         if crcError:
             print(prefixError + "CRC error detected!")
@@ -161,7 +161,7 @@ def run_test(serialDevice, verbosity):
         # IC55 (PCA9547PW): I2C port 3, slave address 0x70
         i2cDevice_IC55_PCA9547PW = I2C_PCA9547.I2C_PCA9547(mcuI2C[3], 0x70, "IC55 (PCA9547PW)")
         i2cDevice_IC55_PCA9547PW.debugLevel = verbosity
-        print("I2C test of IC55 (PCA9547PW) on I2C port {0:d}.".format(i2cDevice_IC55_PCA9547PW.mcuI2C.port))
+        print("I2C test of {0:s} on I2C port {1:d}.".format(i2cDevice_IC55_PCA9547PW.deviceName, i2cDevice_IC55_PCA9547PW.mcuI2C.port))
         i2cDevice_IC55_PCA9547PW.set_channel(0)
         print("Active multiplexer channel: {0:d}".format(i2cDevice_IC55_PCA9547PW.get_channel()[1]))
         i2cDevice_IC55_PCA9547PW.set_channel(1)
@@ -178,8 +178,10 @@ def run_test(serialDevice, verbosity):
         # IC54 (Si5341A): I2C port 3, slave address 0x74
         i2cDevice_IC54_Si5341A = I2C_Si53xx.I2C_Si53xx(mcuI2C[3], 0x74, "IC54 (Si5341A)")
         i2cDevice_IC54_Si5341A.debugLevel = verbosity
-        print("I2C test of IC54 (Si5341A) on I2C port {0:d}.".format(i2cDevice_IC54_Si5341A.mcuI2C.port))
-        i2cDevice_IC54_Si5341A.config_file("config/IC54_RegMap.txt")
+        print("I2C test of {0:s} on I2C port {1:d}.".format(i2cDevice_IC54_Si5341A.deviceName, i2cDevice_IC54_Si5341A.mcuI2C.port))
+        print("Writing the complete configurationto the device.")
+        print("Please be patient, this takes ~ 15 seconds.")
+        i2cDevice_IC54_Si5341A.config_file("config/clock/IC54_h74_240M-Registers.txt")
         print(separatorTests)
 
 
@@ -198,6 +200,11 @@ def run_test(serialDevice, verbosity):
         # IC107 (TCA6424A): I2C port 8, slave address 0x23
         i2cDevice_IC107_TCA6424A = I2C_TCA6424A.I2C_TCA6424A(mcuI2C[8], 0x23, "IC107 (TCA6424A)")
         i2cDevice_IC107_TCA6424A.debugLevel = verbosity
+        print("I2C test of all TCA6424A devices:")
+        print("    {0:s} on I2C port {1:d}.".format(i2cDevice_IC104_TCA6424A.deviceName, i2cDevice_IC104_TCA6424A.mcuI2C.port))
+        print("    {0:s} on I2C port {1:d}.".format(i2cDevice_IC105_TCA6424A.deviceName, i2cDevice_IC105_TCA6424A.mcuI2C.port))
+        print("    {0:s} on I2C port {1:d}.".format(i2cDevice_IC106_TCA6424A.deviceName, i2cDevice_IC106_TCA6424A.mcuI2C.port))
+        print("    {0:s} on I2C port {1:d}.".format(i2cDevice_IC107_TCA6424A.deviceName, i2cDevice_IC107_TCA6424A.mcuI2C.port))
         # Configure all ports as inputs.
         i2cDevice_IC104_TCA6424A.write_config(0xffffff)
         i2cDevice_IC105_TCA6424A.write_config(0xffffff)
@@ -208,6 +215,7 @@ def run_test(serialDevice, verbosity):
         print("IC105 (TCA6424A) logic levels: 0x{0:06x}".format(i2cDevice_IC105_TCA6424A.read_input()[1]))
         print("IC106 (TCA6424A) logic levels: 0x{0:06x}".format(i2cDevice_IC106_TCA6424A.read_input()[1]))
         print("IC107 (TCA6424A) logic levels: 0x{0:06x}".format(i2cDevice_IC107_TCA6424A.read_input()[1]))
+        print(separatorTests)
 
 
 
@@ -228,6 +236,12 @@ def run_test(serialDevice, verbosity):
         # IC38 (MCP9808): I2C port 4, slave address 0x1c
         i2cDevice_IC38_MCP9808 = I2C_MCP9808.I2C_MCP9808(mcuI2C[4], 0x1c, "IC38 (MCP9808)")
         i2cDevice_IC38_MCP9808.debugLevel = verbosity
+        print("I2C test of all MCP9808 devices:")
+        print("    {0:s} on I2C port {1:d}.".format(i2cDevice_IC34_MCP9808.deviceName, i2cDevice_IC34_MCP9808.mcuI2C.port))
+        print("    {0:s} on I2C port {1:d}.".format(i2cDevice_IC35_MCP9808.deviceName, i2cDevice_IC35_MCP9808.mcuI2C.port))
+        print("    {0:s} on I2C port {1:d}.".format(i2cDevice_IC36_MCP9808.deviceName, i2cDevice_IC36_MCP9808.mcuI2C.port))
+        print("    {0:s} on I2C port {1:d}.".format(i2cDevice_IC37_MCP9808.deviceName, i2cDevice_IC37_MCP9808.mcuI2C.port))
+        print("    {0:s} on I2C port {1:d}.".format(i2cDevice_IC38_MCP9808.deviceName, i2cDevice_IC38_MCP9808.mcuI2C.port))
         # Set up the configuration registers.
         i2cDevice_IC34_MCP9808.write_config(0x0000)
         i2cDevice_IC35_MCP9808.write_config(0x0000)
@@ -241,14 +255,15 @@ def run_test(serialDevice, verbosity):
         i2cDevice_IC37_MCP9808.write_resolution(0x0003)
         i2cDevice_IC38_MCP9808.write_resolution(0x0003)
         # Read the manufacturer and device ID.
-        print("IC34 (MCP9808) manufacturer ID: 0x{0:04x}".format(i2cDevice_IC34_MCP9808.read_manufacturer_id()[1]))
-        print("IC34 (MCP9808) device ID: 0x{0:04x}".format(i2cDevice_IC34_MCP9808.read_device_id()[1]))
+        print("{0:s} manufacturer ID: 0x{1:04x}".format(i2cDevice_IC34_MCP9808.deviceName, i2cDevice_IC34_MCP9808.read_manufacturer_id()[1]))
+        print("{0:s} device ID: 0x{1:04x}".format(i2cDevice_IC34_MCP9808.deviceName, i2cDevice_IC34_MCP9808.read_device_id()[1]))
         # Read the temperatures.
-        print("IC34 (MCP9808) temperature: {0:8.4f} degC".format(i2cDevice_IC34_MCP9808.read_temperature()[1]))
-        print("IC35 (MCP9808) temperature: {0:8.4f} degC".format(i2cDevice_IC35_MCP9808.read_temperature()[1]))
-        print("IC36 (MCP9808) temperature: {0:8.4f} degC".format(i2cDevice_IC36_MCP9808.read_temperature()[1]))
-        print("IC37 (MCP9808) temperature: {0:8.4f} degC".format(i2cDevice_IC37_MCP9808.read_temperature()[1]))
-        print("IC38 (MCP9808) temperature: {0:8.4f} degC".format(i2cDevice_IC38_MCP9808.read_temperature()[1]))
+        print("{0:s} temperature: {1:8.4f} degC".format(i2cDevice_IC34_MCP9808.deviceName, i2cDevice_IC34_MCP9808.read_temperature()[1]))
+        print("{0:s} temperature: {1:8.4f} degC".format(i2cDevice_IC35_MCP9808.deviceName, i2cDevice_IC35_MCP9808.read_temperature()[1]))
+        print("{0:s} temperature: {1:8.4f} degC".format(i2cDevice_IC36_MCP9808.deviceName, i2cDevice_IC36_MCP9808.read_temperature()[1]))
+        print("{0:s} temperature: {1:8.4f} degC".format(i2cDevice_IC37_MCP9808.deviceName, i2cDevice_IC37_MCP9808.read_temperature()[1]))
+        print("{0:s} temperature: {1:8.4f} degC".format(i2cDevice_IC38_MCP9808.deviceName, i2cDevice_IC38_MCP9808.read_temperature()[1]))
+        print(separatorTests)
 
 
 
@@ -257,17 +272,19 @@ def run_test(serialDevice, verbosity):
         # IC39 (MCP9903): I2C port 4, slave address 0x5c
         i2cDevice_IC39_MCP9903 = I2C_MCP9903.I2C_MCP9903(mcuI2C[4], 0x5c, "IC39 (MCP9903)")
         i2cDevice_IC39_MCP9903.debugLevel = verbosity
+        print("I2C test of {0:s} on I2C port {1:d}.".format(i2cDevice_IC39_MCP9903.deviceName, i2cDevice_IC39_MCP9903.mcuI2C.port))
         # Set up the configuration registers.
         i2cDevice_IC39_MCP9903.write_config_0(0x00)
         i2cDevice_IC39_MCP9903.write_config_1(0x00)
         # Read the product ID, the manufacturer ID and the revision.
-        print("IC39 (MCP9903) product ID: 0x{0:02x}".format(i2cDevice_IC39_MCP9903.read_product_id()[1]))
-        print("IC39 (MCP9903) manufacturer ID: 0x{0:02x}".format(i2cDevice_IC39_MCP9903.read_manufacturer_id()[1]))
-        print("IC39 (MCP9903) revision: 0x{0:02x}".format(i2cDevice_IC39_MCP9903.read_revision()[1]))
+        print("{0:s} product ID: 0x{1:02x}".format(i2cDevice_IC39_MCP9903.deviceName, i2cDevice_IC39_MCP9903.read_product_id()[1]))
+        print("{0:s} manufacturer ID: 0x{1:02x}".format(i2cDevice_IC39_MCP9903.deviceName, i2cDevice_IC39_MCP9903.read_manufacturer_id()[1]))
+        print("{0:s} revision: 0x{1:02x}".format(i2cDevice_IC39_MCP9903.deviceName, i2cDevice_IC39_MCP9903.read_revision()[1]))
         # Read the temperatures.
-        print("IC39 (MCP9903) internal diode temperature: {0:7.3f} degC".format(i2cDevice_IC39_MCP9903.read_temp_int()[1]))
-        print("IC39 (MCP9903) external diode 1 temperature: {0:7.3f} degC".format(i2cDevice_IC39_MCP9903.read_temp_ext_1()[1]))
-        print("IC39 (MCP9903) external diode 2 temperature: {0:7.3f} degC".format(i2cDevice_IC39_MCP9903.read_temp_ext_2()[1]))
+        print("{0:s} internal diode temperature: {1:7.3f} degC".format(i2cDevice_IC39_MCP9903.deviceName, i2cDevice_IC39_MCP9903.read_temp_int()[1]))
+        print("{0:s} external diode 1 temperature: {1:7.3f} degC".format(i2cDevice_IC39_MCP9903.deviceName, i2cDevice_IC39_MCP9903.read_temp_ext_1()[1]))
+        print("{0:s} external diode 2 temperature: {1:7.3f} degC".format(i2cDevice_IC39_MCP9903.deviceName, i2cDevice_IC39_MCP9903.read_temp_ext_2()[1]))
+        print(separatorTests)
 
 
 

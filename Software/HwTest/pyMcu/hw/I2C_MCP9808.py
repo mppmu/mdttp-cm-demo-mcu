@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 04 May 2020
-# Rev.: 08 May 2020
+# Rev.: 24 Jul 2020
 #
 # Python class for communicating with the MCP9808 digital temperature sensor
 # IC.
@@ -81,8 +81,44 @@ class I2C_MCP9808:
 
 
 
-    # Read a register value.
-    def read_reg(self, pointer):
+    # Read a register byte.
+    def read_reg_byte(self, pointer):
+        self.i2cDevice.debugLevel = self.debugLevel
+        if self.check_pointer(pointer):
+            return -1, 0xffff
+        regName = self.pointer_to_name(pointer)
+        # Debug info.
+        if self.debugLevel >= 2:
+            print(self.prefixDebugDevice + "Reading the value of the {0:s}, pointer address 0x{1:02x}.".format(regName, pointer), end='')
+            self.i2cDevice.print_details()
+        # Assemble command to write.
+        dataWr = []
+        dataWr.append(pointer)
+        # Write command and read data with repeated start.
+        ret, dataRd = self.i2cDevice.write_read(dataWr, 1)
+        # Evaluate response.
+        if ret:
+            print(self.prefixErrorDevice + "Error reading the value of the {0:s}, pointer address 0x{1:02x}!".format(regName, pointer), end='')
+            self.i2cDevice.print_details()
+            print(self.prefixErrorDevice + "Error code: {0:d}: ".format(ret))
+            return -1, 0xffff
+        if len(dataRd) != 1:
+            print(self.prefixErrorDevice + "Error reading the value of the {0:s}, pointer address 0x{1:02x}: Incorrect amount of data received!".\
+                format(regName, pointer), end='')
+            self.i2cDevice.print_details()
+            return -1, 0xffff
+        # Calculate the value.
+        value = dataRd[0] & 0xff
+        # Debug info.
+        if self.debugLevel >= 2:
+            print(self.prefixDebugDevice + "Read the value of the {0:s}, pointer address 0x{1:02x}: 0x{2:02x}.".format(regName, pointer, value), end='')
+            self.i2cDevice.print_details()
+        return 0, value
+
+
+
+    # Read a register word (2 bytes).
+    def read_reg_word(self, pointer):
         self.i2cDevice.debugLevel = self.debugLevel
         if self.check_pointer(pointer):
             return -1, 0xffff
@@ -118,8 +154,35 @@ class I2C_MCP9808:
 
 
 
-    # Write a register value.
-    def write_reg(self, pointer, value):
+    # Write a register byte.
+    def write_reg_byte(self, pointer, value):
+        self.i2cDevice.debugLevel = self.debugLevel
+        if self.check_pointer(pointer):
+            return -1
+        regName = self.pointer_to_name(pointer)
+        value &= 0xff       # Limit to 8 bits.
+        # Debug info.
+        if self.debugLevel >= 2:
+            print(self.prefixDebugDevice + "Writing 0x{0:02x} to the {1:s}, pointer address 0x{2:02x}.".format(value, regName, pointer), end='')
+            self.i2cDevice.print_details()
+        # Assemble command and data to write.
+        dataWr = []
+        dataWr.append(pointer)
+        dataWr.append(value & 0xff)         # Data byte 0: LSB.
+        # Write command and data.
+        ret = self.i2cDevice.write(dataWr)
+        # Evaluate response.
+        if ret:
+            print(self.prefixErrorDevice + "Error writing 0x{0:02x} to the {1:s}, pointer address 0x{2:02x}!".\
+                format(value, regName, pointer), end='')
+            self.i2cDevice.print_details()
+            print(self.prefixErrorDevice + "Error code: {0:d}: ".format(ret))
+            return -1
+        return 0
+
+
+    # Write a register word (2 bytes).
+    def write_reg_word(self, pointer, value):
         self.i2cDevice.debugLevel = self.debugLevel
         if self.check_pointer(pointer):
             return -1
@@ -144,7 +207,6 @@ class I2C_MCP9808:
             print(self.prefixErrorDevice + "Error code: {0:d}: ".format(ret))
             return -1
         return 0
-
 
 
     # Convert a raw value to a temperature value.
@@ -172,21 +234,21 @@ class I2C_MCP9808:
 
     # Read the reserved for future use register.
     def read_rfu(self):
-        ret, value = self.read_reg(0x00)
+        ret, value = self.read_reg_word(0x00)
         return ret, value
 
 
 
     # Read the configuration register.
     def read_config(self):
-        ret, value = self.read_reg(0x01)
+        ret, value = self.read_reg_word(0x01)
         return ret, value
 
 
 
     # Read the alert temperature upper boundary trip register.
     def read_t_upper(self):
-        ret, value = self.read_reg(0x02)
+        ret, value = self.read_reg_word(0x02)
         temperature = self.raw_to_temperature(value)
         return ret, temperature
 
@@ -194,7 +256,7 @@ class I2C_MCP9808:
 
     # Read the alert temperature lower boundary trip register.
     def read_t_lower(self):
-        ret, value = self.read_reg(0x03)
+        ret, value = self.read_reg_word(0x03)
         temperature = self.raw_to_temperature(value)
         return ret, temperature
 
@@ -202,7 +264,7 @@ class I2C_MCP9808:
 
     # Read the critical temperature trip register.
     def read_t_crit(self):
-        ret, value = self.read_reg(0x04)
+        ret, value = self.read_reg_word(0x04)
         temperature = self.raw_to_temperature(value)
         return ret, temperature
 
@@ -210,7 +272,7 @@ class I2C_MCP9808:
 
     # Read the temperature register.
     def read_temperature(self):
-        ret, value = self.read_reg(0x05)
+        ret, value = self.read_reg_word(0x05)
         temperature = self.raw_to_temperature(value)
         alerts = (value >> 13) & 0x7
         return ret, temperature, alerts
@@ -219,55 +281,55 @@ class I2C_MCP9808:
 
     # Read the manufacturer ID register.
     def read_manufacturer_id(self):
-        ret, value = self.read_reg(0x06)
+        ret, value = self.read_reg_word(0x06)
         return ret, value
 
 
 
     # Read the device ID register.
     def read_device_id(self):
-        ret, value = self.read_reg(0x07)
+        ret, value = self.read_reg_word(0x07)
         return ret, value
 
 
 
     # Read the resolution register.
     def read_resolution(self):
-        ret, value = self.read_reg(0x08)
+        ret, value = self.read_reg_byte(0x08)
         return ret, value
 
 
 
     # Write the configuration register.
     def write_config(self, value):
-        ret = self.write_reg(0x01, value)
+        ret = self.write_reg_word(0x01, value)
         return ret
 
 
 
     # Write the alert temperature upper boundary trip register.
     def wirte_t_upper(self, value):
-        ret = self.write_reg(0x02, self.temperature_to_raw(value))
+        ret = self.write_reg_word(0x02, self.temperature_to_raw(value))
         return ret
 
 
 
     # Write the alert temperature lower boundary trip register.
     def write_t_lower(self, value):
-        ret = self.write_reg(0x03, self.temperature_to_raw(value))
+        ret = self.write_reg_word(0x03, self.temperature_to_raw(value))
         return ret
 
 
 
     # Write the critical temperature trip register.
     def write_t_crit(self, value):
-        ret = self.write_reg(0x04, self.temperature_to_raw(value))
+        ret = self.write_reg_word(0x04, self.temperature_to_raw(value))
         return ret
 
 
 
     # Write the resolution register.
     def write_resolution(self, value):
-        ret = self.write_reg(0x08, value)
+        ret = self.write_reg_byte(0x08, value)
         return ret
 
