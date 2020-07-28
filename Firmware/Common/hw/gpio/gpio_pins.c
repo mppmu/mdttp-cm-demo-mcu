@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 24 Apr 2020
-// Rev.: 29 Jun 2020
+// Rev.: 28 Jul 2020
 //
 // GPIO pin definitions and functions for the TI Tiva TM4C1290 MCU on the ATLAS
 // MDT Trigger Processor (TP) Command Module (CM).
@@ -61,12 +61,14 @@ void GpioInit_All(void)
 // ******************************************************************
 
 // SM_PWR_ENA: PN3, 110
-tGPIO g_sGpio_SmPwerEna = {
+tGPIO g_sGpio_SmPowerEna = {
     SYSCTL_PERIPH_GPION,
     GPIO_PORTN_BASE,
     GPIO_PIN_3,             // ui8Pins
     GPIO_STRENGTH_2MA,      // ui32Strength
-    GPIO_PIN_TYPE_STD,      // ui32PinType
+    // Note: The Servie Module CM_PWR_EN signal is active high, so implement a
+    //       weak pull-down on the MCU input pin.
+    GPIO_PIN_TYPE_STD_WPD,  // ui32PinType
     true,                   // bInput: false = output, true = input
     0                       // ui32IntType
 };
@@ -74,7 +76,7 @@ tGPIO g_sGpio_SmPwerEna = {
 // Initialize the Service Module power enable GPIO.
 void GpioInit_SmPowerEna(void)
 {
-    GpioInit(&g_sGpio_SmPwerEna);
+    GpioInit(&g_sGpio_SmPowerEna);
 }
 
 // Read the Service Module power enable GPIO.
@@ -82,7 +84,7 @@ uint32_t GpioGet_SmPowerEna(void)
 {
     uint32_t ui32Val = 0;
 
-    ui32Val |= (GpioInputGetBool(&g_sGpio_SmPwerEna) & 0x1) << 0;
+    ui32Val |= (GpioInputGetBool(&g_sGpio_SmPowerEna) & 0x1) << 0;
 
     return ui32Val;
 }

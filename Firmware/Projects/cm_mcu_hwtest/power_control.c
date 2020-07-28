@@ -279,10 +279,7 @@ int PowerControl_KU15P(bool bPowerSet, uint32_t ui32PowerVal)
         }
         // Then power down the peripherals.
         ui32GpioGet = GpioGet_Reserved();
-        if ((ui32GpioGet & POWER_RESERVED_ZU11EG) == 0)                 // The ZU11EG is off.
-            ui32GpioSet = ui32GpioGet & (~POWER_RESERVED_CLOCK_KU15P);  // Power down the clock domain, too.
-        else
-            ui32GpioSet = ui32GpioGet & (~POWER_RESERVED_KU15P);        // Power down only the KU15P domain.
+        ui32GpioSet = ui32GpioGet & (~POWER_RESERVED_KU15P);
         GpioSet_Reserved(ui32GpioSet);
         ui32GpioGet = GpioGet_Reserved();
         if (ui32GpioGet != ui32GpioSet) {
@@ -382,10 +379,7 @@ int PowerControl_ZU11EG(bool bPowerSet, uint32_t ui32PowerVal)
     if (ui32PowerVal == 0) {
         // Power down the peripherals first.
         ui32GpioGet = GpioGet_Reserved();
-        if ((ui32GpioGet & POWER_RESERVED_KU15P) == 0)                  // The KU15P is off.
-            ui32GpioSet = ui32GpioGet & (~POWER_RESERVED_CLOCK_ZU11EG); // Power down the clock domain, too.
-        else
-            ui32GpioSet = ui32GpioGet & (~POWER_RESERVED_ZU11EG);       // Power down only the ZU11EG domain.
+        ui32GpioSet = ui32GpioGet & (~POWER_RESERVED_ZU11EG);
         GpioSet_Reserved(ui32GpioSet);
         ui32GpioGet = GpioGet_Reserved();
         if (ui32GpioGet != ui32GpioSet) {

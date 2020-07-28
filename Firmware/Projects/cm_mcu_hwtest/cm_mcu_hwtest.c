@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 08 Apr 2020
-// Rev.: 24 Jul 2020
+// Rev.: 28 Jul 2020
 //
 // Hardware test firmware running on the ATLAS MDT Trigger Processor (TP)
 // Command Module (CM) MCU.
@@ -540,7 +540,6 @@ int TemperatureAnalog(char *pcCmd, char *pcParam)
         ui32Adc = AdcConvert(&g_sAdc_ZUP_DDR4_IO_ETH_USB_SD_LDO_TEMP);
         UARTprintf(", ZUP DDR4/IO/LDO/Misc.: 0x%03x", ui32Adc);
         #else
-        char cTempStr[16];
         ui32Adc = AdcConvert(&g_sAdc_KUP_MGTAVCC_ADC_AUX_TEMP);
         UARTprintf("KUP MGTAVCC/ADC/AUX: %s degC", (int) Adc2TempStr(ui32Adc));
         ui32Adc = AdcConvert(&g_sAdc_KUP_MGTAVTT_TEMP);
@@ -804,31 +803,31 @@ int LedCmStatusUpdated(void)
 
     // Clock power domain.
     ui32LedCmStatus = GpioGet_LedCmStatus();
-    if (GpioGet_Reserved() & 0x01)
-        ui32LedCmStatus |= 0x01;
+    if (GpioGet_Reserved() & POWER_RESERVED_CLOCK)
+        ui32LedCmStatus |= LED_CM_STATUS_CLOCK;
     else
-        ui32LedCmStatus &= ~0x01;
+        ui32LedCmStatus &= ~LED_CM_STATUS_CLOCK;
     GpioSet_LedCmStatus(ui32LedCmStatus);
 
     // KU15P power domain.
     ui32LedCmStatus = GpioGet_LedCmStatus();
-    if((GpioGet_PowerCtrl() & 0x03) && (GpioGet_Reserved() & 0x02))
-        ui32LedCmStatus |= 0x02;
+    if((GpioGet_PowerCtrl() & POWER_KU15P) && (GpioGet_Reserved() & POWER_RESERVED_KU15P))
+        ui32LedCmStatus |= LED_CM_STATUS_KU15P;
     else
-        ui32LedCmStatus &= ~0x02;
+        ui32LedCmStatus &= ~LED_CM_STATUS_KU15P;
     GpioSet_LedCmStatus(ui32LedCmStatus);
 
     // ZU11EG power domain.
     ui32LedCmStatus = GpioGet_LedCmStatus();
-    if((GpioGet_PowerCtrl() & 0x08) && (GpioGet_Reserved() & 0x04))
-        ui32LedCmStatus |= 0x04;
+    if((GpioGet_PowerCtrl() & POWER_ZU11EG) && (GpioGet_Reserved() & POWER_RESERVED_ZU11EG))
+        ui32LedCmStatus |= LED_CM_STATUS_ZU11EG;
     else
-        ui32LedCmStatus &= ~0x04;
+        ui32LedCmStatus &= ~LED_CM_STATUS_ZU11EG;
     GpioSet_LedCmStatus(ui32LedCmStatus);
 
     // Temperature alert.
     // TODO.
-    ui32LedCmStatus &= ~0x08;
+    ui32LedCmStatus &= ~LED_CM_STATUS_TEMP_ALERT;
     GpioSet_LedCmStatus(ui32LedCmStatus);
 
     return 0;
