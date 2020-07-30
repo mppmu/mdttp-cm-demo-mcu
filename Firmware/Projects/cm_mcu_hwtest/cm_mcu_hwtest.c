@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 08 Apr 2020
-// Rev.: 28 Jul 2020
+// Rev.: 30 Jul 2020
 //
 // Hardware test firmware running on the ATLAS MDT Trigger Processor (TP)
 // Command Module (CM) MCU.
@@ -71,6 +71,7 @@ int main(void)
     char pcUartStr[UI_STR_BUF_SIZE];
     char *pcUartCmd;
     char *pcUartParam;
+    tUartUi *psUartUi;
 
     // Setup the system clock.
     ui32SysClock = MAP_SysCtlClockFreqSet(SYSTEM_CLOCK_SETTINGS, SYSTEM_CLOCK_FREQ);
@@ -93,6 +94,29 @@ int main(void)
         I2CMasterInit(&g_psI2C[i]);
     }
 
+GpioSet_LedMcuUser(0xf);
+
+    // Choose the front panel UART as UI first and check if somebody requests access.
+    // Note: This must be done *before* setting up the user UARTs!
+    psUartUi = &g_sUartUi3;     // Front-panel USB UART.
+    #ifdef UI_UART_SELECT
+    psUartUi->ui32SrcClock = ui32SysClock;
+    UartUiInit(psUartUi);
+    UARTprintf("\nPress any key to use the front panel USB UART.\n");
+    for (int i = 10; i >= 0; i--) {
+        UARTprintf("%d ", i);
+        // Note: The SysCtlDelay executes a simple 3 instruction cycle loop.
+        SysCtlDelay((ui32SysClock / 3e6) * 1e6);
+        // Character received on the UART UI.
+        if (UARTCharsAvail(psUartUi->ui32Base)) break;
+    }
+    // No character received. => Switch to the SM SoC UART.
+    if (!UARTCharsAvail(psUartUi->ui32Base)) {
+        psUartUi = &g_sUartUi5;     // SM SoC UART.
+        UARTprintf("\nSwitching to the SM SoC UART. This port will be disabled now.\n");
+    }
+    #endif  // UI_UART_SELECT
+            
     // Initialize the UARTs.
     g_sUart1.ui32UartClk = ui32SysClock;
     g_sUart1.bLoopback = true;      // Enable loopback for testing.
@@ -107,10 +131,10 @@ int main(void)
     // Initialize the UART for the user interface.
     // CAUTION: This must be done *after* the initialization of the UARTs.
     //          Otherwise, the UART UI settings would be overwritten.
-    g_sUartUi3.ui32SrcClock = ui32SysClock;
-    UartUiInit(&g_sUartUi3);
+    psUartUi->ui32SrcClock = ui32SysClock;
+    UartUiInit(psUartUi);
 
-    // Send initial information to UART.
+    // Send initial information to the UART UI.
     UARTprintf("\n\n*******************************************************************************\n");
     UARTprintf("MDT-TP CM MCU `%s' firmware version %s, release date: %s\n", FW_NAME, FW_VERSION, FW_RELEASEDATE);
     UARTprintf("*******************************************************************************\n\n");
