@@ -73,6 +73,8 @@ int main(void)
     char *pcUartParam;
     tUartUi *psUartUi;
 
+    uint8_t liveleds;
+
     // Setup the system clock.
     ui32SysClock = MAP_SysCtlClockFreqSet(SYSTEM_CLOCK_SETTINGS, SYSTEM_CLOCK_FREQ);
 
@@ -94,7 +96,8 @@ int main(void)
         I2CMasterInit(&g_psI2C[i]);
     }
 
-GpioSet_LedMcuUser(0xf);
+    GpioSet_LedMcuUser(LED_USER_BLUE_0);
+    
 
     // Choose the front panel UART as UI first and check if somebody requests access.
     // Note: This must be done *before* setting up the user UARTs!
@@ -112,8 +115,9 @@ GpioSet_LedMcuUser(0xf);
     }
     // No character received. => Switch to the SM SoC UART.
     if (!UARTCharsAvail(psUartUi->ui32Base)) {
-        psUartUi = &g_sUartUi5;     // SM SoC UART.
         UARTprintf("\nSwitching to the SM SoC UART. This port will be disabled now.\n");
+        GpioSet_LedMcuUser(LED_USER_BLUE_1);
+        psUartUi = &g_sUartUi5;     // SM SoC UART.
     }
     #endif  // UI_UART_SELECT
             

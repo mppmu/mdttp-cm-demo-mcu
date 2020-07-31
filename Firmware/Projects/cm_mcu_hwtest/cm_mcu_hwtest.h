@@ -71,6 +71,16 @@
 #define LED_CM_STATUS_ZU11EG        0x04
 #define LED_CM_STATUS_TEMP_ALERT    0x08
 
+#define LED_USER_BLUE_0             0x01
+#define LED_USER_BLUE_1             0x02
+#define LED_USER_ORANGE_0           0x04
+#define LED_USER_ORANGE_1           0x08
+#define LED_USER_GREEN_O            0x10
+#define LED_USER_GREEN_1            0x20
+#define LED_USER_RED_0              0x40
+#define LED_USER_RED_1              0x80
+
+
 
 #endif  // __CM_MCU_HWTEST_H__
 
