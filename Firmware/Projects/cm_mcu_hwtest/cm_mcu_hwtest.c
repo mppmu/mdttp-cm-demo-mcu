@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 08 Apr 2020
-// Rev.: 30 Jul 2020
+// Rev.: 31 Jul 2020
 //
 // Hardware test firmware running on the ATLAS MDT Trigger Processor (TP)
 // Command Module (CM) MCU.
@@ -96,9 +96,10 @@ int main(void)
         I2CMasterInit(&g_psI2C[i]);
     }
 
-    GpioSet_LedMcuUser(LED_USER_BLUE_0);
+    // Turn on an LED to indicate MCU activity.
+    liveleds = 0;
+    GpioSet_LedMcuUser(liveleds |= LED_USER_BLUE_0);
     
-
     // Choose the front panel UART as UI first and check if somebody requests access.
     // Note: This must be done *before* setting up the user UARTs!
     psUartUi = &g_sUartUi3;     // Front-panel USB UART.
@@ -106,17 +107,23 @@ int main(void)
     psUartUi->ui32SrcClock = ui32SysClock;
     UartUiInit(psUartUi);
     UARTprintf("\nPress any key to use the front panel USB UART.\n");
-    for (int i = 10; i >= 0; i--) {
+    for (int i = UI_UART_SELECT_TIMEOUT; i >= 0; i--) {
         UARTprintf("%d ", i);
         // Note: The SysCtlDelay executes a simple 3 instruction cycle loop.
-        SysCtlDelay((ui32SysClock / 3e6) * 1e6);
+        SysCtlDelay((ui32SysClock / 3e6) * 5e5);
+        GpioSet_LedMcuUser(liveleds &= ~LED_USER_BLUE_0);
+        SysCtlDelay((ui32SysClock / 3e6) * 5e5);
+        GpioSet_LedMcuUser(liveleds |= LED_USER_BLUE_0);
         // Character received on the UART UI.
         if (UARTCharsAvail(psUartUi->ui32Base)) break;
     }
     // No character received. => Switch to the SM SoC UART.
     if (!UARTCharsAvail(psUartUi->ui32Base)) {
         UARTprintf("\nSwitching to the SM SoC UART. This port will be disabled now.\n");
-        GpioSet_LedMcuUser(LED_USER_BLUE_1);
+        // Wait some time for UART to send out the last message.
+        SysCtlDelay((ui32SysClock / 3e6) * 1e5);
+        GpioSet_LedMcuUser(liveleds &= ~LED_USER_BLUE_0);
+        GpioSet_LedMcuUser(liveleds |= LED_USER_BLUE_1);
         psUartUi = &g_sUartUi5;     // SM SoC UART.
     }
     #endif  // UI_UART_SELECT
