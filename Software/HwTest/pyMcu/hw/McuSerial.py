@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 24 Apr 2020
-# Rev.: 30 Apr 2020
+# Rev.: 04 Aug 2020
 #
 # Python class for communicating with the TM4C1290NCPDT MCU over a serial port
 # (UART).
@@ -96,7 +96,7 @@ class McuSerial:
             print(self.separatorDetails + "Error count: {0:d}".format(self.errorCount), end='')
         if self.debugLevel >= 1:
             print(self.separatorDetails + "Read access count: {0:d}".format(self.accessRead), end='')
-            print(self.separatorDetails + "Write access countn: {0:d}".format(self.accessWrite), end='')
+            print(self.separatorDetails + "Write access count: {0:d}".format(self.accessWrite), end='')
         if self.debugLevel >= 1:
             print(self.separatorDetails + "Bytes read: {0:d}".format(self.bytesRead), end='')
             print(self.separatorDetails + "Bytes written: {0:d}".format(self.bytesWritten), end='')
