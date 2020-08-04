@@ -70,7 +70,7 @@ tGPIO g_sGpio_SmPowerEna = {
     //       weak pull-down on the MCU input pin.
     GPIO_PIN_TYPE_STD_WPD,  // ui32PinType
     true,                   // bInput: false = output, true = input
-    0                       // ui32IntType
+    GPIO_BOTH_EDGES         // ui32IntType
 };
 
 // Initialize the Service Module power enable GPIO.

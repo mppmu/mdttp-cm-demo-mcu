@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 08 Apr 2020
-// Rev.: 31 Jul 2020
+// Rev.: 04 Aug 2020
 //
 // Hardware test firmware running on the ATLAS MDT Trigger Processor (TP)
 // Command Module (CM) MCU.
@@ -28,6 +28,7 @@
 #include "hw/uart/uart.h"
 #include "uart_ui.h"
 #include "power_control.h"
+#include "sm_cm.h"
 #include "cm_mcu_hwtest.h"
 #include "cm_mcu_hwtest_io.h"
 
@@ -73,7 +74,7 @@ int main(void)
     char *pcUartParam;
     tUartUi *psUartUi;
 
-    uint8_t liveleds;
+    uint8_t ui8McuUserLeds;
 
     // Setup the system clock.
     ui32SysClock = MAP_SysCtlClockFreqSet(SYSTEM_CLOCK_SETTINGS, SYSTEM_CLOCK_FREQ);
@@ -96,9 +97,15 @@ int main(void)
         I2CMasterInit(&g_psI2C[i]);
     }
 
+    // Initialize power up/down handshaking between the Service Module and the
+    // Command Module.
+    #ifdef SM_CM_POWER_HANDSHAKING_ENABLE
+    SmCm_PowerHandshakingInit();
+    #endif
+
     // Turn on an LED to indicate MCU activity.
-    liveleds = 0;
-    GpioSet_LedMcuUser(liveleds |= LED_USER_BLUE_0);
+    ui8McuUserLeds = 0;
+    GpioSet_LedMcuUser(ui8McuUserLeds |= LED_USER_GREEN_0);
     
     // Choose the front panel UART as UI first and check if somebody requests access.
     // Note: This must be done *before* setting up the user UARTs!
@@ -107,13 +114,20 @@ int main(void)
     psUartUi->ui32SrcClock = ui32SysClock;
     UartUiInit(psUartUi);
     UARTprintf("\nPress any key to use the front panel USB UART.\n");
+    // Clear all pending characters to avoid false activation of the front
+    // panel USB UART.
+    while (UARTCharsAvail(psUartUi->ui32Base)) {
+        UARTCharGetNonBlocking(psUartUi->ui32Base);
+    }
+    // Wait for key press on the front panel USB UART.
     for (int i = UI_UART_SELECT_TIMEOUT; i >= 0; i--) {
         UARTprintf("%d ", i);
+        // Blink the LED with 1 second period.
         // Note: The SysCtlDelay executes a simple 3 instruction cycle loop.
         SysCtlDelay((ui32SysClock / 3e6) * 5e5);
-        GpioSet_LedMcuUser(liveleds &= ~LED_USER_BLUE_0);
+        GpioSet_LedMcuUser(ui8McuUserLeds &= ~LED_USER_BLUE_0);
         SysCtlDelay((ui32SysClock / 3e6) * 5e5);
-        GpioSet_LedMcuUser(liveleds |= LED_USER_BLUE_0);
+        GpioSet_LedMcuUser(ui8McuUserLeds |= LED_USER_BLUE_0);
         // Character received on the UART UI.
         if (UARTCharsAvail(psUartUi->ui32Base)) break;
     }
@@ -122,8 +136,8 @@ int main(void)
         UARTprintf("\nSwitching to the SM SoC UART. This port will be disabled now.\n");
         // Wait some time for UART to send out the last message.
         SysCtlDelay((ui32SysClock / 3e6) * 1e5);
-        GpioSet_LedMcuUser(liveleds &= ~LED_USER_BLUE_0);
-        GpioSet_LedMcuUser(liveleds |= LED_USER_BLUE_1);
+        GpioSet_LedMcuUser(ui8McuUserLeds &= ~LED_USER_BLUE_0);
+        GpioSet_LedMcuUser(ui8McuUserLeds |= LED_USER_BLUE_1);
         psUartUi = &g_sUartUi5;     // SM SoC UART.
     }
     #endif  // UI_UART_SELECT
@@ -150,6 +164,8 @@ int main(void)
     UARTprintf("MDT-TP CM MCU `%s' firmware version %s, release date: %s\n", FW_NAME, FW_VERSION, FW_RELEASEDATE);
     UARTprintf("*******************************************************************************\n\n");
     UARTprintf("Type `help' to get an overview of available commands.\n");
+
+    GpioSet_LedMcuUser(ui8McuUserLeds |= LED_USER_GREEN_1);
 
     while(1)
     {

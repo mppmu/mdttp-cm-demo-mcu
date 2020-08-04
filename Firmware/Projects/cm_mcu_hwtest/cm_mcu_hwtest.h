@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 08 Apr 2020
-// Rev.: 31 Jul 2020
+// Rev.: 04 Aug 2020
 //
 // Header file of the firmware running on the ATLAS MDT Trigger Processor (TP)
 // Command Module (CM) MCU.
@@ -19,8 +19,8 @@
 // Firmware parameters.
 // ******************************************************************
 #define FW_NAME                     "cm_mcu_hwtest"
-#define FW_VERSION                  "0.1.12"
-#define FW_RELEASEDATE              "31 Jul 2020"
+#define FW_VERSION                  "0.1.13"
+#define FW_RELEASEDATE              "04 Aug 2020"
 
 
 
@@ -72,15 +72,21 @@
 #define LED_CM_STATUS_ZU11EG        0x04
 #define LED_CM_STATUS_TEMP_ALERT    0x08
 
+// User LEDs.
 #define LED_USER_BLUE_0             0x01
 #define LED_USER_BLUE_1             0x02
 #define LED_USER_ORANGE_0           0x04
 #define LED_USER_ORANGE_1           0x08
-#define LED_USER_GREEN_O            0x10
+#define LED_USER_GREEN_0            0x10
 #define LED_USER_GREEN_1            0x20
 #define LED_USER_RED_0              0x40
 #define LED_USER_RED_1              0x80
 
+// Enable power up/down handshaking between the Service Module and the Command
+// Module using the PWR_EN (drive by the SM) and the READY (driven by the CM)
+// signals (SM-CM handshaking).
+#define SM_CM_POWER_HANDSHAKING_ENABLE
+#define SM_CM_POWER_HANDSHAKING_SHOW_MESSAGE
 
 
 #endif  // __CM_MCU_HWTEST_H__
