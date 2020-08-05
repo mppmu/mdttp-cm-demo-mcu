@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 04 Aug 2020
-# Rev.: 04 Aug 2020
+# Rev.: 05 Aug 2020
 #
 # Python class for accessing the ATLAS MDT Trigger Processor (TP) Command
 # Module (CM) via the TI Tiva TM4C1290 MCU UART.
@@ -299,8 +299,8 @@ class MdtTp_CM:
             print(self.prefixDebug + "{0:s} manufacturer ID: 0x{1:02x}".format(self.i2cDevice_IC39_MCP9903.deviceName, self.i2cDevice_IC39_MCP9903.read_manufacturer_id()[1]))
             print(self.prefixDebug + "{0:s} revision: 0x{1:02x}".format(self.i2cDevice_IC39_MCP9903.deviceName, self.i2cDevice_IC39_MCP9903.read_revision()[1]))
         # Read the temperatures.
-        print("KU15P                       : {0:6.3f} degC".format(self.i2cDevice_IC39_MCP9903.read_temp_ext_1()[1]))
-        print("ZU11EG                      : {0:6.3f} degC".format(self.i2cDevice_IC39_MCP9903.read_temp_ext_2()[1]))
+        print("KU15P  : {0:19s}: {1:6.3f} degC".format(self.i2cDevice_IC39_MCP9903.deviceName, self.i2cDevice_IC39_MCP9903.read_temp_ext_1()[1]))
+        print("ZU11EG : {0:19s}: {1:6.3f} degC".format(self.i2cDevice_IC39_MCP9903.deviceName, self.i2cDevice_IC39_MCP9903.read_temp_ext_2()[1]))
         # Board temperatures.
         if self.debugLevel >= 1:
             print(self.prefixDebug + "Reading the temperatures from local sensors on the board.")
