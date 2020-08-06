@@ -75,6 +75,8 @@ void SmCm_IntHandlerSmPowerEna(void)
             UARTprintf("\nPower down requested from SM by driving SM_PWR_ENA low. Driving CM_READY low.\n");
             #endif
         }
+        // Update the status LEDs.
+        LedCmStatusUpdated();
         // Show new command prompt.
         UARTprintf("%s", UI_COMMAND_PROMPT);
     }

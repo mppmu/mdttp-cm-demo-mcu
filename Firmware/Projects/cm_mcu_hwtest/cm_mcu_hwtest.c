@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 08 Apr 2020
-// Rev.: 04 Aug 2020
+// Rev.: 06 Aug 2020
 //
 // Hardware test firmware running on the ATLAS MDT Trigger Processor (TP)
 // Command Module (CM) MCU.
@@ -61,7 +61,11 @@ int UartAccess(char *pcCmd, char *pcParam);
 int UartPortCheck(uint8_t ui8UartPort, tUART **psUart);
 int UartSetup(char *pcCmd, char *pcParam);
 void UartSetupHelp(void);
-int LedCmStatusUpdated(void);
+
+
+
+// Global variables.
+tUartUi *g_psUartUi;
 
 
 
@@ -72,7 +76,6 @@ int main(void)
     char pcUartStr[UI_STR_BUF_SIZE];
     char *pcUartCmd;
     char *pcUartParam;
-    tUartUi *psUartUi;
 
     uint8_t ui8McuUserLeds;
 
@@ -109,15 +112,15 @@ int main(void)
     
     // Choose the front panel UART as UI first and check if somebody requests access.
     // Note: This must be done *before* setting up the user UARTs!
-    psUartUi = &g_sUartUi3;     // Front-panel USB UART.
+    g_psUartUi = &g_sUartUi3;     // Front-panel USB UART.
     #ifdef UI_UART_SELECT
-    psUartUi->ui32SrcClock = ui32SysClock;
-    UartUiInit(psUartUi);
+    g_psUartUi->ui32SrcClock = ui32SysClock;
+    UartUiInit(g_psUartUi);
     UARTprintf("\nPress any key to use the front panel USB UART.\n");
     // Clear all pending characters to avoid false activation of the front
     // panel USB UART.
-    while (UARTCharsAvail(psUartUi->ui32Base)) {
-        UARTCharGetNonBlocking(psUartUi->ui32Base);
+    while (UARTCharsAvail(g_psUartUi->ui32Base)) {
+        UARTCharGetNonBlocking(g_psUartUi->ui32Base);
     }
     // Wait for key press on the front panel USB UART.
     for (int i = UI_UART_SELECT_TIMEOUT; i >= 0; i--) {
@@ -129,16 +132,16 @@ int main(void)
         SysCtlDelay((ui32SysClock / 3e6) * 5e5);
         GpioSet_LedMcuUser(ui8McuUserLeds |= LED_USER_BLUE_0);
         // Character received on the UART UI.
-        if (UARTCharsAvail(psUartUi->ui32Base)) break;
+        if (UARTCharsAvail(g_psUartUi->ui32Base)) break;
     }
     // No character received. => Switch to the SM SoC UART.
-    if (!UARTCharsAvail(psUartUi->ui32Base)) {
+    if (!UARTCharsAvail(g_psUartUi->ui32Base)) {
         UARTprintf("\nSwitching to the SM SoC UART. This port will be disabled now.\n");
         // Wait some time for UART to send out the last message.
         SysCtlDelay((ui32SysClock / 3e6) * 1e5);
         GpioSet_LedMcuUser(ui8McuUserLeds &= ~LED_USER_BLUE_0);
         GpioSet_LedMcuUser(ui8McuUserLeds |= LED_USER_BLUE_1);
-        psUartUi = &g_sUartUi5;     // SM SoC UART.
+        g_psUartUi = &g_sUartUi5;     // SM SoC UART.
     }
     #endif  // UI_UART_SELECT
             
@@ -156,8 +159,8 @@ int main(void)
     // Initialize the UART for the user interface.
     // CAUTION: This must be done *after* the initialization of the UARTs.
     //          Otherwise, the UART UI settings would be overwritten.
-    psUartUi->ui32SrcClock = ui32SysClock;
-    UartUiInit(psUartUi);
+    g_psUartUi->ui32SrcClock = ui32SysClock;
+    UartUiInit(g_psUartUi);
 
     // Send initial information to the UART UI.
     UARTprintf("\n\n*******************************************************************************\n");
@@ -683,13 +686,7 @@ int UartAccess(char *pcCmd, char *pcParam)
     }
     if (i < 2) return -1;
     // Check if the UART port number is valid.
-    switch (ui8UartPort) {
-        case 1: psUart = &g_sUart1; break;
-        case 5: psUart = &g_sUart5; break;
-        default:
-            UARTprintf("%s: Only UART port numbers 1 and 5 are supported!", UI_STR_ERROR);
-            return -1;
-    }
+    if (UartPortCheck(ui8UartPort, &psUart)) return -1;
     // UART write.
     if (ui8UartRw == 0) {
         i32UartStatus = UartWrite(psUart, pui8UartData, i - 2);
@@ -743,14 +740,38 @@ int UartAccess(char *pcCmd, char *pcParam)
 // selected UART port struct.
 int UartPortCheck(uint8_t ui8UartPort, tUART **psUart)
 {
-    switch (ui8UartPort) {
-        case 1: *psUart = &g_sUart1; break;
-        case 5: *psUart = &g_sUart5; break;
-        default:
-            *psUart = NULL;
-            UARTprintf("%s: Only UART port numbers 1 and 5 are supported!", UI_STR_ERROR);
-            return -1;
+    // Front-panel USB UART UI on UART3.
+    if (g_psUartUi == &g_sUartUi3) {
+        switch (ui8UartPort) {
+            case 1: *psUart = &g_sUart1; break;
+            case 5: *psUart = &g_sUart5; break;
+            default:
+                *psUart = NULL;
+                UARTprintf("%s: Only UART port numbers 1 and 5 are supported!", UI_STR_ERROR);
+                return -1;
+        }
+    // SM SoC UART UI on UART5.
+    } else if (g_psUartUi == &g_sUartUi5) {
+        switch (ui8UartPort) {
+            case 1: *psUart = &g_sUart1; break;
+            case 3: *psUart = &g_sUart3; break;
+            default:
+                *psUart = NULL;
+                UARTprintf("%s: Only UART port numbers 1 and 3 are supported!", UI_STR_ERROR);
+                return -1;
+        }
+    // UART UI on UART 1.
+    } else {
+        switch (ui8UartPort) {
+            case 3: *psUart = &g_sUart3; break;
+            case 5: *psUart = &g_sUart5; break;
+            default:
+                *psUart = NULL;
+                UARTprintf("%s: Only UART port numbers 3 and 5 are supported!", UI_STR_ERROR);
+                return -1;
+        }
     }
+
     return 0;
 }
 
