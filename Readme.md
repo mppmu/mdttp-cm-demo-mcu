@@ -3,7 +3,7 @@
 Auth: M. Fras, Electronics Division, MPI for Physics, Munich  
 Mod.: M. Fras, Electronics Division, MPI for Physics, Munich  
 Date: 09 Apr 2020  
-Rev.: 09 Apr 2020  
+Rev.: 07 Aug 2020  
 
 
 
@@ -70,13 +70,14 @@ Rev.: 09 Apr 2020
     Download the firmware. Make sure that these conditions are met:
     * The TM4C1294 Connected LaunchPad™ Evaluation Kit is connected to an USB
       port of the PC.
-    * Its resistors R8, R10 and R15 are removed.
-    * Its SWD pins on X1 are connected to the correct pins of X113 on the CM.
-      | Signal | LaunchPad X1 | CM X113 |
-      | ------ | -------------| ------- |
-      | SWCLK  | X1-9         | X113-4  |
-      | SWDIO  | X1-7         | X113-2  |
-      | SWO    | X1-3         | X113-6  |
+    * Its resistors R8, R10, R11, R15 and R16 are removed.
+    * Its header U6 is connected with a 10-pin 50 mil pitch flat cable to X113
+      of the CM.
+    * The jumpers X122, X123, X125 and X126 on the CM are in the correct
+      position to connect the MCU SWD pins to the header X113.
+    * By default, always download the MCU firmware with no other power source
+      provided to the CM. Alternatively, if the CM is powered with +12 V, cut
+      the pin 1 of the flat cable to avoid connecting to power supplies.
     ```shell
     make install
     ```
