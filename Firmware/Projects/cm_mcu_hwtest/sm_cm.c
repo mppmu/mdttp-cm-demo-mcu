@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 04 Aug 2020
-// Rev.: 04 Aug 2020
+// Rev.: 27 Aug 2020
 //
 // Functions for interfacing the Service Module and the Command Module in the
 // hardware test firmware running on the ATLASfirmware running on the ATLAS MDT
@@ -23,6 +23,7 @@
 #include "power_control.h"
 #include "sm_cm.h"
 #include "cm_mcu_hwtest.h"
+#include "cm_mcu_hwtest_aux.h"
 
 
 
