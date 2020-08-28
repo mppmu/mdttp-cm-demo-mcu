@@ -19,7 +19,10 @@
 // Function prototypes.
 // ******************************************************************
 
-int DelayUs(char *pcCmd, char *pcParam, uint32_t ui32SysClock);
+int DelayUs(uint32_t ui32DelayUs);
+int DelayUsCmd(char *pcCmd, char *pcParam);
+int McuReset(char *pcCmd, char *pcParam);
+int JumpToBootLoader(char *pcCmd, char *pcParam);
 int LedCmStatusUpdated(void);
 int TemperatureAnalog(char *pcCmd, char *pcParam);
 float Adc2Temp(uint32_t ui32Adc);

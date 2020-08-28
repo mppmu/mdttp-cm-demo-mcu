@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 08 Apr 2020
-// Rev.: 06 Aug 2020
+// Rev.: 28 Aug 2020
 //
 // Hardware test firmware running on the ATLAS MDT Trigger Processor (TP)
 // Command Module (CM) MCU.
@@ -55,6 +55,7 @@ void Info(void);
 
 
 // Global variables.
+uint32_t g_ui32SysClock;
 tUartUi *g_psUartUi;
 
 
@@ -62,7 +63,6 @@ tUartUi *g_psUartUi;
 // Initialize hardware, get and process commands.
 int main(void)
 {
-    uint32_t ui32SysClock;
     char pcUartStr[UI_STR_BUF_SIZE];
     char *pcUartCmd;
     char *pcUartParam;
@@ -70,7 +70,7 @@ int main(void)
     uint8_t ui8McuUserLeds;
 
     // Setup the system clock.
-    ui32SysClock = MAP_SysCtlClockFreqSet(SYSTEM_CLOCK_SETTINGS, SYSTEM_CLOCK_FREQ);
+    g_ui32SysClock = MAP_SysCtlClockFreqSet(SYSTEM_CLOCK_SETTINGS, SYSTEM_CLOCK_FREQ);
 
     // Initialize the ADCs.
     AdcReset(&g_sAdc_KUP_MGTAVCC_ADC_AUX_TEMP);
@@ -86,7 +86,7 @@ int main(void)
 
     // Initialize the I2C masters.
     for (int i = 0; i < I2C_MASTER_NUM; i++) {
-        g_psI2C[i].ui32I2CClk = ui32SysClock;
+        g_psI2C[i].ui32I2CClk = g_ui32SysClock;
         I2CMasterInit(&g_psI2C[i]);
     }
 
@@ -104,7 +104,7 @@ int main(void)
     // Note: This must be done *before* setting up the user UARTs!
     g_psUartUi = &g_sUartUi3;     // Front-panel USB UART.
     #ifdef UI_UART_SELECT
-    g_psUartUi->ui32SrcClock = ui32SysClock;
+    g_psUartUi->ui32SrcClock = g_ui32SysClock;
     UartUiInit(g_psUartUi);
     UARTprintf("\nPress any key to use the front panel USB UART.\n");
     // Clear all pending characters to avoid false activation of the front
@@ -116,10 +116,9 @@ int main(void)
     for (int i = UI_UART_SELECT_TIMEOUT; i >= 0; i--) {
         UARTprintf("%d ", i);
         // Blink the LED with 1 second period.
-        // Note: The SysCtlDelay executes a simple 3 instruction cycle loop.
-        SysCtlDelay((ui32SysClock / 3e6) * 5e5);
+        DelayUs(5e5);
         GpioSet_LedMcuUser(ui8McuUserLeds &= ~LED_USER_BLUE_0);
-        SysCtlDelay((ui32SysClock / 3e6) * 5e5);
+        DelayUs(5e5);
         GpioSet_LedMcuUser(ui8McuUserLeds |= LED_USER_BLUE_0);
         // Character received on the UART UI.
         if (UARTCharsAvail(g_psUartUi->ui32Base)) break;
@@ -128,7 +127,7 @@ int main(void)
     if (!UARTCharsAvail(g_psUartUi->ui32Base)) {
         UARTprintf("\nSwitching to the SM SoC UART. This port will be disabled now.\n");
         // Wait some time for UART to send out the last message.
-        SysCtlDelay((ui32SysClock / 3e6) * 1e5);
+        DelayUs(1e5);
         GpioSet_LedMcuUser(ui8McuUserLeds &= ~LED_USER_BLUE_0);
         GpioSet_LedMcuUser(ui8McuUserLeds |= LED_USER_BLUE_1);
         g_psUartUi = &g_sUartUi5;     // SM SoC UART.
@@ -136,20 +135,20 @@ int main(void)
     #endif  // UI_UART_SELECT
             
     // Initialize the UARTs.
-    g_sUart1.ui32UartClk = ui32SysClock;
+    g_sUart1.ui32UartClk = g_ui32SysClock;
     g_sUart1.bLoopback = true;      // Enable loopback for testing.
     UartInit(&g_sUart1);
-    g_sUart3.ui32UartClk = ui32SysClock;
+    g_sUart3.ui32UartClk = g_ui32SysClock;
     g_sUart3.bLoopback = true;      // Enable loopback for testing.
     UartInit(&g_sUart3);
-    g_sUart5.ui32UartClk = ui32SysClock;
+    g_sUart5.ui32UartClk = g_ui32SysClock;
     g_sUart5.bLoopback = true;      // Enable loopback for testing.
     UartInit(&g_sUart5);
 
     // Initialize the UART for the user interface.
     // CAUTION: This must be done *after* the initialization of the UARTs.
     //          Otherwise, the UART UI settings would be overwritten.
-    g_psUartUi->ui32SrcClock = ui32SysClock;
+    g_psUartUi->ui32SrcClock = g_ui32SysClock;
     UartUiInit(g_psUartUi);
 
     // Send initial information to the UART UI.
@@ -174,7 +173,13 @@ int main(void)
             Info();
         // Delay execution for a given number of microseconds.
         } else if (!strcasecmp(pcUartCmd, "delay")) {
-            DelayUs(pcUartCmd, pcUartParam, ui32SysClock);
+            DelayUsCmd(pcUartCmd, pcUartParam);
+        // Reset the MCU.
+        } else if (!strcasecmp(pcUartCmd, "reset")) {
+            McuReset(pcUartCmd, pcUartParam);
+        // Enter the boot loader for firmware update over UART.
+        } else if (!strcasecmp(pcUartCmd, "bootldr")) {
+            JumpToBootLoader(pcUartCmd, pcUartParam);
         // GPIO based functions.
         } else if (!strcasecmp(pcUartCmd, "gpio")) {
             GpioGetSet(pcUartCmd, pcUartParam);            
@@ -213,12 +218,14 @@ void Help(void)
 {
     UARTprintf("Available commands:\n");
     UARTprintf("  help                                Show this help text.\n");
+    UARTprintf("  bootldr                             Enter the boot loader for firmware update.\n");
     UARTprintf("  delay   MICROSECONDS                Delay execution.\n");
     UARTprintf("  gpio    TYPE [VALUE]                Get/Set the value of a GPIO type.\n");
     UARTprintf("  i2c     PORT SLV-ADR ACC NUM|DATA   I2C access (ACC bits: R/W, Sr, nP, Q).\n");
     UARTprintf("  i2c-det PORT [MODE]                 I2C detect devices (MODE: 0 = auto,\n");
     UARTprintf("                                          1 = quick command, 2 = read).\n");
     UARTprintf("  info                                Show information about this firmware.\n");
+    UARTprintf("  reset                               Reset the MCU.\n");
     UARTprintf("  temp-a  [COUNT]                     Read analog temperatures.\n");
     UARTprintf("  uart    PORT R/W NUM|DATA           UART access (R/W: 0 = write, 1 = read).\n");
     UARTprintf("  uart-s  PORT BAUD [PARITY] [LOOP]   Set up the UART port.\n");

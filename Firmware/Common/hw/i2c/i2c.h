@@ -4,8 +4,8 @@
 // Date: 11 Feb 2020
 // Rev.: 14 Apr 2020
 //
-// Header file for the I2C functions on the TI Tiva TM4C1294 Connected
-// LaunchPad Evaluation Kit.
+// Header file for the I2C functions on the ATLAS MDT Trigger Processor (TP)
+// Command Module (CM) MCU.
 //
 
 

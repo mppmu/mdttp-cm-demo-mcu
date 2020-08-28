@@ -4,8 +4,8 @@
 // Date: 07 Feb 2020
 // Rev.: 17 Apr 2020
 //
-// UART user interface (UI) for the TI Tiva TM4C1294 Connected LaunchPad
-// Evaluation Kit.
+// UART user interface (UI) for the ATLAS MDT Trigger Processor (TP) Command
+// Module (CM) MCU.
 //
 
 

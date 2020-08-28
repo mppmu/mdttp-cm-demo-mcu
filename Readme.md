@@ -3,7 +3,7 @@
 Auth: M. Fras, Electronics Division, MPI for Physics, Munich  
 Mod.: M. Fras, Electronics Division, MPI for Physics, Munich  
 Date: 09 Apr 2020  
-Rev.: 07 Aug 2020  
+Rev.: 28 Aug 2020  
 
 
 
@@ -52,7 +52,48 @@ Rev.: 07 Aug 2020
     sudo apt-get install python3 python3-serial python3-tk
     ```
 
-2. Compile and download the firmware project for hardware testing.  
+2. Install the serial boot loader.  
+    The serial boot loader provides firmware updates over the UART 5, which is
+    connected to the SM SoC and is normally used for the user interface. In
+    order to build and install the boot loader, change to the
+    ```Firmware/Projects/boot_loader``` directory and run this command:
+    ```
+    make install
+    ```
+
+    The boot loader sits at address ```0x0000``` of the flash, the main
+    firmware image starts at address ```0x4000```.
+
+    Note that the UART for the boot loader can be changed to UART 3, which is
+    the front panel UART of the CM. Define
+    ```MDTTP_CM_MCU_BL_UART_FRONTPANEL``` in the file ```bl_config.h``` to use
+    UART 3 instead of UART 5 for the boot loader..
+
+    Example minicom session for the serial boot loader:
+    ```
+    ***** MDT-TP CM MCU boot loader version 0.0.3, release date: 28 Aug 2020 *****
+
+    Press any key to enter the boot loader menu.
+    5 4 3 2 1
+
+    Boot Loader Menu
+    ================
+    
+    Available commands:
+    h   Show this help text.
+    b   Start normal boot process.
+    f   Force MCU firmware download via the serial boot loader.
+    r   Reboot the MCU.
+    > f
+    
+    
+    
+    ***** MDT-TP CM MCU boot loader version 0.0.3, release date: 28 Aug 2020 *****
+    
+    Waiting for firmware data...
+    ```
+
+3. Compile and download the firmware project for hardware testing.  
     Change to the ```Firmware/Projects/cm_mcu_hwtest``` directory. Then clean
     the firmware project directory.
     ```shell
@@ -94,15 +135,39 @@ Rev.: 07 Aug 2020
     make clean install
     ```
 
-3. Communicate with the MCU using the minicom terminal program.  
+4. Firmware download via the serial boot loader.  
+    Once the serial boot loader is installed, you can use it to download the
+    main firmware. To do so, hit any key during the countdown after power-up to
+    enter the boot loader menu. Then press the key ```f``` to force a firmware
+    update. Now quit the terminal program, change to the
+    ```Firmware/Projects/cm_mcu_hwtest``` directory and download the main
+    firmware via the serial boot loader.
+    ```shell
+    make sflash
+    ```
+    If not yet done, this will automatically build the ```sflash``` tool that
+    comes with the TivaWare.
+
+    Note that you may need to change the serial device in the ```Makefile```
+    from ```/dev/ttyUL1``` to the one your computer uses to communicate with
+    the UART of the MCU.
+
+    Optionally, you can also run the sflash tool from the command line:
+    ```shell
+    sflash -c /dev/ttyUL1 -p 0x4000 -b 115200 -d -s 252 gcc/cm_mcu_hwtest.bin
+    ```
+
+5. Communicate with the MCU using the minicom terminal program.  
     Create a file ```.minirc.cm_mcu``` in your home directory with this
     content:
     ```
-    pu port             /dev/ttyUSB0
+    pu port             /dev/ttyUL1
     pu rtscts           No
     ```
-    Adapt the ```pu port``` to the serial input to which your TM4C1294
-    Connected LaunchPad™ Evaluation Kitis connected.
+    Adapt the ```pu port``` to the serial input to which the MCU UART user
+    interface is connected. This is usually ```/dev/ttyUL1``` when using the SM
+    SoC UART and ```/dev/ttyUSB0``` when using the CM front panel mini USB
+    UART.
 
     Launch minicom either by calling ```make minicom``` inside the firmware
     folder or by starting minicom from the shell ```minicom hw_demo```. To quit
@@ -112,10 +177,25 @@ Rev.: 07 Aug 2020
     Example minicom session:
     ```
     *******************************************************************************
-    MDT-TP CM MCU `cm_mcu_hwtest' firmware version 0.0.1, release date: 09 Apr 2020
+    MDT-TP CM MCU `cm_mcu_hwtest' firmware version 0.2.0, release date: 27 Aug 2020
     *******************************************************************************
     
     Type `help' to get an overview of available commands.
+    > help
+    Available commands:
+      help                                Show this help text.
+      bootldr                             Enter the boot loader for firmware update.
+      delay   MICROSECONDS                Delay execution.
+      gpio    TYPE [VALUE]                Get/Set the value of a GPIO type.
+      i2c     PORT SLV-ADR ACC NUM|DATA   I2C access (ACC bits: R/W, Sr, nP, Q).
+      i2c-det PORT [MODE]                 I2C detect devices (MODE: 0 = auto,
+                                              1 = quick command, 2 = read).
+      info                                Show information about this firmware.
+      reset                               Reset the MCU.
+      temp-a  [COUNT]                     Read analog temperatures.
+      uart    PORT R/W NUM|DATA           UART access (R/W: 0 = write, 1 = read).
+      uart-s  PORT BAUD [PARITY] [LOOP]   Set up the UART port.
+      power   DOMAIN [MODE]               Power domain control (0 = down, 1 = up).
     >
     ```
 

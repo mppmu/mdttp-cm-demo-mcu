@@ -67,7 +67,8 @@ BACKUP_FILES_SRC   = $(SOURCE_FILES) $(HEADER_FILES) Makefile
 RM_FILES_CLEAN     = core *.o $(COMPILER)/*.axf $(COMPILER)/*.bin $(COMPILER)/*.d $(COMPILER)/*.o
 RM_FILES_REALCLEAN = $(RM_FILES_CLEAN) $(COMPILER) *.bak *~ \
                      $(addsuffix ~, $(SOURCE_FILES)) \
-                     $(addsuffix ~, $(HEADER_FILES))
+                     $(addsuffix ~, $(HEADER_FILES)) \
+                     $(COMMON_LINK)
 
 
 
@@ -98,7 +99,7 @@ IPATH += $(COMMON_LINK)/hw/uart
 # Rules for building the project.
 SCATTERgcc_$(PROJECT)=$(PROJECT).ld
 ENTRY_$(PROJECT)=ResetISR
-CFLAGSgcc=-DTARGET_IS_TM4C129_RA0
+CFLAGSgcc=-DTARGET_IS_TM4C129_RA2
 
 # Minicom configuration.
 MINICOM_CONFIG = cm_mcu
@@ -122,6 +123,7 @@ CP              = cp -a
 CVS             = cvs
 DATE            = date
 DATE_BACKUP     = $(DATE) +"%Y-%m-%d_%H-%M-%S"
+DIRNAME         = dirname
 ECHO            = echo
 ECHO_ERR        = $(ECHO) "**ERROR:"
 EDIT			= gvim
@@ -137,9 +139,10 @@ MAKE            = make
 MKDIR           = mkdir
 MSGVIEW         = msgview
 MV              = mv
-SLEEP           = sleep
-SH              = sh -c 
 RM              = rm
+SFLASH          = ../../../Software/$(subst ../,,$(TIVAWARE))/tools/sflash/sflash
+SH              = sh -c 
+SLEEP           = sleep
 TAIL            = tail -n 5
 TAR             = tar
 TCL             = tclsh
@@ -163,7 +166,7 @@ LIBS += ${TIVAWARE}/grlib/${COMPILER}/libgr.a
 
 
 # ********** Rules. **********
-.PHONY: all exec edit flash install clean real_clean mrproper minicom mk_backup mk_backup_src $(COMPILER)
+.PHONY: all exec edit flash install sflash clean real_clean mrproper minicom mk_backup mk_backup_src $(COMPILER)
 
 all: ${COMPILER}
 all: $(COMMON_LINK) $(COMPILER) ${COMPILER}/$(PROJECT).axf
@@ -173,7 +176,7 @@ $(COMMON_LINK):
 
 ${COMPILER}:
 	@$(MKDIR) -p ${COMPILER}
-	@$(MKDIR) -p $(addprefix $(COMPILER)/, $(filter-out $(TIVAWARE), $(IPATH)))
+	@$(MKDIR) -p $(addprefix $(COMPILER)/, $(subst ../,,$(filter-out $(TIVAWARE), $(IPATH))))
 
 edit: $(COMMON_LINK) $(SOURCE_FILES) $(HEADER_FILES) $(LINKER_FILE)
 	@$(EDIT) $(SOURCE_FILES) $(HEADER_FILES) $(LINKER_FILE)
@@ -182,9 +185,17 @@ exec: install
 
 flash: install
 
-install: ${COMPILER} ${COMPILER}/$(PROJECT).axf ${COMPILER}/$(PROJECT).bin
-#	@$(LM4FLASH) -E -v ${COMPILER}/$(PROJECT).bin
-	@$(LM4FLASH) -E ${COMPILER}/$(PROJECT).bin
+install: all ${COMPILER} ${COMPILER}/$(PROJECT).axf ${COMPILER}/$(PROJECT).bin
+# Offest 0x4000 for boot loader.
+#	@$(LM4FLASH) -E -v -S 0x4000 $(COMPILER)/$(PROJECT).bin
+	@$(LM4FLASH) -E -S 0x4000 $(COMPILER)/$(PROJECT).bin
+
+sflash: all $(COMPILER) $(COMPILER)/$(PROJECT).axf $(COMPILER)/$(PROJECT).bin $(SFLASH)
+# Offest 0x4000 for boot loader.
+	@$(SFLASH) -c /dev/ttyUL1 -p 0x4000 -b 115200 -d -s 252 $(COMPILER)/$(PROJECT).bin
+
+$(SFLASH):
+	@$(CD) $(shell $(DIRNAME) $(SFLASH)) && $(MAKE)
 
 ${COMPILER}/$(PROJECT).axf: $(OBJS) $(LIBS)
 

@@ -4,8 +4,8 @@
 // Date: 18 Feb 2020
 // Rev.: 11 Apr 2020
 //
-// Header file for the UART functions on the TI Tiva TM4C1294 Connected
-// LaunchPad Evaluation Kit.
+// Header file for the UART functions on the TI Tiva TM4C1290 MCU on the ATLAS
+// MDT Trigger Processor (TP) Command Module (CM).
 //
 
 
