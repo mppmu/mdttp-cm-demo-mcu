@@ -3,7 +3,7 @@
 Auth: M. Fras, Electronics Division, MPI for Physics, Munich  
 Mod.: M. Fras, Electronics Division, MPI for Physics, Munich  
 Date: 09 Apr 2020  
-Rev.: 28 Aug 2020  
+Rev.: 01 Sep 2020  
 
 
 
@@ -52,7 +52,21 @@ Rev.: 28 Aug 2020
     sudo apt-get install python3 python3-serial python3-tk
     ```
 
-2. Install the serial boot loader.  
+2. Preparations for firmware download.  
+    Before installing the serial boot loader or downloading firmware, make sure
+    that these conditions are met:
+    * The TM4C1294 Connected LaunchPad™ Evaluation Kit is connected to an USB
+      port of the PC.
+    * Its resistors R8, R10, R11, R15 and R16 are removed.
+    * Its header U6 is connected with a 10-pin 50 mil pitch flat cable to X113
+      of the CM.
+    * The jumpers X122, X123, X125 and X126 on the CM are in the correct
+      position to connect the MCU SWD pins to the header X113.
+    * By default, always download the MCU firmware with no other power source
+      provided to the CM. Alternatively, if the CM is powered with +12 V, cut
+      the pin 1 of the flat cable to avoid connecting to power supplies.
+
+3. Install the serial boot loader.  
     The serial boot loader provides firmware updates over the UART 5, which is
     connected to the SM SoC and is normally used for the user interface. In
     order to build and install the boot loader, change to the
@@ -64,10 +78,18 @@ Rev.: 28 Aug 2020
     The boot loader sits at address ```0x0000``` of the flash, the main
     firmware image starts at address ```0x4000```.
 
+    The 8 MCU user LEDs indicate activity of the boot loader:
+    * The LED red 2 blinks during the countdown of the boot loader.
+    * The LED red 2 is on when the boot loader is active.
+    * During firmware download via the boot loader, the LEDs red 1 and red 2
+      are on and the remaining LEDs (blue 1/2, orange 1/2, green 1/2) count up.
+    * When the firmware download via the boot loader is finished, all 8 MCU
+      user LEDs blink 3 times indicating the end of the firmware download.
+
     Note that the UART for the boot loader can be changed to UART 3, which is
     the front panel UART of the CM. Define
     ```MDTTP_CM_MCU_BL_UART_FRONTPANEL``` in the file ```bl_config.h``` to use
-    UART 3 instead of UART 5 for the boot loader..
+    UART 3 instead of UART 5 for the boot loader.
 
     Example minicom session for the serial boot loader:
     ```
@@ -93,7 +115,7 @@ Rev.: 28 Aug 2020
     Waiting for firmware data...
     ```
 
-3. Compile and download the firmware project for hardware testing.  
+4. Compile and download the firmware project for hardware testing.  
     Change to the ```Firmware/Projects/cm_mcu_hwtest``` directory. Then clean
     the firmware project directory.
     ```shell
@@ -108,17 +130,7 @@ Rev.: 28 Aug 2020
     ```shell
     make
     ```
-    Download the firmware. Make sure that these conditions are met:
-    * The TM4C1294 Connected LaunchPad™ Evaluation Kit is connected to an USB
-      port of the PC.
-    * Its resistors R8, R10, R11, R15 and R16 are removed.
-    * Its header U6 is connected with a 10-pin 50 mil pitch flat cable to X113
-      of the CM.
-    * The jumpers X122, X123, X125 and X126 on the CM are in the correct
-      position to connect the MCU SWD pins to the header X113.
-    * By default, always download the MCU firmware with no other power source
-      provided to the CM. Alternatively, if the CM is powered with +12 V, cut
-      the pin 1 of the flat cable to avoid connecting to power supplies.
+    Download the firmware.
     ```shell
     make install
     ```
@@ -135,7 +147,7 @@ Rev.: 28 Aug 2020
     make clean install
     ```
 
-4. Firmware download via the serial boot loader.  
+5. Firmware download via the serial boot loader.  
     Once the serial boot loader is installed, you can use it to download the
     main firmware. To do so, hit any key during the countdown after power-up to
     enter the boot loader menu. Then press the key ```f``` to force a firmware
@@ -146,18 +158,19 @@ Rev.: 28 Aug 2020
     make sflash
     ```
     If not yet done, this will automatically build the ```sflash``` tool that
-    comes with the TivaWare.
+    comes with the TivaWare. After the firmware download, the MCU reboots
+    automatically.
 
     Note that you may need to change the serial device in the ```Makefile```
     from ```/dev/ttyUL1``` to the one your computer uses to communicate with
     the UART of the MCU.
 
-    Optionally, you can also run the sflash tool from the command line:
+    Optionally, you can also run the ```sflash``` tool from the command line:
     ```shell
     sflash -c /dev/ttyUL1 -p 0x4000 -b 115200 -d -s 252 gcc/cm_mcu_hwtest.bin
     ```
 
-5. Communicate with the MCU using the minicom terminal program.  
+6. Communicate with the MCU using the minicom terminal program.  
     Create a file ```.minirc.cm_mcu``` in your home directory with this
     content:
     ```
@@ -170,9 +183,9 @@ Rev.: 28 Aug 2020
     UART.
 
     Launch minicom either by calling ```make minicom``` inside the firmware
-    folder or by starting minicom from the shell ```minicom hw_demo```. To quit
-    minicom, press ```Ctrl-A```, then ```Q```. To edit the minicom settings,
-    press ```Ctrl-A```, then ```Z```.
+    directory or by starting minicom from the shell ```minicom -c on
+    hw_demo```. To quit minicom, press ```Ctrl-A```, then ```Q```. To edit the
+    minicom settings, press ```Ctrl-A```, then ```Z```.
 
     Example minicom session:
     ```
