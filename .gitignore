@@ -47,3 +47,7 @@ __pycache__/
 /Software/TivaWare/*/tools/sflash/sflash
 /Software/TivaWare/*/tools/bin
 
+# Log files and temporary directories of the hardware test tools.
+Software/HwTest/*/*.log
+Software/HwTest/*/tmp/
+

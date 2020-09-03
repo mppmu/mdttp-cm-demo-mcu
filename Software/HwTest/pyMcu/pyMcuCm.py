@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 29 May 2020
-# Rev.: 04 Aug 2020
+# Rev.: 03 Sep 2020
 #
 # Python script to access the ATLAS MDT Trigger Processor (TP) Command Module
 # (CM) via the TI Tiva TM4C1290 MCU.
@@ -48,7 +48,7 @@ if __name__ == "__main__":
                         dest='command', default='status',
                         help='Command to execute on the CM.')
     parser.add_argument('-d', '--device', action='store', type=str,
-                        dest='serialDevice', default='/dev/ttyUSB0',
+                        dest='serialDevice', default='/dev/ttyUL1',
                         help='Serial device to access the MCU.')
     parser.add_argument('-v', '--verbosity', action='store', type=int,
                         dest='verbosity', default="1", choices=range(0, 5),
