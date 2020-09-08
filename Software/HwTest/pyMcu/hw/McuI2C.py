@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 28 Mar 2020
-# Rev.: 04 Aug 2020
+# Rev.: 08 Sep 2020
 #
 # Python class for using the I2C ports of the TM4C1290NCPDT MCU.
 #
@@ -231,4 +231,26 @@ class McuI2C:
                 print(" 0x{0:02x}".format(adr), end='')
             print()
         return 0, devAdr
+
+
+
+    # Reset the I2C bus, e.g. after it gets stuck when an access was aborted
+    # before sending a stop condition.
+    def ms_reset_bus(self):
+        accMode = 0x03      # Read with repeated start.
+        slaveAddr = 0x01
+        cnt = 1
+        cmd = "i2c {0:d} 0x{1:02x} 0x{2:01x} {3:d}".format(self.port, slaveAddr & 0x7f, accMode, cnt)
+        if self.debugLevel >= 2:
+            print(self.prefixDebug + "Resetting the I2C master port {0:d}.".format(self.port), end='')
+            print()
+        # Send command.
+        self.mcuSer.send(cmd)
+        # Debug: Show response.
+        if self.debugLevel >= 3:
+            print(self.prefixDebug + "Response from MCU:")
+            print(self.mcuSer.get_full())
+        # Don't evaluate the response, because it will probably contain an
+        # error, which can be ignored.
+        return 0
 

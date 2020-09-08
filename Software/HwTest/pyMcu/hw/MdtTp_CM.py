@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 04 Aug 2020
-# Rev.: 05 Aug 2020
+# Rev.: 08 Sep 2020
 #
 # Python class for accessing the ATLAS MDT Trigger Processor (TP) Command
 # Module (CM) via the TI Tiva TM4C1290 MCU UART.
@@ -40,6 +40,7 @@ class MdtTp_CM:
     debugLevel = 0                 # Debug verbosity.
 
     # Hardware parameters.
+    i2cBusNum           = 10
 
 
 
@@ -64,9 +65,11 @@ class MdtTp_CM:
     def init_hw_i2c(self):
         # I2C buses.
         self.mcuI2C = []
-        for i in range(0, 10):
+        for i in range(0, self.i2cBusNum):
             self.mcuI2C.append(McuI2C.McuI2C(self.mcuSer, i))
             self.mcuI2C[i].debugLevel = self.debugLevel
+            # Reset the I2C bus.
+            self.mcuI2C[i].ms_reset_bus()
 
         # IC114: DS28CM00 silicon serial number IC.
         # I2C port 4, slave address 0x50.
@@ -113,7 +116,7 @@ class MdtTp_CM:
         # I2C mux for clock I2C bus:
         # IC55 (PCA9547PW): I2C port 3, slave address 0x70
         self.i2cDevice_IC55_PCA9547PW = I2C_PCA9547.I2C_PCA9547(self.mcuI2C[3], 0x70, "IC55 (PCA9547PW)")
-        self.i2cDevice_IC55_PCA9547PW = self.debugLevel
+        self.i2cDevice_IC55_PCA9547PW.debugLevel = self.debugLevel
         # I2C clock devices.
         # IC54 (Si5341A): I2C port 3, slave address 0x74
         self.i2cDevice_IC54_Si5341A = I2C_Si53xx.I2C_Si53xx(self.mcuI2C[3], 0x74, "IC54 (Si5341A)")
@@ -318,12 +321,31 @@ class MdtTp_CM:
 
 
 
+    # Reset all I2C busses.
+    def i2c_reset(self):
+        for i in range(0, self.i2cBusNum):
+            self.mcuI2C[i].ms_reset_bus()
+
+
+
+    # Detect devices on all I2C busses.
+    def i2c_detect_devices(self):
+        print("Devices found on I2C busses:")
+        for i in range(0, self.i2cBusNum):
+            print("Bus {0:d}: ".format(i), end='')
+            ret, devAdr = self.mcuI2C[i].ms_detect_devices()
+            for adr in devAdr:
+                print(" 0x{0:02x}".format(adr), end='')
+            print()
+
+
+
     # Program a single Silicon Labs clock IC from a register map file.
     def clk_prog_device_file(self, i2cDevice):
         i2cDevice.debugLevel = self.debugLevel
         muxChannel = i2cDevice.muxChannel
         if self.debugLevel >= 1:
-            print(self.prefixDebug + "Setting I2C mux for clock chips {0:s} to channel {1:d}.".format(i2cDevice_IC55_PCA9547PW.deviceName, muxChannel))
+            print(self.prefixDebug + "Setting I2C mux for clock chips {0:s} to channel {1:d}.".format(self.i2cDevice_IC55_PCA9547PW.deviceName, muxChannel))
         self.i2cDevice_IC55_PCA9547PW.set_channel(muxChannel)
         self.i2cDevice_IC55_PCA9547PW.debugLevel = self.debugLevel
         regMapFile = i2cDevice.regMapFile
