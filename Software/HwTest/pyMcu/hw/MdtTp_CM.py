@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 04 Aug 2020
-# Rev.: 08 Sep 2020
+# Rev.: 11 Sep 2020
 #
 # Python class for accessing the ATLAS MDT Trigger Processor (TP) Command
 # Module (CM) via the TI Tiva TM4C1290 MCU UART.
@@ -353,6 +353,36 @@ class MdtTp_CM:
             format(i2cDevice.deviceName, i2cDevice.mcuI2C.port, regMapFile))
         i2cDevice.debugLevel = self.debugLevel
         i2cDevice.config_file(regMapFile)
+
+
+
+    # Program a single Silicon Labs clock IC from a register map file by its name.
+    def clk_prog_device_by_name(self, clkDevName, regMapFile):
+        clkDeviceList = [self.i2cDevice_IC54_Si5341A,
+                         self.i2cDevice_IC56_Si5345A,
+                         self.i2cDevice_IC60_Si5345A,
+                         self.i2cDevice_IC61_Si5342A,
+                         self.i2cDevice_IC62_Si5345A,
+                         self.i2cDevice_IC63_Si5345A,
+                         self.i2cDevice_IC81_Si5342A,
+                         self.i2cDevice_IC82_Si5344A,
+                         self.i2cDevice_IC83_Si5342A,
+                         self.i2cDevice_IC84_Si5345A,
+                         self.i2cDevice_IC85_Si5345A]
+        clkDevice = None
+        for dev in clkDeviceList:
+            if clkDevName.lower() == dev.deviceName[0:4].lower():
+                clkDevice = dev
+                clkDevice.regMapFile = regMapFile
+        if not clkDevice:
+            print(self.prefixError, "Clock device '{0:s}' not valid!".format(clkDevName))
+            print(self.prefixError, "Valid clock devices: ", end='')
+            for dev in clkDeviceList:
+                print(dev.deviceName[0:4] + " ", end='')
+            print()
+            return -1
+        self.clk_prog_device_file(clkDevice)
+        return 0
 
 
 

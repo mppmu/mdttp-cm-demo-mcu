@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 29 May 2020
-# Rev.: 08 Sep 2020
+# Rev.: 11 Sep 2020
 #
 # Python script to access the ATLAS MDT Trigger Processor (TP) Command Module
 # (CM) via the TI Tiva TM4C1290 MCU.
@@ -49,19 +49,26 @@ if __name__ == "__main__":
                         dest='command', default='status',
                         help='Command to execute on the CM.')
     parser.add_argument('-d', '--device', action='store', type=str,
-                        dest='serialDevice', default='/dev/ttyUL1',
+                        dest='serialDevice', default='/dev/ttyUL1', metavar='SERIAL_DEVICE',
                         help='Serial device to access the MCU.')
+    parser.add_argument('-p', '--parameters', action='store', type=str, nargs='*',
+                        dest='commandParameters', default=None, metavar='PARAMETER',
+                        help='Parameter(s) for the selected command.')
     parser.add_argument('-v', '--verbosity', action='store', type=int,
                         dest='verbosity', default="1", choices=range(0, 5),
                         help='Set the verbosity level. The default is 1.')
     args = parser.parse_args()
 
     command = args.command
+    commandParameters = args.commandParameters
     serialDevice = args.serialDevice
     verbosity = args.verbosity
 
     # Define the Command Module object.
     mdtTp_CM = MdtTp_CM.MdtTp_CM(serialDevice, verbosity)
+
+    if commandParameters:
+        print(commandParameters)
 
     # Execute requested command.
     if not command:
@@ -78,7 +85,14 @@ if __name__ == "__main__":
     elif command == "mon_temp":
         mdtTp_CM.mon_temp()
     elif command == "clk_setup":
-        mdtTp_CM.clk_prog_all()
+        if commandParameters:
+            if len(commandParameters) != 2:
+                print(prefixError, "Please specify the clock IC number and the register map file.")
+                print(prefixError, "E.g.: -p IC54 config/clock/IC54_h74_240M-Registers.txt")
+            else:
+                mdtTp_CM.clk_prog_device_by_name(commandParameters[0], commandParameters[1])
+        else:
+            mdtTp_CM.clk_prog_all()
     elif command == "i2c_reset":
         mdtTp_CM.i2c_reset()
     elif command == "i2c_detect":
