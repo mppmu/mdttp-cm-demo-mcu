@@ -368,25 +368,22 @@ class MdtTp_CM:
         fireFlyNum -= 1
         # RX.
         self.i2cDevice_IC24_PCA9547PW.set_channel(self.i2cDevice_FireFly_RX[fireFlyNum].muxChannel)
-        print(self.i2cDevice_FireFly_RX[fireFlyNum].deviceName)
-        print("============")
+        print(self.i2cDevice_FireFly_RX[fireFlyNum].deviceName + ":")
         ret, temperature = self.i2cDevice_FireFly_RX[fireFlyNum].read_temperature()
         ret, vcc = self.i2cDevice_FireFly_RX[fireFlyNum].read_vcc()
         ret, firmware_version = self.i2cDevice_FireFly_RX[fireFlyNum].read_firmware_version()
-        print("Temperature      : {0:d} degC".format(temperature))
-        print("VCC              : {0:f} V".format(vcc))
-        print("Firmware version : {0:s}".format(firmware_version))
-        print("---")
+        print("    Temperature      : {0:d} degC".format(temperature))
+        print("    VCC              : {0:f} V".format(vcc))
+        print("    Firmware version : {0:s}".format(firmware_version))
         # TX.
         self.i2cDevice_IC25_PCA9547PW.set_channel(self.i2cDevice_FireFly_TX[fireFlyNum].muxChannel)
-        print(self.i2cDevice_FireFly_TX[fireFlyNum].deviceName)
-        print("============")
+        print(self.i2cDevice_FireFly_TX[fireFlyNum].deviceName+ ":")
         ret, temperature = self.i2cDevice_FireFly_TX[fireFlyNum].read_temperature()
         ret, vcc = self.i2cDevice_FireFly_TX[fireFlyNum].read_vcc()
         ret, firmware_version = self.i2cDevice_FireFly_TX[fireFlyNum].read_firmware_version()
-        print("Temperature      : {0:d} degC".format(temperature))
-        print("VCC              : {0:f} V".format(vcc))
-        print("Firmware version : {0:s}".format(firmware_version))
+        print("    Temperature      : {0:d} degC".format(temperature))
+        print("    VCC              : {0:f} V".format(vcc))
+        print("    Firmware version : {0:s}".format(firmware_version))
 
 
 
