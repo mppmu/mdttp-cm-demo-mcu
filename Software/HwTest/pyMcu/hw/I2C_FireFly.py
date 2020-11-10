@@ -279,7 +279,6 @@ class I2C_FireFly:
             (deviceFirmwareVersionTmp >> 16) & 0xff,
             (deviceFirmwareVersionTmp >>  8) & 0xff,
             (deviceFirmwareVersionTmp >>  0) & 0xff)
-        print(deviceFirmwareVersion)
         return ret, deviceFirmwareVersion
 
 

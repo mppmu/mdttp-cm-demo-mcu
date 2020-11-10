@@ -347,7 +347,7 @@ class MdtTp_CM:
 
 
     # Monitor the FireFly temperatures.
-    def mon_temp_firefly(self):
+    def firefly_mon_temp(self):
         for i in range(0, self.fireFlyNum):
             self.i2cDevice_IC24_PCA9547PW.set_channel(self.i2cDevice_FireFly_RX[i].muxChannel)
             ret, temperature = self.i2cDevice_FireFly_RX[i].read_temperature()
@@ -357,6 +357,36 @@ class MdtTp_CM:
             ret, temperature = self.i2cDevice_FireFly_TX[i].read_temperature()
             if ret == 0:
                 print("{0:28s}: {1:d} degC".format(self.i2cDevice_FireFly_TX[i].deviceName, temperature))
+
+
+
+    # Get the status of a FireFly module.
+    def firefly_status(self, fireFlyNum):
+        if fireFlyNum < 1 or fireFlyNum > self.fireFlyNum:
+            print(self.prefixError + "FireFly number {0:d} out of range {1:d}..{2:d}!".format(fireFlyNum, 1, self.fireFlyNum))
+            return -1
+        fireFlyNum -= 1
+        # RX.
+        self.i2cDevice_IC24_PCA9547PW.set_channel(self.i2cDevice_FireFly_RX[fireFlyNum].muxChannel)
+        print(self.i2cDevice_FireFly_RX[fireFlyNum].deviceName)
+        print("============")
+        ret, temperature = self.i2cDevice_FireFly_RX[fireFlyNum].read_temperature()
+        ret, vcc = self.i2cDevice_FireFly_RX[fireFlyNum].read_vcc()
+        ret, firmware_version = self.i2cDevice_FireFly_RX[fireFlyNum].read_firmware_version()
+        print("Temperature      : {0:d} degC".format(temperature))
+        print("VCC              : {0:f} V".format(vcc))
+        print("Firmware version : {0:s}".format(firmware_version))
+        print("---")
+        # TX.
+        self.i2cDevice_IC25_PCA9547PW.set_channel(self.i2cDevice_FireFly_TX[fireFlyNum].muxChannel)
+        print(self.i2cDevice_FireFly_TX[fireFlyNum].deviceName)
+        print("============")
+        ret, temperature = self.i2cDevice_FireFly_TX[fireFlyNum].read_temperature()
+        ret, vcc = self.i2cDevice_FireFly_TX[fireFlyNum].read_vcc()
+        ret, firmware_version = self.i2cDevice_FireFly_TX[fireFlyNum].read_firmware_version()
+        print("Temperature      : {0:d} degC".format(temperature))
+        print("VCC              : {0:f} V".format(vcc))
+        print("Firmware version : {0:s}".format(firmware_version))
 
 
 
