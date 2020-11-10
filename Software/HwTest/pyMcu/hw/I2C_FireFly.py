@@ -244,42 +244,85 @@ class I2C_FireFly:
 
 
 
+    # Read a register range as string.
+    def read_reg_range_str(self, regAdrStart, regAdrEnd):
+        if regAdrStart > regAdrEnd:
+            print(self.prefixErrorDevice + "Error reading register range: Start address {0:d} larger than end address {1:d}!".\
+                format(regAdrStart, regAdrEnd))
+            return -1, ""
+        ret = 0
+        string = ""
+        for i in range(regAdrStart, regAdrEnd + 1):
+            retTmp, valueTmp = self.read_reg(i)
+            ret |= retTmp
+            string += chr(valueTmp)
+        return ret, string
+
+
+
     # Read device temperature.
     def read_temperature(self):
-        ret, deviceTemperatureTmp = self.read_reg(22)
+        ret, temperatureTmp = self.read_reg(22)
         # Convert to signed value.
-        deviceTemperature = deviceTemperatureTmp - 256 * (deviceTemperatureTmp > 128)
-        return ret, deviceTemperature
+        temperature = temperatureTmp - 256 * (temperatureTmp > 128)
+        return ret, temperature
 
 
 
     # Read device supply voltage.
     def read_vcc(self):
-        ret, deviceVcc = self.read_reg_range_int(26, 27)
+        ret, vcc = self.read_reg_range_int(26, 27)
         # Calculate value in volts.
-        deviceVcc = deviceVcc * 0.0001
-        return ret, deviceVcc
+        vcc = vcc * 0.0001
+        return ret, vcc
 
 
 
     # Read device elapsed operating time in hours.
     def read_operating_time(self):
-        ret, deviceOperatingTime = self.read_reg_range_int(38, 39)
+        ret, operatingTime = self.read_reg_range_int(38, 39)
         # Calculate value in hours.
-        deviceOperatingTime = deviceOperatingTime * 2
-        return ret, deviceOperatingTime
+        operatingTime = deviceOperatingTime * 2
+        return ret, operatingTime
+
+
+
+    # Read vendor name.
+    def read_vendor_name(self):
+        # Set the page select byte.
+        self.write_reg(127, 0)
+        ret, vendorName = self.read_reg_range_str(152, 161)
+        return ret, vendorName
+
+
+
+    # Read vendor part number.
+    def read_vendor_part_number(self):
+        # Set the page select byte.
+        self.write_reg(127, 0)
+        ret, vendorPartNumber = self.read_reg_range_str(171, 186)
+        return ret, vendorPartNumber
+
+
+
+    # Read vendor serial number.
+    def read_vendor_serial_number(self):
+        # Set the page select byte.
+        self.write_reg(127, 0)
+        ret, vendorSerialNumber = self.read_reg_range_str(189, 198)
+        return ret, vendorSerialNumber
 
 
 
     # Read device firmware version.
     def read_firmware_version(self):
-        ret, deviceFirmwareVersionTmp = self.read_reg_range_int(111, 114)
-        deviceFirmwareVersion = "{0:d}.{1:d}.{2:d}.{3:d}".format(
-            (deviceFirmwareVersionTmp >> 24) & 0xff,
-            (deviceFirmwareVersionTmp >> 16) & 0xff,
-            (deviceFirmwareVersionTmp >>  8) & 0xff,
-            (deviceFirmwareVersionTmp >>  0) & 0xff)
-        return ret, deviceFirmwareVersion
+        ret, firmwareVersionTmp = self.read_reg_range_int(111, 114)
+        firmwareVersion = "{0:d}.{1:d}.{2:d}.{3:d}".format(
+            (firmwareVersionTmp >> 24) & 0xff,
+            (firmwareVersionTmp >> 16) & 0xff,
+            (firmwareVersionTmp >>  8) & 0xff,
+            (firmwareVersionTmp >>  0) & 0xff)
+        return ret, firmwareVersion
 
 
 
