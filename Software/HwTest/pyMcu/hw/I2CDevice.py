@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 30 Apr 2020
-# Rev.: 05 May 2020
+# Rev.: 10 Nov 2020
 #
 # Python class implementing generic hardware access for I2C devices.
 #
@@ -99,7 +99,7 @@ class I2CDevice:
             self.errorCount += 1
             print(self.prefixErrorDevice + "Error writing data!", end='')
             self.print_details()
-            return ret
+            return ret, 0xff
         self.accessWrite += 1
         self.bytesWritten += len(dataWr)
         # Read access with repeated start.

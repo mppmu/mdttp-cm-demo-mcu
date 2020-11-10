@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 04 Aug 2020
-# Rev.: 11 Sep 2020
+# Rev.: 10 Nov 2020
 #
 # Python class for accessing the ATLAS MDT Trigger Processor (TP) Command
 # Module (CM) via the TI Tiva TM4C1290 MCU UART.
@@ -24,6 +24,7 @@ import I2C_MCP9903
 import I2C_PCA9547
 import I2C_Si53xx
 import I2C_TCA6424A
+import I2C_FireFly
 
 
 
@@ -41,6 +42,7 @@ class MdtTp_CM:
 
     # Hardware parameters.
     i2cBusNum           = 10
+    fireFlyNum          = 8
 
 
 
@@ -123,56 +125,78 @@ class MdtTp_CM:
         self.i2cDevice_IC54_Si5341A.muxChannel = 0
         self.i2cDevice_IC54_Si5341A.regMapFile = os.path.join("config", "clock", "IC54_h74_240M-Registers.txt")
         self.i2cDevice_IC54_Si5341A.debugLevel = self.debugLevel
-        # IC56 (Si5345A): I2C port 3, slave address 0x68, I2C mux port 0
+        # IC56 (Si5345A): I2C port 3, slave address 0x68, clock I2C mux port 0
         self.i2cDevice_IC56_Si5345A = I2C_Si53xx.I2C_Si53xx(self.mcuI2C[3], 0x68, "IC56 (Si5345A)")
         self.i2cDevice_IC56_Si5345A.muxChannel = 0
         self.i2cDevice_IC56_Si5345A.regMapFile = os.path.join("config", "clock", "IC56_h68_IN0-240M_O-240M-Registers.txt")
         self.i2cDevice_IC56_Si5345A.debugLevel = self.debugLevel
-        # IC60 (Si5345A): I2C port 3, slave address 0x6B, I2C mux port 0
+        # IC60 (Si5345A): I2C port 3, slave address 0x6B, clock I2C mux port 0
         self.i2cDevice_IC60_Si5345A = I2C_Si53xx.I2C_Si53xx(self.mcuI2C[3], 0x6b, "IC60 (Si5345A)")
         self.i2cDevice_IC60_Si5345A.muxChannel = 0
         self.i2cDevice_IC60_Si5345A.regMapFile = os.path.join("config", "clock", "IC60_h6B_IN0-240M_O-240M-Registers.txt")
         self.i2cDevice_IC60_Si5345A.debugLevel = self.debugLevel
-        # IC61 (Si5342A): I2C port 3, slave address 0x68, I2C mux port 1
+        # IC61 (Si5342A): I2C port 3, slave address 0x68, clock I2C mux port 1
         self.i2cDevice_IC61_Si5342A = I2C_Si53xx.I2C_Si53xx(self.mcuI2C[3], 0x68, "IC61 (Si5342A)")
         self.i2cDevice_IC61_Si5342A.muxChannel = 1
         self.i2cDevice_IC61_Si5342A.regMapFile = os.path.join("config", "clock", "IC61_h68_IN0-240M_O-240M-Registers.txt")
         self.i2cDevice_IC61_Si5342A.debugLevel = self.debugLevel
-        # IC62 (Si5345A): I2C port 3, slave address 0x69, I2C mux port 1
+        # IC62 (Si5345A): I2C port 3, slave address 0x69, clock I2C mux port 1
         self.i2cDevice_IC62_Si5345A = I2C_Si53xx.I2C_Si53xx(self.mcuI2C[3], 0x69, "IC62 (Si5345A)")
         self.i2cDevice_IC62_Si5345A.muxChannel = 1
         self.i2cDevice_IC62_Si5345A.regMapFile = os.path.join("config", "clock", "IC62_h69_IN0-240M_O-240M-Registers.txt")
         self.i2cDevice_IC62_Si5345A.debugLevel = self.debugLevel
-        # IC63 (Si5345A): I2C port 3, slave address 0x6A, I2C mux port 1
+        # IC63 (Si5345A): I2C port 3, slave address 0x6A, clock I2C mux port 1
         self.i2cDevice_IC63_Si5345A = I2C_Si53xx.I2C_Si53xx(self.mcuI2C[3], 0x6a, "IC63 (Si5345A)")
         self.i2cDevice_IC63_Si5345A.muxChannel = 1
         self.i2cDevice_IC63_Si5345A.regMapFile = os.path.join("config", "clock", "IC63_h6A_IN0-240M_O-240M-Registers.txt")
         self.i2cDevice_IC63_Si5345A.debugLevel = self.debugLevel
-        # IC81 (Si5342A): I2C port 3, slave address 0x6B, I2C mux port 1
+        # IC81 (Si5342A): I2C port 3, slave address 0x6B, clock I2C mux port 1
         self.i2cDevice_IC81_Si5342A = I2C_Si53xx.I2C_Si53xx(self.mcuI2C[3], 0x6b, "IC81 (Si5342A)")
         self.i2cDevice_IC81_Si5342A.muxChannel = 1
         self.i2cDevice_IC81_Si5342A.regMapFile = os.path.join("config", "clock", "IC81_h6B_IN0-240M_O-240M-Registers.txt")
         self.i2cDevice_IC81_Si5342A.debugLevel = self.debugLevel
-        # IC82 (Si5344A): I2C port 3, slave address 0x6A, I2C mux port 0
+        # IC82 (Si5344A): I2C port 3, slave address 0x6A, clock I2C mux port 0
         self.i2cDevice_IC82_Si5344A = I2C_Si53xx.I2C_Si53xx(self.mcuI2C[3], 0x6a, "IC82 (Si5344A)")
         self.i2cDevice_IC82_Si5344A.muxChannel = 0
         self.i2cDevice_IC82_Si5344A.regMapFile = os.path.join("config", "clock", "IC82_h6A_IN0-240M_O-240M-Registers.txt")
         self.i2cDevice_IC82_Si5344A.debugLevel = self.debugLevel
-        # IC83 (Si5342A): I2C port 3, slave address 0x68, I2C mux port 2
+        # IC83 (Si5342A): I2C port 3, slave address 0x68, clock I2C mux port 2
         self.i2cDevice_IC83_Si5342A = I2C_Si53xx.I2C_Si53xx(self.mcuI2C[3], 0x68, "IC83 (Si5342A)")
         self.i2cDevice_IC83_Si5342A.muxChannel = 2
         self.i2cDevice_IC83_Si5342A.regMapFile = os.path.join("config", "clock", "IC83_h68_IN0-240M_O-240M-Registers.txt")
         self.i2cDevice_IC83_Si5342A.debugLevel = self.debugLevel
-        # IC84 (Si5345A): I2C port 3, slave address 0x69, I2C mux port 2
+        # IC84 (Si5345A): I2C port 3, slave address 0x69, clock I2C mux port 2
         self.i2cDevice_IC84_Si5345A = I2C_Si53xx.I2C_Si53xx(self.mcuI2C[3], 0x69, "IC84 (Si5345A)")
         self.i2cDevice_IC84_Si5345A.muxChannel = 2
         self.i2cDevice_IC84_Si5345A.regMapFile = os.path.join("config", "clock", "IC84_h69_IN0-240M_O-240M-Registers.txt")
         self.i2cDevice_IC84_Si5345A.debugLevel = self.debugLevel
-        # IC85 (Si5345A): I2C port 3, slave address 0x6A, I2C mux port 2
+        # IC85 (Si5345A): I2C port 3, slave address 0x6A, clock I2C mux port 2
         self.i2cDevice_IC85_Si5345A = I2C_Si53xx.I2C_Si53xx(self.mcuI2C[3], 0x6a, "IC85 (Si5345A)")
         self.i2cDevice_IC85_Si5345A.muxChannel = 2
         self.i2cDevice_IC85_Si5345A.regMapFile = os.path.join("config", "clock", "IC85_h6A_IN0-240M_O-240M-Registers.txt")
         self.i2cDevice_IC85_Si5345A.debugLevel = self.debugLevel
+
+        # I2C mux for FireFly RX I2C bus:
+        # IC24 (PCA9547PW): I2C port 2, slave address 0x70
+        self.i2cDevice_IC24_PCA9547PW = I2C_PCA9547.I2C_PCA9547(self.mcuI2C[2], 0x70, "IC24 (PCA9547PW)")
+        self.i2cDevice_IC24_PCA9547PW.debugLevel = self.debugLevel
+        # FireFly RX 1..8: I2C port 2, slave address 0x54, FireFly RX I2C mux port 0..7
+        self.i2cDevice_FireFly_RX = []
+        for i in range(0, self.fireFlyNum):
+            self.i2cDevice_FireFly_RX.append(I2C_FireFly.I2C_FireFly(self.mcuI2C[2], 0x54, "FireFly {0:d} RX".format(i+1), I2C_FireFly.I2C_FireFly.deviceTypeRX))
+            self.i2cDevice_FireFly_RX[i].muxChannel = i
+            self.i2cDevice_FireFly_RX[i].debugLevel = self.debugLevel
+
+        # I2C mux for FireFly TX I2C bus:
+        # IC25 (PCA9547PW): I2C port 2, slave address 0x71
+        self.i2cDevice_IC25_PCA9547PW = I2C_PCA9547.I2C_PCA9547(self.mcuI2C[2], 0x71, "IC25 (PCA9547PW)")
+        self.i2cDevice_IC25_PCA9547PW.debugLevel = self.debugLevel
+        # FireFly TX 1..8: I2C port 2, slave address 0x50, FireFly TX I2C mux port 0..7
+        self.i2cDevice_FireFly_TX = []
+        for i in range(0, self.fireFlyNum):
+            self.i2cDevice_FireFly_TX.append(I2C_FireFly.I2C_FireFly(self.mcuI2C[2], 0x50, "FireFly {0:d} TX".format(i+1), I2C_FireFly.I2C_FireFly.deviceTypeTX))
+            self.i2cDevice_FireFly_TX[i].muxChannel = i
+            self.i2cDevice_FireFly_TX[i].debugLevel = self.debugLevel
 
 
 
@@ -318,6 +342,21 @@ class MdtTp_CM:
         print("Board 4: {0:19s}: {1:7.4f} degC".format(self.i2cDevice_IC36_MCP9808.deviceName, self.i2cDevice_IC36_MCP9808.read_temperature()[1]))
         print("Board 5: {0:19s}: {1:7.4f} degC".format(self.i2cDevice_IC37_MCP9808.deviceName, self.i2cDevice_IC37_MCP9808.read_temperature()[1]))
         print("Board 6: {0:19s}: {1:7.4f} degC".format(self.i2cDevice_IC38_MCP9808.deviceName, self.i2cDevice_IC38_MCP9808.read_temperature()[1]))
+        # FireFly temperatures.
+
+
+
+    # Monitor the FireFly temperatures.
+    def mon_temp_firefly(self):
+        for i in range(0, self.fireFlyNum):
+            self.i2cDevice_IC24_PCA9547PW.set_channel(self.i2cDevice_FireFly_RX[i].muxChannel)
+            ret, temperature = self.i2cDevice_FireFly_RX[i].read_temperature()
+            if ret == 0:
+                print("{0:28s}: {1:d} degC".format(self.i2cDevice_FireFly_RX[i].deviceName, temperature))
+            self.i2cDevice_IC25_PCA9547PW.set_channel(self.i2cDevice_FireFly_TX[i].muxChannel)
+            ret, temperature = self.i2cDevice_FireFly_TX[i].read_temperature()
+            if ret == 0:
+                print("{0:28s}: {1:d} degC".format(self.i2cDevice_FireFly_TX[i].deviceName, temperature))
 
 
 
