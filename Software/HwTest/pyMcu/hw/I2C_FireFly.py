@@ -287,33 +287,6 @@ class I2C_FireFly:
 
 
 
-    # Read vendor name.
-    def read_vendor_name(self):
-        # Set the page select byte.
-        self.write_reg(127, 0)
-        ret, vendorName = self.read_reg_range_str(152, 161)
-        return ret, vendorName
-
-
-
-    # Read vendor part number.
-    def read_vendor_part_number(self):
-        # Set the page select byte.
-        self.write_reg(127, 0)
-        ret, vendorPartNumber = self.read_reg_range_str(171, 186)
-        return ret, vendorPartNumber
-
-
-
-    # Read vendor serial number.
-    def read_vendor_serial_number(self):
-        # Set the page select byte.
-        self.write_reg(127, 0)
-        ret, vendorSerialNumber = self.read_reg_range_str(189, 198)
-        return ret, vendorSerialNumber
-
-
-
     # Read device firmware version.
     def read_firmware_version(self):
         ret, firmwareVersionTmp = self.read_reg_range_int(111, 114)
@@ -323,6 +296,44 @@ class I2C_FireFly:
             (firmwareVersionTmp >>  8) & 0xff,
             (firmwareVersionTmp >>  0) & 0xff)
         return ret, firmwareVersion
+
+
+
+    # Read vendor name.
+    def read_vendor_name(self):
+        # Set the page select byte.
+        self.write_reg(127, 0x00)
+        ret, vendorName = self.read_reg_range_str(152, 161)
+        return ret, vendorName
+
+
+
+    # Read vendor part number.
+    def read_vendor_part_number(self):
+        # Set the page select byte.
+        self.write_reg(127, 0x00)
+        ret, vendorPartNumber = self.read_reg_range_str(171, 186)
+        return ret, vendorPartNumber
+
+
+
+    # Read vendor serial number.
+    def read_vendor_serial_number(self):
+        # Set the page select byte.
+        self.write_reg(127, 0x00)
+        ret, vendorSerialNumber = self.read_reg_range_str(189, 198)
+        return ret, vendorSerialNumber
+
+
+
+    # Read device time at temperature.
+    def read_time_at_temperature(self, temperaturSlot):
+        # Set the page select byte.
+        self.write_reg(127, 0x0b)
+        ret, timeAtTemperatureTmp = self.read_reg_range_int(128 + (3 * temperaturSlot), 130 + (3 * temperaturSlot))
+        # Convert to hours.
+        timeAtTemperature = timeAtTemperatureTmp * 5 / 60
+        return ret, timeAtTemperature
 
 
 

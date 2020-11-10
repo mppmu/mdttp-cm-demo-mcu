@@ -347,23 +347,32 @@ class MdtTp_CM:
 
 
     # Monitor the FireFly temperatures.
-    def firefly_mon_temp(self):
+    def firefly_temp(self):
         for i in range(0, self.fireFlyNum):
+            # RX.
             self.i2cDevice_IC24_PCA9547PW.set_channel(self.i2cDevice_FireFly_RX[i].muxChannel)
             ret, temperature = self.i2cDevice_FireFly_RX[i].read_temperature()
             if ret == 0:
-                print("{0:28s}: {1:d} degC".format(self.i2cDevice_FireFly_RX[i].deviceName, temperature))
+                print("{0:13s}: {1:3d} degC".format(self.i2cDevice_FireFly_RX[i].deviceName, temperature))
+            # TX.
             self.i2cDevice_IC25_PCA9547PW.set_channel(self.i2cDevice_FireFly_TX[i].muxChannel)
             ret, temperature = self.i2cDevice_FireFly_TX[i].read_temperature()
             if ret == 0:
-                print("{0:28s}: {1:d} degC".format(self.i2cDevice_FireFly_TX[i].deviceName, temperature))
+                print("{0:13s}: {1:3d} degC".format(self.i2cDevice_FireFly_TX[i].deviceName, temperature))
+
+
+
+    # Check the FireFly number.
+    def firefly_check_num(self, fireFlyNum):
+        if fireFlyNum < 1 or fireFlyNum > self.fireFlyNum:
+            print(self.prefixError + "FireFly number {0:d} out of range {1:d}..{2:d}!".format(fireFlyNum, 1, self.fireFlyNum))
+            return -1
 
 
 
     # Get the status of a FireFly module.
     def firefly_status(self, fireFlyNum):
-        if fireFlyNum < 1 or fireFlyNum > self.fireFlyNum:
-            print(self.prefixError + "FireFly number {0:d} out of range {1:d}..{2:d}!".format(fireFlyNum, 1, self.fireFlyNum))
+        if self.firefly_check_num(fireFlyNum):
             return -1
         fireFlyNum -= 1
         # RX.
@@ -376,7 +385,7 @@ class MdtTp_CM:
         ret, vendorPartNumber = self.i2cDevice_FireFly_RX[fireFlyNum].read_vendor_part_number()
         ret, vendorSerialNumber = self.i2cDevice_FireFly_RX[fireFlyNum].read_vendor_serial_number()
         print("    Temperature          : {0:d} degC".format(temperature))
-        print("    VCC                  : {0:f} V".format(vcc))
+        print("    VCC                  : {0:5.3f} V".format(vcc))
         print("    Firmware version     : {0:s}".format(firmwareVersion))
         print("    Vendor Name          : {0:s}".format(vendorName))
         print("    Vendor Part Number   : {0:s}".format(vendorPartNumber))
@@ -391,11 +400,43 @@ class MdtTp_CM:
         ret, vendorPartNumber = self.i2cDevice_FireFly_TX[fireFlyNum].read_vendor_part_number()
         ret, vendorSerialNumber = self.i2cDevice_FireFly_TX[fireFlyNum].read_vendor_serial_number()
         print("    Temperature          : {0:d} degC".format(temperature))
-        print("    VCC                  : {0:f} V".format(vcc))
+        print("    VCC                  : {0:5.3f} V".format(vcc))
         print("    Firmware version     : {0:s}".format(firmwareVersion))
         print("    Vendor Name          : {0:s}".format(vendorName))
         print("    Vendor Part Number   : {0:s}".format(vendorPartNumber))
         print("    Vendor Serial Number : {0:s}".format(vendorSerialNumber))
+
+
+
+    # Get the time at temperature of a FireFly module.
+    def firefly_time_at_temperature(self, fireFlyNum):
+        if self.firefly_check_num(fireFlyNum):
+            return -1
+        fireFlyNum -= 1
+        # RX.
+        self.i2cDevice_IC24_PCA9547PW.set_channel(self.i2cDevice_FireFly_RX[fireFlyNum].muxChannel)
+        print(self.i2cDevice_FireFly_RX[fireFlyNum].deviceName + ":")
+        for i in range(0, 22):
+            ret, timeAtTemperature = self.i2cDevice_FireFly_RX[fireFlyNum].read_time_at_temperature(i)
+            if i == 0:
+                print("       < 0 degC", end='')
+            elif i == 21:
+                print("     > 100 degC", end='')
+            else:
+                print("{0:3d} .. {1:3d} degC".format((i - 1) * 5, i * 5), end='')
+            print(" : {0:10.2f} hours".format(timeAtTemperature))
+        # TX.
+        self.i2cDevice_IC25_PCA9547PW.set_channel(self.i2cDevice_FireFly_TX[fireFlyNum].muxChannel)
+        print(self.i2cDevice_FireFly_TX[fireFlyNum].deviceName + ":")
+        for i in range(0, 22):
+            ret, timeAtTemperature = self.i2cDevice_FireFly_TX[fireFlyNum].read_time_at_temperature(i)
+            if i == 0:
+                print("       < 0 degC", end='')
+            elif i == 21:
+                print("     > 100 degC", end='')
+            else:
+                print("{0:3d} .. {1:3d} degC".format((i - 1) * 5, i * 5), end='')
+            print(" : {0:10.2f} hours".format(timeAtTemperature))
 
 
 

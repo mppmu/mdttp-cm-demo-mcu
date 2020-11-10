@@ -45,7 +45,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Run an automated set of MCU tests.')
     parser.add_argument('-c', '--command', action='store', type=str,
                         choices=['power_up', 'power_down', 'sn', 'init', 'status', 'mon_temp',
-                                 'firefly_mon_temp', 'firefly_status',
+                                 'firefly_temp', 'firefly_temp_time', 'firefly_status',
                                  'clk_setup', 'i2c_reset', 'i2c_detect'],
                         dest='command', default='status',
                         help='Command to execute on the CM.')
@@ -82,13 +82,20 @@ if __name__ == "__main__":
         mdtTp_CM.clk_prog_all()
     elif command == "mon_temp":
         mdtTp_CM.mon_temp()
-    elif command == "firefly_mon_temp":
-        mdtTp_CM.firefly_mon_temp()
+    elif command == "firefly_temp":
+        mdtTp_CM.firefly_temp()
+    elif command == "firefly_temp_time":
+        if commandParameters:
+            mdtTp_CM.firefly_time_at_temperature(int(commandParameters[0]))
+        else:
+            for i in range(1, mdtTp_CM.fireFlyNum + 1):
+                mdtTp_CM.firefly_time_at_temperature(i)
+                print()
     elif command == "firefly_status":
         if commandParameters:
             mdtTp_CM.firefly_status(int(commandParameters[0]))
         else:
-            for i in range(0, mdtTp_CM.fireFlyNum):
+            for i in range(1, mdtTp_CM.fireFlyNum + 1):
                 mdtTp_CM.firefly_status(i)
                 print()
     elif command == "clk_setup":
