@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 24 Apr 2020
-// Rev.: 15 Sep 2020
+// Rev.: 19 Nov 2020
 //
 // Header file for the GPIO pin definitions and functions for the TI Tiva
 // TM4C1290 MCU on the ATLAS MDT Trigger Processor (TP) Command Module (CM).
@@ -19,7 +19,7 @@
 #define GPIO_DEFAULT_CM_READY       0x0
 #define GPIO_DEFAULT_LED_CM_STATUS  0x0     // 0..3: LED_CM_STATUS_CLOCK, LED_CM_STATUS_KU15P, LED_CM_STATUS_ZU11EG, LED_CM_STATUS_TEMP_ALERT
 #define GPIO_DEFAULT_LED_CM_USER    0x00    // 0..7: LED_USER_BLUE_0, LED_USER_BLUE_1 LED_USER_ORANGE_0, LED_USER_ORANGE_1, LED_USER_GREEN_0, LED_USER_GREEN_1, LED_USER_RED_0, LED_USER_RED_1
-#define GPIO_DEFAULT_MUX_SEL        0x2     // 0..2: B2B_MUX1_SEL, B2B_MUX2_SEL, LTTC_MUX1_SEL
+#define GPIO_DEFAULT_MUX_SEL        0x1     // 0..2: B2B_MUX1_SEL, B2B_MUX2_SEL, LTTC_MUX1_SEL
 // Hint: The power down (PD) pin of the multiplexers is active high.
 #define GPIO_DEFAULT_MUX_PD         0x0     // 0..2: B2B_MUX1_PD, B2B_MUX2_PD, LTTC_MUX1_PD
 #define GPIO_DEFAULT_CLOCK_SEL      0x00    // 0..4: AD_CLK2_KUP_SEL, AD_CLK3_KUP_SEL, AD_CLK4_KUP_SEL, AD_CLK5_ZUP_SEL, CLK_LHC_FPGA_SEL
