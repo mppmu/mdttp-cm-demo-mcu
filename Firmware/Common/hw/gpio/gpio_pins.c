@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 24 Apr 2020
-// Rev.: 28 Jul 2020
+// Rev.: 21 Jan 2021
 //
 // GPIO pin definitions and functions for the TI Tiva TM4C1290 MCU on the ATLAS
 // MDT Trigger Processor (TP) Command Module (CM).
@@ -1048,7 +1048,7 @@ tGPIO g_sGpio_Reserved0 = {
     GPIO_PORTH_BASE,
     GPIO_PIN_1,             // ui8Pins
     GPIO_STRENGTH_2MA,      // ui32Strength
-    GPIO_PIN_TYPE_OD,       // ui32PinType
+    GPIO_PIN_TYPE_STD,      // ui32PinType
     false,                  // bInput: false = output, true = input
     0                       // ui32IntType
 };
@@ -1059,7 +1059,7 @@ tGPIO g_sGpio_Reserved1 = {
     GPIO_PORTH_BASE,
     GPIO_PIN_2,             // ui8Pins
     GPIO_STRENGTH_2MA,      // ui32Strength
-    GPIO_PIN_TYPE_OD,       // ui32PinType
+    GPIO_PIN_TYPE_STD,      // ui32PinType
     false,                  // bInput: false = output, true = input
     0                       // ui32IntType
 };
@@ -1070,7 +1070,7 @@ tGPIO g_sGpio_Reserved2 = {
     GPIO_PORTH_BASE,
     GPIO_PIN_3,             // ui8Pins
     GPIO_STRENGTH_2MA,      // ui32Strength
-    GPIO_PIN_TYPE_OD,       // ui32PinType
+    GPIO_PIN_TYPE_STD,      // ui32PinType
     false,                  // bInput: false = output, true = input
     0                       // ui32IntType
 };
