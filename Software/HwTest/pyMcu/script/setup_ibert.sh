@@ -3,7 +3,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 23 Mar 2021
-# Rev.: 23 Mar 2021
+# Rev.: 26 Mar 2021
 #
 # Simple script to set up the ATLAS MDT Trigger Processor (TP) Command Module
 # for Xilinx IBERT tests.
@@ -42,7 +42,8 @@ echo "Program the clock synthesizer chip IC82 (Si5344A) for the FELIX communicat
 ${PY_MCU_CM} -d ${SERIAL_DEVICE} -v ${VERBOSITY} -c clk_setup -p IC82 config/clock/IBERT-Test/IC82_h6A_FreeRun_O-240M-Registers.txt
 
 echo "Program the clock synthesizer chip IC84 (Si5345A) for the front-end (FE) communication."
-${PY_MCU_CM} -d ${SERIAL_DEVICE} -v ${VERBOSITY} -c clk_setup -p IC84 config/clock/IBERT-Test/IC84_h69_FreeRun_O-100M-Registers.txt
+#${PY_MCU_CM} -d ${SERIAL_DEVICE} -v ${VERBOSITY} -c clk_setup -p IC84 config/clock/IBERT-Test/IC84_h69_FreeRun_O-100M-Registers.txt
+${PY_MCU_CM} -d ${SERIAL_DEVICE} -v ${VERBOSITY} -c clk_setup -p IC84 config/clock/IBERT-Test/IC84_h69_FreeRun_O-320M-Registers.txt
 
 echo "Program the clock synthesizer chip IC85 (Si5345A) for the front-end (FE) communication."
 ${PY_MCU_CM} -d ${SERIAL_DEVICE} -v ${VERBOSITY} -c clk_setup -p IC85 config/clock/IBERT-Test/IC85_h6A_FreeRun_O-100M-Registers.txt
