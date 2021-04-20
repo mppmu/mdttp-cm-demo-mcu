@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 29 Apr 2020
-# Rev.: 03 Jul 2020
+# Rev.: 20 Apr 2021
 #
 # Python class for communicating with Silicon Labs Si5341/40 and Si5345/44/42
 # devices.
@@ -46,6 +46,10 @@ class I2C_Si53xx:
     # Load the configuration of an Si53xx IC from a register map file produced
     # with the ClockBuilder Pro software.
     def config_file(self, fileRegMapName):
+        # Check if fileRegMapName exists.
+        if not os.path.exists(fileRegMapName):
+            print(self.prefixErrorDevice + "The register map file `{0:s}' does not exist!".format(fileRegMapName))
+            return -1
         # Check if fileRegMapName is a file.
         if not os.path.isfile(fileRegMapName):
             print(self.prefixErrorDevice + "The register map file `{0:s}' is not a file!".format(fileRegMapName))
