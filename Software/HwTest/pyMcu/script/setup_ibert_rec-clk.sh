@@ -3,7 +3,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 23 Mar 2021
-# Rev.: 20 Apr 2021
+# Rev.: 21 Apr 2021
 #
 # Simple script to set up the ATLAS MDT Trigger Processor (TP) Command Module
 # for Xilinx IBERT tests, using the recovered clock from the FELIX IBERT module
@@ -14,10 +14,13 @@
 #   -> IC82, IN0: 40 MHz, OUT: 240 MHz
 #   -> KU15P FELIX IBERT, MGTREFCLK0: 240 MHz -> rxoutclock: 120 MHz
 #   -> Multiplexer for recovered LHC clock (IC57)
-#   -> IC56, IN3: 120 MHz, OUT: 40 MHz
+#   -> IC56, IN2/IN3 (*): 120 MHz, OUT: 40 MHz
 #   -> IC83, IN2:  40 MHz, OUT: 40 MHz
 #       +-> IC84, IN0: 40 MHz, OUT: 320 MHz -> KU15P FE IBERT, MGTREFCLK0: 320 MHz
 #       +-> IC85, IN0: 40 MHz, OUT: 320 MHz -> ZU11EG FE IBERT, MGTREFCLK0: 320 MHz
+#
+# (*) IN3 on the CM demonstrator V1, IN2 on the CM demonstrator V2. IN3 is used
+#     for the zero-delay mode on V2.
 #
 
 
@@ -62,9 +65,15 @@ ${PY_MCU_CM} -d ${SERIAL_DEVICE} -v ${VERBOSITY} -c clk_setup -p IC82 config/clo
 echo "Set up the multiplexer for the recovered LHC clock to use the recovered LHC clock from the KU15P."
 ${PY_MCU_CM} -d ${SERIAL_DEVICE} -v ${VERBOSITY} -c mcu_cmd_raw -p gpio mux-clk-sel 0
 
-echo "Program the clock synthesizer chip IC56 (Si5345A) to generate a 40 MHz LHC clock from the 120 MHz recovered clock from the FELIX IBERT on its input 3."
+#echo "Program the clock synthesizer chip IC56 (Si5345A) to generate a 40 MHz LHC clock from the 120 MHz recovered clock from the FELIX IBERT on its input 3."
+#echo "CAUTION: This is only valid for the CM demonstrator V1!"
 #${PY_MCU_CM} -d ${SERIAL_DEVICE} -v ${VERBOSITY} -c clk_setup -p IC56 config/clock/IBERT-Test/IC56_h68_IN3-120M_O-40M-Registers.txt
-${PY_MCU_CM} -d ${SERIAL_DEVICE} -v ${VERBOSITY} -c clk_setup -p IC56 config/clock/IBERT-Test/IC56_h68_IN3-120M_O-40M_No-OOF-Registers.txt
+#${PY_MCU_CM} -d ${SERIAL_DEVICE} -v ${VERBOSITY} -c clk_setup -p IC56 config/clock/IBERT-Test/IC56_h68_IN3-120M_O-40M_No-OOF-Registers.txt
+echo "Program the clock synthesizer chip IC56 (Si5345A) to generate a 40 MHz LHC clock from the 120 MHz recovered clock from the FELIX IBERT on its input 2."
+echo "CAUTION: This is only valid for the CM demonstrator V2!"
+#${PY_MCU_CM} -d ${SERIAL_DEVICE} -v ${VERBOSITY} -c clk_setup -p IC56 config/clock/IBERT-Test/IC56_h68_IN2-120M_O-40M-Registers.txt
+#${PY_MCU_CM} -d ${SERIAL_DEVICE} -v ${VERBOSITY} -c clk_setup -p IC56 config/clock/IBERT-Test/IC56_h68_IN2-120M_O-40M_No-OOF-Registers.txt
+${PY_MCU_CM} -d ${SERIAL_DEVICE} -v ${VERBOSITY} -c clk_setup -p IC56 config/clock/IBERT-Test/IC56_h68_IN2-120M_O-40M_No-OOF_ZDM-Registers.txt
 
 echo "Program the clock synthesizer chip IC83 (Si5342A) to generate a 40 MHz LHC clock from the 40 MHz LHC clock on its input 2."
 #${PY_MCU_CM} -d ${SERIAL_DEVICE} -v ${VERBOSITY} -c clk_setup -p IC83 config/clock/IBERT-Test/IC83_h68_IN2-40M_O-40M-Registers.txt
