@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 29 May 2020
-# Rev.: 23 Mar 2021
+# Rev.: 26 Apr 2021
 #
 # Python script to access the ATLAS MDT Trigger Processor (TP) Command Module
 # (CM) via the TI Tiva TM4C1290 MCU.
@@ -46,8 +46,10 @@ if __name__ == "__main__":
     parser.add_argument('-c', '--command', action='store', type=str,
                         choices=['power_up', 'power_down', 'sn', 'init', 'status', 'mon_temp',
                                  'mcu_cmd_raw',
-                                 'firefly_temp', 'firefly_temp_time', 'firefly_status',
-                                 'clk_setup', 'i2c_reset', 'i2c_detect'],
+                                 'i2c_reset', 'i2c_detect',
+                                 'power_module_status',
+                                 'clk_setup',
+                                 'firefly_temp', 'firefly_temp_time', 'firefly_status'],
                         dest='command', default='status',
                         help='Command to execute on the CM.')
     parser.add_argument('-d', '--device', action='store', type=str,
@@ -81,6 +83,18 @@ if __name__ == "__main__":
     elif command == "init":
         mdtTp_CM.power_up()
         mdtTp_CM.clk_prog_all()
+    elif command == "status":
+        print("Board Serial Number")
+        print("===================")
+        mdtTp_CM.serial_number()
+        print()
+        print("Power Status")
+        print("============")
+        mdtTp_CM.power_status()
+        print()
+        print("Temperatures")
+        print("============")
+        mdtTp_CM.mon_temp()
     elif command == "mon_temp":
         mdtTp_CM.mon_temp()
     elif command == "mcu_cmd_raw":
@@ -89,6 +103,21 @@ if __name__ == "__main__":
             print(response)
         else:
             print(prefixError, "Please specify the raw MCU command.")
+    elif command == "i2c_reset":
+        mdtTp_CM.i2c_reset()
+    elif command == "i2c_detect":
+        mdtTp_CM.i2c_detect_devices()
+    elif command == "power_module_status":
+        mdtTp_CM.power_module_status()
+    elif command == "clk_setup":
+        if commandParameters:
+            if len(commandParameters) != 2:
+                print(prefixError, "Please specify the clock IC number and the register map file.")
+                print(prefixError, "E.g.: -p IC54 config/clock/IC54_h74_240M-Registers.txt")
+            else:
+                mdtTp_CM.clk_prog_device_by_name(commandParameters[0], commandParameters[1])
+        else:
+            mdtTp_CM.clk_prog_all()
     elif command == "firefly_temp":
         mdtTp_CM.firefly_temp()
     elif command == "firefly_temp_time":
@@ -105,31 +134,6 @@ if __name__ == "__main__":
             for i in range(1, mdtTp_CM.fireFlyNum + 1):
                 mdtTp_CM.firefly_status(i)
                 print()
-    elif command == "clk_setup":
-        if commandParameters:
-            if len(commandParameters) != 2:
-                print(prefixError, "Please specify the clock IC number and the register map file.")
-                print(prefixError, "E.g.: -p IC54 config/clock/IC54_h74_240M-Registers.txt")
-            else:
-                mdtTp_CM.clk_prog_device_by_name(commandParameters[0], commandParameters[1])
-        else:
-            mdtTp_CM.clk_prog_all()
-    elif command == "i2c_reset":
-        mdtTp_CM.i2c_reset()
-    elif command == "i2c_detect":
-        mdtTp_CM.i2c_detect_devices()
-    elif command == "status":
-        print("Board Serial Number")
-        print("===================")
-        mdtTp_CM.serial_number()
-        print()
-        print("Power Status")
-        print("============")
-        mdtTp_CM.power_status()
-        print()
-        print("Temperatures")
-        print("============")
-        mdtTp_CM.mon_temp()
     else:
         print(prefixError + "Command `{0:s}' not supported!".format(command))
 
