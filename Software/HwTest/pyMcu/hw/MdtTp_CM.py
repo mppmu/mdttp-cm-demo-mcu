@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 04 Aug 2020
-# Rev.: 26 Apr 2021
+# Rev.: 27 Apr 2021
 #
 # Python class for accessing the ATLAS MDT Trigger Processor (TP) Command
 # Module (CM) via the TI Tiva TM4C1290 MCU UART.
@@ -404,14 +404,30 @@ class MdtTp_CM:
     # Power modules.
     # ===============================================================
 
-    # Print the status of an LTC2977 8-channel PMBus power system manager IC.
-    def power_ltc2977_status(self, i2cDevice):
+    # Define the measurement names and the values of the shunt resistors.
+    IC26_LTC2977_measurementNames =     ["KU15P 0.9V MGTAVCC", "KU15P 0.9V MGTAVCC", "KU15P 1.8V ADC AUX", "KU15P 1.8V ADC AUX", "KU15P 1.2V MGTAVTT", "KU15P 1.2V MGTAVTT", "KU15P 2.5V LDO", "KU15P 2.5V LDO"]
+    IC26_LTC2977_currentSenseShunts =   [0, 0.04 / 2, 0, 0.04 / 2, 0, 0.01 / 2, 0, 0.08 / 2]
+    IC27_LTC2977_measurementNames =     ["KU15P 1.2V DDR4", "KU15P 1.2V DDR4", "KU15P 1.8V IO", "KU15P 1.8V IO", "KU15P 1.8V MGTAUX", "KU15P 1.8V MGTAUX", "<unused>", "<unused>"]
+    IC27_LTC2977_currentSenseShunts =   [0, 0.04 / 2, 0, 0.04 / 2, 0, 0.15 / 2, 0, 0]
+    IC49_LTC2977_measurementNames =     ["ZU11EG 0.9V MGTAVCC", "ZU11EG 0.9V MGTAVCC", "ZU11EG 1.2V MGTAVTT", "ZU11EG 1.2V MGTAVTT", "ZU11EG 1.2V DDR4", "ZU11EG 1.2V DDR4", "ZU11EG 1.8V IO", "ZU11EG 1.8V IO"]
+    IC49_LTC2977_currentSenseShunts =   [0, 0.02 / 2, 0, 0.02 / 2, 0, 0.04 / 2, 0, 0.04 / 2]
+    IC50_LTC2977_measurementNames =     ["ZU11EG 2.5V LDO", "ZU11EG 2.5V LDO", "ZU11EG 3.3V MISC", "ZU11EG 3.3V MISC", "ZU11EG 0.85V MGTRAVCC", "ZU11EG 0.85V MGTRAVCC", "ZU11EG 1.8V ADC AUX", "ZU11EG 1.8V ADC AUX"]
+    IC50_LTC2977_currentSenseShunts =   [0, 0.04 / 2, 0, 0.04 /2, 0, 0.15 / 2, 0, 0.15 / 2]
+    IC51_LTC2977_measurementNames =     ["ZU11EG 1.1V ETH", "ZU11EG 1.1V ETH", "ZU11EG 1.8V MGTRVTT", "ZU11EG 1.8V MGTRVTT", "ZU11EG 1.8V MGTAUX", "ZU11EG 1.8V MGTAUX","<unused>", "<unused>"]
+    IC51_LTC2977_currentSenseShunts =   [0, 0.15 / 2, 0, 0.15 / 2, 0, 0.15 / 2, 0, 0]
+    IC52_LTC2977_measurementNames =     ["Clock 1.8V", "Clock 1.8V", "Clock 2.5V", "Clock 2.5V", "Expansion con. 1.8V", "Expansion con. 1.8V", "KU15P 3.3V MISC", "KU15P 3.3V MISC"]
+    IC52_LTC2977_currentSenseShunts =   [0, 0.04 / 2, 0, 0.15 / 2, 0, 0.08 / 2, 0, 0.04 / 2]
+
+
+
+    # Print the raw status of an LTC2977 8-channel PMBus power system manager IC.
+    def power_ltc2977_status_raw(self, i2cDevice):
         if self.debugLevel >= 1:
             print(self.prefixDebug + "Reading the status of the power module {0:s} on I2C port {1:d}!".format(i2cDevice.deviceName, i2cDevice.mcuI2C.port))
         ret, data = i2cDevice.read_status()
         if ret:
             self.errorCount += 1
-            print(self.prefixError + "Error reading the status of the power module {0:s} on I2C port {1:d}!".format(i2cDevice.deviceName, i2cDevice.mcuI2C.port))
+            print(self.prefixError + "Error reading the raw status of the power module {0:s} on I2C port {1:d}!".format(i2cDevice.deviceName, i2cDevice.mcuI2C.port))
             return -1
         print("Status of the power module {0:s} on I2C port {1:d}:".format(i2cDevice.deviceName, i2cDevice.mcuI2C.port))
         print(self.prefixStatus + "{0:18s}: {1:5.2f} degC".format("Temperature", data[0]))
@@ -422,14 +438,57 @@ class MdtTp_CM:
 
 
 
+    # Print the status of an LTC2977 8-channel PMBus power system manager IC.
+    def power_ltc2977_status(self, i2cDevice, measurementNames, currentSenseShunts):
+        if len(measurementNames) != i2cDevice.hwChannels:
+            self.errorCount += 1
+            print(self.prefixError + "Error reading the status of the power module {0:s} on I2C port {1:d}: {2:d} measurement names must be provided, but only {3:d} were given!".format(i2cDevice.deviceName, i2cDevice.mcuI2C.port, i2cDevice.hwChannels, len(measurementNames)))
+            return -1
+        if len(currentSenseShunts) != i2cDevice.hwChannels:
+            self.errorCount += 1
+            print(self.prefixError + "Error reading the status of the power module {0:s} on I2C port {1:d}: {2:d} current sense values must be provided, but only {3:d} were given!".format(i2cDevice.deviceName, i2cDevice.mcuI2C.port, i2cDevice.hwChannels, len(currentSenseShunts)))
+            return -1
+        if self.debugLevel >= 1:
+            print(self.prefixDebug + "Reading the status of the power module {0:s} on I2C port {1:d}!".format(i2cDevice.deviceName, i2cDevice.mcuI2C.port))
+        ret, data = i2cDevice.read_status()
+        if ret:
+            self.errorCount += 1
+            print(self.prefixError + "Error reading the status of the power module {0:s} on I2C port {1:d}!".format(i2cDevice.deviceName, i2cDevice.mcuI2C.port))
+            return -1
+        print("Status of the power module {0:s} on I2C port {1:d}:".format(i2cDevice.deviceName, i2cDevice.mcuI2C.port))
+        print(self.prefixStatus + "{0:26s}: {1:5.2f} degC".format("Temperature", data[0]))
+        print(self.prefixStatus + "{0:26s}: {1:5.2f} V".format("V_in", data[1]))
+        for channel in range(i2cDevice.hwChannels):
+            if currentSenseShunts[channel] != 0:
+                value = data[2][channel] / currentSenseShunts[channel]
+                unit = "A"
+            else:
+                value = data[2][channel]
+                unit = "V"
+            print(self.prefixStatus + "{0:d}: {1:23s}: {2:5.2f} {3:s}".format(channel, measurementNames[channel], value, unit))
+        return 0
+
+
+
+    # Print the raw status of all power modules.
+    def power_module_status_raw(self):
+        self.power_ltc2977_status_raw(self.i2cDevice_IC26_LTC2977)
+        self.power_ltc2977_status_raw(self.i2cDevice_IC27_LTC2977)
+        self.power_ltc2977_status_raw(self.i2cDevice_IC49_LTC2977)
+        self.power_ltc2977_status_raw(self.i2cDevice_IC50_LTC2977)
+        self.power_ltc2977_status_raw(self.i2cDevice_IC51_LTC2977)
+        self.power_ltc2977_status_raw(self.i2cDevice_IC52_LTC2977)
+
+
+
     # Print the status of all power modules.
     def power_module_status(self):
-        self.power_ltc2977_status(self.i2cDevice_IC26_LTC2977)
-        self.power_ltc2977_status(self.i2cDevice_IC27_LTC2977)
-        self.power_ltc2977_status(self.i2cDevice_IC49_LTC2977)
-        self.power_ltc2977_status(self.i2cDevice_IC50_LTC2977)
-        self.power_ltc2977_status(self.i2cDevice_IC51_LTC2977)
-        self.power_ltc2977_status(self.i2cDevice_IC52_LTC2977)
+        self.power_ltc2977_status(self.i2cDevice_IC26_LTC2977, self.IC26_LTC2977_measurementNames, self.IC26_LTC2977_currentSenseShunts)
+        self.power_ltc2977_status(self.i2cDevice_IC27_LTC2977, self.IC27_LTC2977_measurementNames, self.IC27_LTC2977_currentSenseShunts)
+        self.power_ltc2977_status(self.i2cDevice_IC49_LTC2977, self.IC49_LTC2977_measurementNames, self.IC49_LTC2977_currentSenseShunts)
+        self.power_ltc2977_status(self.i2cDevice_IC50_LTC2977, self.IC50_LTC2977_measurementNames, self.IC50_LTC2977_currentSenseShunts)
+        self.power_ltc2977_status(self.i2cDevice_IC51_LTC2977, self.IC51_LTC2977_measurementNames, self.IC51_LTC2977_currentSenseShunts)
+        self.power_ltc2977_status(self.i2cDevice_IC52_LTC2977, self.IC52_LTC2977_measurementNames, self.IC52_LTC2977_currentSenseShunts)
 
 
 
