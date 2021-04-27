@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 15 Jun 2020
-# Rev.: 26 Apr 2021
+# Rev.: 27 Apr 2021
 #
 # Python class for communicating with the LTC2977 8-channel PMBus power system
 # manager IC.
@@ -210,22 +210,28 @@ class I2C_LTC2977:
 
 
     # Calculate a float value from an L11 value.
-    def l11_to_float(self, value):
-        n = (value >> 11) & 0x1f
+    def l11_to_float(self, b):
+        # PMBus data field b[15:0]
+        # Value = Y * 2**N
+        # where N = b[15:11] is a 5-bit two’s complement integer
+        #   and Y = b[10:0] is an 11-bit two’s complement integer.
+        n = (b >> 11) & 0x1f
         if n & 0x10:
             n = -((~n & 0xf) + 1)
-        y = value & 0x7ff
+        y = b & 0x7ff
         if y & 0x400:
             y = -((~y & 0x3ff) + 1)
-        return float(y * 2 ** n)
+        return float(y * 2**n)
 
 
 
     # Calculate a float value from an L16 value.
-    def l16_to_float(self, value):
-        y = value & 0xffff
-        if y & 0x8000:
-            y = -((~y & 0x7fff) + 1)
+    def l16_to_float(self, b):
+        # PMBus data field b[15:0]
+        # Value = Y * 2**N
+        # where Y = b[15:0] is an unsigned integer
+        #   and N = Vout_mode_parameter is a 5-bit two’s complement exponent that is hardwired to –13 decimal.
+        y = b & 0xffff
         return float(y * 2 ** (-13))
 
 
@@ -310,7 +316,7 @@ class I2C_LTC2977:
         if self.set_page(channel):
             self.errorCount += 1
             return -1, 0xffff
-        ret, data = self.read(self.hwCmdCodeReadVout, 2)
+        ret, data = self.read(self.hwCmdCodeMfrConfigLtc2977, 2)
         if ret:
             self.errorCount += 1
             print(self.prefixErrorDevice + "Error reading the channel specific configuration register. Error code: 0x{0:02x}: ".format(ret))
@@ -335,7 +341,7 @@ class I2C_LTC2977:
         voutRaw = (data[1] << 8) + data[0]
         # High resoltuion only for odd channels and only if bit 9 of the configuration register of the channel is set.
         if channel & 0x1 == 0x1 and mfrConfig & (0x1 << 9):
-            return 0, self.l11_to_float(voutRaw)
+            return 0, self.l11_to_float(voutRaw) / 1000     # This value is in mV!
         else:
             return 0, self.l16_to_float(voutRaw)
 
