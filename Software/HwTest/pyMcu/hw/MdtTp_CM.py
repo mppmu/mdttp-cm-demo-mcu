@@ -19,6 +19,7 @@ import McuSerial
 import McuUart
 import I2C_DS28CM00
 import I2C_LTC2977
+import I2C_LTM4675
 import I2C_LTM4700
 import I2C_MCP9808
 import I2C_MCP9903
@@ -268,6 +269,8 @@ class MdtTp_CM:
         self.i2cDevice_IC78_LTM4700 = I2C_LTM4700.I2C_LTM4700(self.mcuI2C[0], 0x42, "IC78 (LTM4700)")
         # IC79: LTM4700 regulator with digital power system management IC (ZU11EG core voltage).
         self.i2cDevice_IC79_LTM4700 = I2C_LTM4700.I2C_LTM4700(self.mcuI2C[0], 0x43, "IC79 (LTM4700)")
+        # IC80: LTM4675 regulator with digital power system management IC (FireFly modules).
+        self.i2cDevice_IC80_LTM4675 = I2C_LTM4675.I2C_LTM4675(self.mcuI2C[2], 0x44, "IC80 (LTM4675)")
         # Set write protection for all power ICs.
         self.i2cDevice_IC26_LTC2977.wp_level_1()
         self.i2cDevice_IC27_LTC2977.wp_level_1()
@@ -279,6 +282,7 @@ class MdtTp_CM:
         self.i2cDevice_IC77_LTM4700.wp_level_1()
         self.i2cDevice_IC78_LTM4700.wp_level_1()
         self.i2cDevice_IC79_LTM4700.wp_level_1()
+        self.i2cDevice_IC80_LTM4675.wp_level_1()
 
         # I2C mux for clock I2C bus:
         # IC55 (PCA9547PW): I2C port 3, slave address 0x70
@@ -434,6 +438,7 @@ class MdtTp_CM:
     IC77_LTM4700_measurementNames =     ["KU15P core 3/4", "KU15P core 4/4"]
     IC78_LTM4700_measurementNames =     ["ZU11EG core 1/4", "ZU11EG core 2/4"]
     IC79_LTM4700_measurementNames =     ["ZU11EG core 3/4", "ZU11EG core 4/4"]
+    IC80_LTM4675_measurementNames =     ["FireFly 1.8V", "FireFly 3.3V"]
 
 
 
@@ -483,6 +488,56 @@ class MdtTp_CM:
                 value = data[2][channel]
                 unit = "V"
             print(self.prefixStatus + "{0:d}: {1:23s}: {2:5.2f} {3:s}".format(channel, measurementNames[channel], value, unit))
+        return 0
+
+
+
+    # Print the raw status of an LTM4675 regulator with digital power system management IC.
+    def power_ltm4675_status_raw(self, i2cDevice):
+        if self.debugLevel >= 1:
+            print(self.prefixDebug + "Reading the status of the power module {0:s} on I2C port {1:d}.".format(i2cDevice.deviceName, i2cDevice.mcuI2C.port))
+        ret, data = i2cDevice.read_status()
+        if ret:
+            self.errorCount += 1
+            print(self.prefixError + "Error reading the raw status of the power module {0:s} on I2C port {1:d}!".format(i2cDevice.deviceName, i2cDevice.mcuI2C.port))
+            return -1
+        print("Status of the power module {0:s} on I2C port {1:d}:".format(i2cDevice.deviceName, i2cDevice.mcuI2C.port))
+        # Measurement of the external temperature is not supported on the CM demonstrator.
+        #print(self.prefixStatus + "{0:18s}: {1:5.2f} degC".format("Temperature (ext)", data[0]))
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} degC".format("Temperature (int)", data[1]))
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} V".format("V_in", data[2]))
+        # Measurement of the input current is not supported on the CM demonstrator.
+        #print(self.prefixStatus + "{0:18s}: {1:5.2f} A".format("I_in", data[3]))
+        for channel in range(i2cDevice.hwChannels):
+            print(self.prefixStatus + "Channel {0:d}: {1:7s}: {2:5.2f} V".format(channel, "V_out", data[4][channel]))
+            print(self.prefixStatus + "Channel {0:d}: {1:7s}: {2:5.2f} A".format(channel, "I_out", data[5][channel]))
+        return 0
+
+
+
+    # Print the status of an LTM4675 regulator with digital power system management IC.
+    def power_ltm4675_status(self, i2cDevice, measurementNames):
+        if len(measurementNames) != i2cDevice.hwChannels:
+            self.errorCount += 1
+            print(self.prefixError + "Error reading the status of the power module {0:s} on I2C port {1:d}: {2:d} measurement names must be provided, but only {3:d} were given!".format(i2cDevice.deviceName, i2cDevice.mcuI2C.port, i2cDevice.hwChannels, len(measurementNames)))
+            return -1
+        if self.debugLevel >= 1:
+            print(self.prefixDebug + "Reading the status of the power module {0:s} on I2C port {1:d}.".format(i2cDevice.deviceName, i2cDevice.mcuI2C.port))
+        ret, data = i2cDevice.read_status()
+        if ret:
+            self.errorCount += 1
+            print(self.prefixError + "Error reading the status of the power module {0:s} on I2C port {1:d}!".format(i2cDevice.deviceName, i2cDevice.mcuI2C.port))
+            return -1
+        print("Status of the power module {0:s} on I2C port {1:d}:".format(i2cDevice.deviceName, i2cDevice.mcuI2C.port))
+        # Measurement of the external temperature is not supported on the CM demonstrator.
+        #print(self.prefixStatus + "{0:18s}: {1:5.2f} degC".format("Temperature (ext)", data[0]))
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} degC".format("Temperature (int)", data[1]))
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} V".format("V_in", data[2]))
+        # Measurement of the input current is not supported on the CM demonstrator.
+        #print(self.prefixStatus + "{0:18s}: {1:5.2f} A".format("I_in", data[3]))
+        for channel in range(i2cDevice.hwChannels):
+            print(self.prefixStatus + "{0:d}: {1:23s}: {2:5.2f} V".format(channel, measurementNames[channel], data[4][channel]))
+            print(self.prefixStatus + "{0:d}: {1:23s}: {2:5.2f} A".format(channel, measurementNames[channel], data[5][channel]))
         return 0
 
 
@@ -549,6 +604,7 @@ class MdtTp_CM:
         self.power_ltm4700_status_raw(self.i2cDevice_IC77_LTM4700)
         self.power_ltm4700_status_raw(self.i2cDevice_IC78_LTM4700)
         self.power_ltm4700_status_raw(self.i2cDevice_IC79_LTM4700)
+        self.power_ltm4675_status_raw(self.i2cDevice_IC80_LTM4675)
 
 
 
@@ -564,6 +620,7 @@ class MdtTp_CM:
         self.power_ltm4700_status(self.i2cDevice_IC77_LTM4700, self.IC77_LTM4700_measurementNames)
         self.power_ltm4700_status(self.i2cDevice_IC78_LTM4700, self.IC78_LTM4700_measurementNames)
         self.power_ltm4700_status(self.i2cDevice_IC79_LTM4700, self.IC79_LTM4700_measurementNames)
+        self.power_ltm4675_status(self.i2cDevice_IC80_LTM4675, self.IC80_LTM4675_measurementNames)
 
 
 
