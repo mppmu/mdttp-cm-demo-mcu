@@ -434,10 +434,10 @@ class MdtTp_CM:
     IC51_LTC2977_currentSenseShunts =   [0, 0.15 / 2, 0, 0.15 / 2, 0, 0.15 / 2, 0, 0]
     IC52_LTC2977_measurementNames =     ["Clock 1.8V", "Clock 1.8V", "Clock 2.5V", "Clock 2.5V", "Expansion con. 1.8V", "Expansion con. 1.8V", "KU15P 3.3V MISC", "KU15P 3.3V MISC"]
     IC52_LTC2977_currentSenseShunts =   [0, 0.04 / 2, 0, 0.15 / 2, 0, 0.08 / 2, 0, 0.04 / 2]
-    IC76_LTM4700_measurementNames =     ["KU15P core 1/4", "KU15P core 2/4"]
-    IC77_LTM4700_measurementNames =     ["KU15P core 3/4", "KU15P core 4/4"]
-    IC78_LTM4700_measurementNames =     ["ZU11EG core 1/4", "ZU11EG core 2/4"]
-    IC79_LTM4700_measurementNames =     ["ZU11EG core 3/4", "ZU11EG core 4/4"]
+    IC76_LTM4700_measurementNames =     ["KU15P 0.85V core 1/4", "KU15P 0.85V core 2/4"]
+    IC77_LTM4700_measurementNames =     ["KU15P 0.85V core 3/4", "KU15P 0.85V core 4/4"]
+    IC78_LTM4700_measurementNames =     ["ZU11EG 0.85V core 1/4", "ZU11EG 0.85V core 2/4"]
+    IC79_LTM4700_measurementNames =     ["ZU11EG 0.85V core 3/4", "ZU11EG 0.85V core 4/4"]
     IC80_LTM4675_measurementNames =     ["FireFly 1.8V", "FireFly 3.3V"]
 
 
@@ -621,6 +621,170 @@ class MdtTp_CM:
         self.power_ltm4700_status(self.i2cDevice_IC78_LTM4700, self.IC78_LTM4700_measurementNames)
         self.power_ltm4700_status(self.i2cDevice_IC79_LTM4700, self.IC79_LTM4700_measurementNames)
         self.power_ltm4675_status(self.i2cDevice_IC80_LTM4675, self.IC80_LTM4675_measurementNames)
+
+
+
+    # Calculate the current from the voltage across a shunt resistor by the
+    # power module and the shunt resistor value.
+    def pm_get_current(self, i2cDevice, i2cDeviceChannel, currentSenseShunt):
+        if currentSenseShunt <= 0:
+            return -1, -1
+        ret, voltage = i2cDevice.read_vout(i2cDeviceChannel)
+        if ret:
+            self.errorCount += 1
+            print(self.prefixError + "Error reading the voltage of channel {0:d} of the power module {1:s} on I2C port {2:d}!".format(i2cDeviceChannel, i2cDevice.deviceName, i2cDevice.mcuI2C.port))
+            return -1, -1
+        return 0, voltage / currentSenseShunt
+
+
+
+    # Detailed power status of the CM.
+    def power_status_detail(self):
+        if self.debugLevel >= 1:
+            print(self.prefixDebug + "Reading the detailed power status of the CM.")
+        # IC26: LTC2977 8-channel PMBus power system manager IC (KU15P).
+        ret, kupMgtAvccVoltage  = self.i2cDevice_IC26_LTC2977.read_vout(0)
+        ret, kupMgtAvccCurrent  = self.pm_get_current(self.i2cDevice_IC26_LTC2977, 1, self.IC26_LTC2977_currentSenseShunts[1])
+        ret, kup1V8AdcAuxVoltage= self.i2cDevice_IC26_LTC2977.read_vout(2)
+        ret, kup1V8AdcAuxCurrent= self.pm_get_current(self.i2cDevice_IC26_LTC2977, 3, self.IC26_LTC2977_currentSenseShunts[3])
+        ret, kupMgtAvttVoltage  = self.i2cDevice_IC26_LTC2977.read_vout(4)
+        ret, kupMgtAvttCurrent  = self.pm_get_current(self.i2cDevice_IC26_LTC2977, 5, self.IC26_LTC2977_currentSenseShunts[5])
+        ret, kup2V5LdoVoltage   = self.i2cDevice_IC26_LTC2977.read_vout(6)
+        ret, kup2V5LdoCurrent   = self.pm_get_current(self.i2cDevice_IC26_LTC2977, 7, self.IC26_LTC2977_currentSenseShunts[7])
+        # IC27: LTC2977 8-channel PMBus power system manager IC (KU15P).
+        ret, kup1V2Ddr4Voltage  = self.i2cDevice_IC27_LTC2977.read_vout(0)
+        ret, kup1V2Ddr4Current  = self.pm_get_current(self.i2cDevice_IC27_LTC2977, 1, self.IC27_LTC2977_currentSenseShunts[1])
+        ret, kup1V8IoVoltage    = self.i2cDevice_IC27_LTC2977.read_vout(2)
+        ret, kup1V8IoCurrent    = self.pm_get_current(self.i2cDevice_IC27_LTC2977, 3, self.IC27_LTC2977_currentSenseShunts[3])
+        ret, kupMgtAuxVoltage   = self.i2cDevice_IC27_LTC2977.read_vout(4)
+        ret, kupMgtAuxCurrent   = self.pm_get_current(self.i2cDevice_IC27_LTC2977, 5, self.IC27_LTC2977_currentSenseShunts[5])
+        # IC49: LTC2977 8-channel PMBus power system manager IC (ZU11EG). 
+        ret, zupMgtAvccVoltage  = self.i2cDevice_IC49_LTC2977.read_vout(0)
+        ret, zupMgtAvccCurrent  = self.pm_get_current(self.i2cDevice_IC49_LTC2977, 1, self.IC49_LTC2977_currentSenseShunts[1])
+        ret, zupMgtAvttVoltage  = self.i2cDevice_IC49_LTC2977.read_vout(2)
+        ret, zupMgtAvttCurrent  = self.pm_get_current(self.i2cDevice_IC49_LTC2977, 3, self.IC49_LTC2977_currentSenseShunts[3])
+        ret, zup1V2Ddr4Voltage  = self.i2cDevice_IC49_LTC2977.read_vout(4)
+        ret, zup1V2Ddr4Current  = self.pm_get_current(self.i2cDevice_IC49_LTC2977, 5, self.IC49_LTC2977_currentSenseShunts[5])
+        ret, zup1V8IoVoltage    = self.i2cDevice_IC49_LTC2977.read_vout(6)
+        ret, zup1V8IoCurrent    = self.pm_get_current(self.i2cDevice_IC49_LTC2977, 7, self.IC49_LTC2977_currentSenseShunts[7])
+        # IC50: LTC2977 8-channel PMBus power system manager IC (ZU11EG).
+        ret, zup2V5LdoVoltage   = self.i2cDevice_IC50_LTC2977.read_vout(0)
+        ret, zup2V5LdoCurrent   = self.pm_get_current(self.i2cDevice_IC50_LTC2977, 1, self.IC50_LTC2977_currentSenseShunts[1])
+        ret, zup3V3MiscVoltage  = self.i2cDevice_IC50_LTC2977.read_vout(2)
+        ret, zup3V3MiscCurrent  = self.pm_get_current(self.i2cDevice_IC50_LTC2977, 3, self.IC50_LTC2977_currentSenseShunts[3])
+        ret, zupMgtRAvccVoltage = self.i2cDevice_IC50_LTC2977.read_vout(4)
+        ret, zupMgtRAvccCurrent = self.pm_get_current(self.i2cDevice_IC50_LTC2977, 5, self.IC50_LTC2977_currentSenseShunts[5])
+        ret, zup1V8AdcAuxVoltage= self.i2cDevice_IC50_LTC2977.read_vout(6)
+        ret, zup1V8AdcAuxCurrent= self.pm_get_current(self.i2cDevice_IC50_LTC2977, 7, self.IC50_LTC2977_currentSenseShunts[7])
+        # IC51: LTC2977 8-channel PMBus power system manager IC (ZU11EG).
+        ret, zup1V1EthVoltage   = self.i2cDevice_IC51_LTC2977.read_vout(0)
+        ret, zup1V1EthCurrent   = self.pm_get_current(self.i2cDevice_IC51_LTC2977, 1, self.IC51_LTC2977_currentSenseShunts[1])
+        ret, zupMgtRVttVoltage  = self.i2cDevice_IC51_LTC2977.read_vout(2)
+        ret, zupMgtRVttCurrent  = self.pm_get_current(self.i2cDevice_IC51_LTC2977, 3, self.IC51_LTC2977_currentSenseShunts[3])
+        ret, zupMgtAuxVoltage   = self.i2cDevice_IC51_LTC2977.read_vout(4)
+        ret, zupMgtAuxCurrent   = self.pm_get_current(self.i2cDevice_IC51_LTC2977, 5, self.IC51_LTC2977_currentSenseShunts[5])
+        # IC52: LTC2977 8-channel PMBus power system manager IC (clock).  
+        ret, clock1V8Voltage    = self.i2cDevice_IC52_LTC2977.read_vout(0)
+        ret, clock1V8Current    = self.pm_get_current(self.i2cDevice_IC52_LTC2977, 1, self.IC52_LTC2977_currentSenseShunts[1])
+        ret, clock2V5Voltage    = self.i2cDevice_IC52_LTC2977.read_vout(2)
+        ret, clock2V5Current    = self.pm_get_current(self.i2cDevice_IC52_LTC2977, 3, self.IC52_LTC2977_currentSenseShunts[3])
+        ret, expCon1V8Voltage   = self.i2cDevice_IC52_LTC2977.read_vout(4)
+        ret, expCon1V8Current   = self.pm_get_current(self.i2cDevice_IC52_LTC2977, 5, self.IC52_LTC2977_currentSenseShunts[5])
+        ret, kup3V3MiscVoltage  = self.i2cDevice_IC52_LTC2977.read_vout(6)
+        ret, kup3V3MiscCurrent  = self.pm_get_current(self.i2cDevice_IC52_LTC2977, 7, self.IC52_LTC2977_currentSenseShunts[7])
+        # IC76: LTM4700 regulator with digital power system management IC (KU15P core voltage).
+        ret, kupCoreVoltage = self.i2cDevice_IC76_LTM4700.read_vout(0)
+        kupCoreCurrent = 0
+        ret, data = self.i2cDevice_IC76_LTM4700.read_iout(0)
+        kupCoreCurrent += data
+        ret, data = self.i2cDevice_IC76_LTM4700.read_iout(1)
+        kupCoreCurrent += data
+        # IC77: LTM4700 regulator with digital power system management IC (KU15P core voltage).
+        ret, data = self.i2cDevice_IC77_LTM4700.read_iout(0)
+        kupCoreCurrent += data
+        ret, data = self.i2cDevice_IC77_LTM4700.read_iout(1)
+        kupCoreCurrent += data
+        # IC78: LTM4700 regulator with digital power system management IC (ZU11EG core voltage).
+        ret, zupCoreVoltage = self.i2cDevice_IC76_LTM4700.read_vout(0)
+        zupCoreCurrent = 0
+        ret, data = self.i2cDevice_IC78_LTM4700.read_iout(0)
+        zupCoreCurrent += data
+        ret, data = self.i2cDevice_IC78_LTM4700.read_iout(1)
+        zupCoreCurrent += data
+        # IC79: LTM4700 regulator with digital power system management IC (ZU11EG core voltage).
+        ret, data = self.i2cDevice_IC79_LTM4700.read_iout(0)
+        zupCoreCurrent += data
+        ret, data = self.i2cDevice_IC79_LTM4700.read_iout(1)
+        zupCoreCurrent += data
+        # IC80: LTM4675 regulator with digital power system management IC (FireFly modules).
+        ret, firefly1V8Voltage = self.i2cDevice_IC80_LTM4675.read_vout(0)
+        ret, firefly1V8Current = self.i2cDevice_IC80_LTM4675.read_iout(0)
+        ret, firefly3V3Voltage = self.i2cDevice_IC80_LTM4675.read_vout(1)
+        ret, firefly3V3Current = self.i2cDevice_IC80_LTM4675.read_iout(1)
+
+        # Calculate power.
+        kupPower = abs(kupCoreVoltage      * kupCoreCurrent     ) + \
+                   abs(kupMgtAvccVoltage   * kupMgtAvccCurrent  ) + \
+                   abs(kup1V8AdcAuxVoltage * kup1V8AdcAuxCurrent) + \
+                   abs(kupMgtAvttVoltage   * kupMgtAvttCurrent  ) + \
+                   abs(kup2V5LdoVoltage    * kup2V5LdoCurrent   ) + \
+                   abs(kup1V2Ddr4Voltage   * kup1V2Ddr4Current  ) + \
+                   abs(kup1V8IoVoltage     * kup1V8IoCurrent    ) + \
+                   abs(kupMgtAuxVoltage    * kupMgtAuxCurrent   ) + \
+                   abs(kup3V3MiscVoltage   * kup3V3MiscCurrent  )
+        zupPower = abs(zupCoreVoltage      * zupCoreCurrent     ) + \
+                   abs(zupMgtAvccVoltage   * zupMgtAvccCurrent  ) + \
+                   abs(zupMgtAvttVoltage   * zupMgtAvttCurrent  ) + \
+                   abs(zup1V2Ddr4Voltage   * zup1V2Ddr4Current  ) + \
+                   abs(zup1V8IoVoltage     * zup1V8IoCurrent    ) + \
+                   abs(zup2V5LdoVoltage    * zup2V5LdoCurrent   ) + \
+                   abs(zup3V3MiscVoltage   * zup3V3MiscCurrent  ) + \
+                   abs(zupMgtRAvccVoltage  * zupMgtRAvccCurrent ) + \
+                   abs(zup1V8AdcAuxVoltage * zup1V8AdcAuxCurrent) + \
+                   abs(zup1V1EthVoltage    * zup1V1EthCurrent   ) + \
+                   abs(zupMgtRVttVoltage   * zupMgtRVttCurrent  ) + \
+                   abs(zupMgtAuxVoltage    * zupMgtAuxCurrent   )
+        clockPower = abs(clock1V8Voltage * clock1V8Current) + abs(clock2V5Voltage * clock2V5Current)
+        fireflyPower = abs(firefly1V8Voltage * firefly1V8Current) + abs(firefly3V3Voltage * firefly3V3Current)
+        miscPower = abs(expCon1V8Voltage * expCon1V8Current)
+
+        # Show overview.
+        print("KU15P")
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} V, {2:5.2f} A".format("0.85V core",    kupCoreVoltage,     kupCoreCurrent     ))
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} V, {2:5.2f} A".format("1.2V DDR4",     kup1V2Ddr4Voltage,  kup1V2Ddr4Current  ))
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} V, {2:5.2f} A".format("1.8V ADC AUX",  kup1V8AdcAuxVoltage,kup1V8AdcAuxCurrent))
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} V, {2:5.2f} A".format("1.8V IO",       kup1V8IoVoltage,    kup1V8IoCurrent    ))
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} V, {2:5.2f} A".format("2.5V LDO",      kup2V5LdoVoltage,   kup2V5LdoCurrent   ))
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} V, {2:5.2f} A".format("3.3V MISC",     kup3V3MiscVoltage,  kup3V3MiscCurrent  ))
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} V, {2:5.2f} A".format("0.9V MGTAVCC",  kupMgtAvccVoltage,  kupMgtAvccCurrent  ))
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} V, {2:5.2f} A".format("1.2V MGTAVTT",  kupMgtAvttVoltage,  kupMgtAvttCurrent  ))
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} V, {2:5.2f} A".format("1.8V MGTAUX",   kupMgtAuxVoltage,   kupMgtAuxCurrent   ))
+        print(self.prefixStatus + "{0:18s}: {1:5.1f} W".format("Total power",  kupPower))
+        print("ZU11EG")
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} V, {2:5.2f} A".format("0.85V core",    zupCoreVoltage,     zupCoreCurrent     ))
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} V, {2:5.2f} A".format("1.1V ETH",      zup1V1EthVoltage,   zup1V1EthCurrent   ))
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} V, {2:5.2f} A".format("1.2V DDR4",     zup1V2Ddr4Voltage,  zup1V2Ddr4Current  ))
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} V, {2:5.2f} A".format("1.8V ADC AUX",  zup1V8AdcAuxVoltage,zup1V8AdcAuxCurrent))
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} V, {2:5.2f} A".format("1.8V IO",       zup1V8IoVoltage,    zup1V8IoCurrent    ))
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} V, {2:5.2f} A".format("2.5V LDO",      zup2V5LdoVoltage,   zup2V5LdoCurrent   ))
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} V, {2:5.2f} A".format("3.3V MISC",     zup3V3MiscVoltage,  zup3V3MiscCurrent  ))
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} V, {2:5.2f} A".format("0.85V MGTRAVCC",zupMgtRAvccVoltage, zupMgtRAvccCurrent ))
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} V, {2:5.2f} A".format("0.9V MGTAVCC",  zupMgtAvccVoltage,  zupMgtAvccCurrent  ))
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} V, {2:5.2f} A".format("1.2V MGTAVTT",  zupMgtAvttVoltage,  zupMgtAvttCurrent  ))
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} V, {2:5.2f} A".format("1.8V MGTAUX",   zupMgtAuxVoltage,   zupMgtAuxCurrent   ))
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} V, {2:5.2f} A".format("1.8V MGTRVTT",  zupMgtRVttVoltage,  zupMgtRVttCurrent  ))
+        print(self.prefixStatus + "{0:18s}: {1:5.1f} W".format("Total power",  zupPower))
+        print("Clock")
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} V, {2:5.2f} A".format("1.8V clock",    clock1V8Voltage,    clock1V8Current))
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} V, {2:5.2f} A".format("2.5V clock",    clock2V5Voltage,    clock2V5Current))
+        print(self.prefixStatus + "{0:18s}: {1:5.1f} W".format("Total power",  clockPower))
+        print("FireFly Modules")
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} V, {2:5.2f} A".format("1.8V FireFly",  firefly1V8Voltage,  firefly1V8Current))
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} V, {2:5.2f} A".format("3.3V FireFly",  firefly3V3Voltage,  firefly3V3Current))
+        print(self.prefixStatus + "{0:18s}: {1:5.1f} W".format("Total power",  fireflyPower))
+        print("Miscellaneous")
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} V, {2:5.2f} A".format("1.8V exp. con.",expCon1V8Voltage,   expCon1V8Current))
+        print(self.prefixStatus + "{0:18s}: {1:5.1f} W".format("Total power",  miscPower))
 
 
 
