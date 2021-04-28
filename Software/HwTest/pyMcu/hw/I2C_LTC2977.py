@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 15 Jun 2020
-# Rev.: 27 Apr 2021
+# Rev.: 28 Apr 2021
 #
 # Python class for communicating with the LTC2977 8-channel PMBus power system
 # manager IC.
@@ -30,17 +30,22 @@ class I2C_LTC2977:
     debugLevel          = 0     # Debug verbosity.
 
     # Hardware parameters.
-    hwCmdCodePage       = 0x00  # Command code for channel/page number.
-    hwCmdCodeMfrConfigLtc2977 = 0xD0
-    hwCmdCodeReadVin    = 0x88
-    hwCmdCodeReadVout   = 0x8b
-    hwCmdCodeReadTemp   = 0x8d
-    hwDataLenMin        = 1
-    hwDataLenMax        = 2
-    hwPageMin           = 0     # Lowest hardware channel/page number.
-    hwPageMax           = 7     # Highest hardware channel/page number.
-    hwPage              = 0     # Current hardware channel/page number.
-    hwChannels          = 8
+    hwCmdCodePage           = 0x00  # Command code for channel/page number.
+    hwCmdCodeOperation      = 0x01
+    hwCmdCodeOnOffConfig    = 0x02
+    hwCmdCodeClearFaults    = 0x03
+    hwCmdCodeWriteProtect   = 0x10
+    hwCmdCodeReadVin        = 0x88
+    hwCmdCodeReadVout       = 0x8b
+    hwCmdCodeReadTemp       = 0x8d
+    hwCmdCodeMfrConfigChan  = 0xd0
+    hwCmdCodeMfrPageFfMask  = 0xe4
+    hwDataLenMin            = 1
+    hwDataLenMax            = 2
+    hwPageMin               = 0     # Lowest hardware channel/page number.
+    hwPageMax               = 7     # Highest hardware channel/page number.
+    hwPage                  = 0     # Current hardware channel/page number.
+    hwChannels              = 8
 
 
 
@@ -62,22 +67,24 @@ class I2C_LTC2977:
     def cmd_to_name(cls, cmdCode):
         if cmdCode == cls.hwCmdCodePage:
             cmdName = "PAGE"
-        elif cmdCode == cls.hwCmdCodeMfrConfigLtc2977:
-            cmdName = "MFR_CONFIG_LTC2977"
+        elif cmdCode == cls.hwCmdCodeOperation:
+            cmdName = "OPERATION"
+        elif cmdCode == cls.hwCmdCodeOnOffConfig:
+            cmdName = "ON_OFF_CONFIG"
+        elif cmdCode == cls.hwCmdCodeClearFaults:
+            cmdName = "CLEAR_FAULTS"
+        elif cmdCode == cls.hwCmdCodeWriteProtect:
+            cmdName = "WRITE_PROTECT"
         elif cmdCode == cls.hwCmdCodeReadVin:
             cmdName = "READ_VIN"
         elif cmdCode == cls.hwCmdCodeReadVout:
             cmdName = "READ_VOUT"
         elif cmdCode == cls.hwCmdCodeReadTemp:
             cmdName = "READ_TEMPERATURE_1"
-        elif cmdCode == 0x01:
-            cmdName = "OPERATION"
-        elif cmdCode == 0x02:
-            cmdName = "ON_OFF_CONFIG"
-        elif cmdCode == 0x03:
-            cmdName = "CLEAR_FAULTS"
-        elif cmdCode == 0x10:
-            cmdName = "WRITE_PROTECT"
+        elif cmdCode == cls.hwCmdCodeMfrConfigChan:
+            cmdName = "MFR_CONFIG_LTC2977"
+        elif cmdCode == hwCmdCodeMfrPageFfMask:
+            cmdName = "MFR_PAGE_FF_MASK"
         elif cmdCode <= 0xfd:
             cmdName = "unknown"
         else:
@@ -209,7 +216,7 @@ class I2C_LTC2977:
 
 
 
-    # Calculate a float value from an L11 value.
+    # Calculate a float value from an L11 (Linear_5s_11s) value.
     def l11_to_float(self, b):
         # PMBus data field b[15:0]
         # Value = Y * 2**N
@@ -225,7 +232,7 @@ class I2C_LTC2977:
 
 
 
-    # Calculate a float value from an L16 value.
+    # Calculate a float value from an L16 (Linear_16u) value.
     def l16_to_float(self, b):
         # PMBus data field b[15:0]
         # Value = Y * 2**N
@@ -236,16 +243,25 @@ class I2C_LTC2977:
 
 
 
+    # Read the write protection status.
+    def read_wp(self):
+        ret, data = self.read(self.hwCmdCodeWriteProtect, 1)
+        if ret:
+            return -1, 0xff
+        return 0, data[0]
+
+
+
     # Clear the write protection.
     def wp_clear(self):
-        return self.write(0x10, [0x00])
+        return self.write(self.hwCmdCodeWriteProtect, [0x00])
 
 
 
     # Set the write protection to level 1:
     # Disable all writes except to the WRITE_PROTECT, PAGE, MFR_EE_UNLOCK, and STORE_USER_ALL commands.
     def wp_level_1(self):
-        return self.write(0x10, [0x80])
+        return self.write(self.hwCmdCodeWriteProtect, [0x80])
 
 
 
@@ -253,36 +269,50 @@ class I2C_LTC2977:
     # Disable all writes except to the WRITE_PROTECT, PAGE, MFR_EE_UNLOCK, STORE_USER_ALL, OPERATION,
     # MFR_COMMAND_PLUS, MFR_PAGE_FF_MASK and CLEAR_FAULTS commands.
     def wp_level_2(self):
-        return self.write(0x10, [0x40])
+        return self.write(self.hwCmdCodeWriteProtect, [0x40])
 
 
 
     # Switch off all power channles simultaneously.
     def power_off_all(self):
-        ret = self.wp_level_2()
+        # Save the current write protection level.
+        ret, wpSave = self.read_wp()
+        # Set the write protection level to 2.
+        ret |= self.wp_level_2()
         # Make all channels respond to global page commands.
-        ret |= self.write(0xe4, [0xff])
+        ret |= self.write(self.hwCmdCodeMfrPageFfMask, [0xff])
         # Write to all channels simultaneously.
-        ret |= self.write(0x00, [0xff])
+        ret |= self.write(self.hwCmdCodePage, [0xff])
         # Configure the on/off behavior.
-        ret |= self.write(0x02, [0x00])
+        ret |= self.write(self.hwCmdCodeOnOffConfig, [0x1e])
         # Switch on all channels.
-        ret |= self.write(0x00, [0x00])
+        ret |= self.write(self.hwCmdCodeOperation, [0x00])
+        # Make all channels ignore global page commands.
+        ret |= self.write(self.hwCmdCodeMfrPageFfMask, [0x00])
+        # Restore the original write protection level.
+        ret |= self.write(self.hwCmdCodeWriteProtect, [wpSave])
         return ret
 
 
 
     # Switch on all power channles simultaneously.
     def power_on_all(self):
-        ret = self.wp_level_2()
+        # Save the current write protection level.
+        ret, wpSave = self.read_wp()
+        # Set the write protection level to 2.
+        ret |= self.wp_level_2()
         # Make all channels respond to global page commands.
-        ret |= self.write(0xe4, [0xff])
+        ret |= self.write(self.hwCmdCodeMfrPageFfMask, [0xff])
         # Write to all channels simultaneously.
-        ret |= self.write(0x00, [0xff])
+        ret |= self.write(self.hwCmdCodePage, [0xff])
         # Configure the on/off behavior.
-        ret |= self.write(0x02, [0x00])
+        ret |= self.write(self.hwCmdCodeOnOffConfig, [0x1e])
         # Switch on all channels.
-        ret |= self.write(0x00, [0x80])
+        ret |= self.write(self.hwCmdCodeOperation, [0x80])
+        # Make all channels ignore global page commands.
+        ret |= self.write(self.hwCmdCodeMfrPageFfMask, [0x00])
+        # Restore the original write protection level.
+        ret |= self.write(self.hwCmdCodeWriteProtect, [wpSave])
         return ret
 
 
@@ -292,10 +322,32 @@ class I2C_LTC2977:
         ret, data = self.read(self.hwCmdCodeReadVin, 2)
         if ret:
             self.errorCount += 1
-            print(self.prefixErrorDevice + "Error reading the input voltag. Error code: 0x{0:02x}: ".format(ret))
+            print(self.prefixErrorDevice + "Error reading the input voltage. Error code: 0x{0:02x}: ".format(ret))
             return -1, float(-1)
         vinRaw = (data[1] << 8) + data[0]
         return 0, self.l11_to_float(vinRaw)
+
+
+
+    # Read the most recent ADC measured value of the channel's output voltage. 
+    def read_vout(self, channel):
+        if self.set_page(channel):
+            self.errorCount += 1
+            return -1, float(-1)
+        # Read the channel specific configuration register.
+        ret, mfrConfig = self.read_mfr_config(channel)
+        # Read the VOUT value.
+        ret, data = self.read(self.hwCmdCodeReadVout, 2)
+        if ret:
+            self.errorCount += 1
+            print(self.prefixErrorDevice + "Error reading the output voltage of channel {0:d}. Error code: 0x{0:02x}: ".format(channel, ret))
+            return -1, float(-1)
+        voutRaw = (data[1] << 8) + data[0]
+        # High resoltuion only for odd channels and only if bit 9 of the configuration register of the channel is set.
+        if channel & 0x1 == 0x1 and mfrConfig & (0x1 << 9):
+            return 0, self.l11_to_float(voutRaw) / 1000     # This value is in mV!
+        else:
+            return 0, self.l16_to_float(voutRaw)
 
 
 
@@ -316,34 +368,12 @@ class I2C_LTC2977:
         if self.set_page(channel):
             self.errorCount += 1
             return -1, 0xffff
-        ret, data = self.read(self.hwCmdCodeMfrConfigLtc2977, 2)
+        ret, data = self.read(self.hwCmdCodeMfrConfigChan, 2)
         if ret:
             self.errorCount += 1
             print(self.prefixErrorDevice + "Error reading the channel specific configuration register. Error code: 0x{0:02x}: ".format(ret))
             return -1, 0xffff
         return 0, (data[1] << 8) + data[0]
-
-
-
-    # Read the most recent ADC measured value of the channel's output voltage. 
-    def read_vout(self, channel):
-        if self.set_page(channel):
-            self.errorCount += 1
-            return -1, float(-1)
-        # Read the channel specific configuration register.
-        ret, mfrConfig = self.read_mfr_config(channel)
-        # Read Vout value.
-        ret, data = self.read(self.hwCmdCodeReadVout, 2)
-        if ret:
-            self.errorCount += 1
-            print(self.prefixErrorDevice + "Error reading the output voltag of channel {0:d}. Error code: 0x{0:02x}: ".format(channel, ret))
-            return -1, float(-1)
-        voutRaw = (data[1] << 8) + data[0]
-        # High resoltuion only for odd channels and only if bit 9 of the configuration register of the channel is set.
-        if channel & 0x1 == 0x1 and mfrConfig & (0x1 << 9):
-            return 0, self.l11_to_float(voutRaw) / 1000     # This value is in mV!
-        else:
-            return 0, self.l16_to_float(voutRaw)
 
 
 
