@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 04 Aug 2020
-# Rev.: 27 Apr 2021
+# Rev.: 28 Apr 2021
 #
 # Python class for accessing the ATLAS MDT Trigger Processor (TP) Command
 # Module (CM) via the TI Tiva TM4C1290 MCU UART.
@@ -19,6 +19,7 @@ import McuSerial
 import McuUart
 import I2C_DS28CM00
 import I2C_LTC2977
+import I2C_LTM4700
 import I2C_MCP9808
 import I2C_MCP9903
 import I2C_PCA9547
@@ -247,25 +248,37 @@ class MdtTp_CM:
         self.i2cDevice_IC39_MCP9903.write_config_1(0x00)
 
         # Power modules.
-        # IC26: LTC2977 8-channel PMBus power system manager (KU15P).
+        # IC26: LTC2977 8-channel PMBus power system manager IC (KU15P).
         self.i2cDevice_IC26_LTC2977 = I2C_LTC2977.I2C_LTC2977(self.mcuI2C[1], 0x5c, "IC26 (LTC2977)")
-        # IC27: LTC2977 8-channel PMBus power system manager (KU15P).
+        # IC27: LTC2977 8-channel PMBus power system manager IC (KU15P).
         self.i2cDevice_IC27_LTC2977 = I2C_LTC2977.I2C_LTC2977(self.mcuI2C[1], 0x5d, "IC27 (LTC2977)")
-        # IC49: LTC2977 8-channel PMBus power system manager (ZU11EG).
+        # IC49: LTC2977 8-channel PMBus power system manager IC (ZU11EG).
         self.i2cDevice_IC49_LTC2977 = I2C_LTC2977.I2C_LTC2977(self.mcuI2C[0], 0x5e, "IC49 (LTC2977)")
-        # IC50: LTC2977 8-channel PMBus power system manager (ZU11EG).
+        # IC50: LTC2977 8-channel PMBus power system manager IC (ZU11EG).
         self.i2cDevice_IC50_LTC2977 = I2C_LTC2977.I2C_LTC2977(self.mcuI2C[0], 0x5f, "IC50 (LTC2977)")
-        # IC51: LTC2977 8-channel PMBus power system manager (ZU11EG).
+        # IC51: LTC2977 8-channel PMBus power system manager IC (ZU11EG).
         self.i2cDevice_IC51_LTC2977 = I2C_LTC2977.I2C_LTC2977(self.mcuI2C[0], 0x60, "IC51 (LTC2977)")
-        # IC52: LTC2977 8-channel PMBus power system manager (clock).
+        # IC52: LTC2977 8-channel PMBus power system manager IC (clock).
         self.i2cDevice_IC52_LTC2977 = I2C_LTC2977.I2C_LTC2977(self.mcuI2C[3], 0x61, "IC52 (LTC2977)")
+        # IC76: LTM4700 regulator with digital power system management IC (KU15P core voltage).
+        self.i2cDevice_IC76_LTM4700 = I2C_LTM4700.I2C_LTM4700(self.mcuI2C[1], 0x40, "IC76 (LTM4700)")
+        # IC77: LTM4700 regulator with digital power system management IC (KU15P core voltage).
+        self.i2cDevice_IC77_LTM4700 = I2C_LTM4700.I2C_LTM4700(self.mcuI2C[1], 0x41, "IC77 (LTM4700)")
+        # IC78: LTM4700 regulator with digital power system management IC (ZU11EG core voltage).
+        self.i2cDevice_IC78_LTM4700 = I2C_LTM4700.I2C_LTM4700(self.mcuI2C[0], 0x42, "IC78 (LTM4700)")
+        # IC79: LTM4700 regulator with digital power system management IC (ZU11EG core voltage).
+        self.i2cDevice_IC79_LTM4700 = I2C_LTM4700.I2C_LTM4700(self.mcuI2C[0], 0x43, "IC79 (LTM4700)")
         # Set write protection for all power ICs.
-        self.i2cDevice_IC26_LTC2977.wp_level_2()
-        self.i2cDevice_IC27_LTC2977.wp_level_2()
-        self.i2cDevice_IC49_LTC2977.wp_level_2()
-        self.i2cDevice_IC50_LTC2977.wp_level_2()
-        self.i2cDevice_IC51_LTC2977.wp_level_2()
-        self.i2cDevice_IC52_LTC2977.wp_level_2()
+        self.i2cDevice_IC26_LTC2977.wp_level_1()
+        self.i2cDevice_IC27_LTC2977.wp_level_1()
+        self.i2cDevice_IC49_LTC2977.wp_level_1()
+        self.i2cDevice_IC50_LTC2977.wp_level_1()
+        self.i2cDevice_IC51_LTC2977.wp_level_1()
+        self.i2cDevice_IC52_LTC2977.wp_level_1()
+        self.i2cDevice_IC76_LTM4700.wp_level_1()
+        self.i2cDevice_IC77_LTM4700.wp_level_1()
+        self.i2cDevice_IC78_LTM4700.wp_level_1()
+        self.i2cDevice_IC79_LTM4700.wp_level_1()
 
         # I2C mux for clock I2C bus:
         # IC55 (PCA9547PW): I2C port 3, slave address 0x70
@@ -417,13 +430,17 @@ class MdtTp_CM:
     IC51_LTC2977_currentSenseShunts =   [0, 0.15 / 2, 0, 0.15 / 2, 0, 0.15 / 2, 0, 0]
     IC52_LTC2977_measurementNames =     ["Clock 1.8V", "Clock 1.8V", "Clock 2.5V", "Clock 2.5V", "Expansion con. 1.8V", "Expansion con. 1.8V", "KU15P 3.3V MISC", "KU15P 3.3V MISC"]
     IC52_LTC2977_currentSenseShunts =   [0, 0.04 / 2, 0, 0.15 / 2, 0, 0.08 / 2, 0, 0.04 / 2]
+    IC76_LTM4700_measurementNames =     ["KU15P core 1/4", "KU15P core 2/4"]
+    IC77_LTM4700_measurementNames =     ["KU15P core 3/4", "KU15P core 4/4"]
+    IC78_LTM4700_measurementNames =     ["ZU11EG core 1/4", "ZU11EG core 2/4"]
+    IC79_LTM4700_measurementNames =     ["ZU11EG core 3/4", "ZU11EG core 4/4"]
 
 
 
     # Print the raw status of an LTC2977 8-channel PMBus power system manager IC.
     def power_ltc2977_status_raw(self, i2cDevice):
         if self.debugLevel >= 1:
-            print(self.prefixDebug + "Reading the status of the power module {0:s} on I2C port {1:d}!".format(i2cDevice.deviceName, i2cDevice.mcuI2C.port))
+            print(self.prefixDebug + "Reading the status of the power module {0:s} on I2C port {1:d}.".format(i2cDevice.deviceName, i2cDevice.mcuI2C.port))
         ret, data = i2cDevice.read_status()
         if ret:
             self.errorCount += 1
@@ -449,7 +466,7 @@ class MdtTp_CM:
             print(self.prefixError + "Error reading the status of the power module {0:s} on I2C port {1:d}: {2:d} current sense values must be provided, but only {3:d} were given!".format(i2cDevice.deviceName, i2cDevice.mcuI2C.port, i2cDevice.hwChannels, len(currentSenseShunts)))
             return -1
         if self.debugLevel >= 1:
-            print(self.prefixDebug + "Reading the status of the power module {0:s} on I2C port {1:d}!".format(i2cDevice.deviceName, i2cDevice.mcuI2C.port))
+            print(self.prefixDebug + "Reading the status of the power module {0:s} on I2C port {1:d}.".format(i2cDevice.deviceName, i2cDevice.mcuI2C.port))
         ret, data = i2cDevice.read_status()
         if ret:
             self.errorCount += 1
@@ -470,6 +487,56 @@ class MdtTp_CM:
 
 
 
+    # Print the raw status of an LTM4700 regulator with digital power system management IC.
+    def power_ltm4700_status_raw(self, i2cDevice):
+        if self.debugLevel >= 1:
+            print(self.prefixDebug + "Reading the status of the power module {0:s} on I2C port {1:d}.".format(i2cDevice.deviceName, i2cDevice.mcuI2C.port))
+        ret, data = i2cDevice.read_status()
+        if ret:
+            self.errorCount += 1
+            print(self.prefixError + "Error reading the raw status of the power module {0:s} on I2C port {1:d}!".format(i2cDevice.deviceName, i2cDevice.mcuI2C.port))
+            return -1
+        print("Status of the power module {0:s} on I2C port {1:d}:".format(i2cDevice.deviceName, i2cDevice.mcuI2C.port))
+        # Measurement of the external temperature is not supported on the CM demonstrator.
+        #print(self.prefixStatus + "{0:18s}: {1:5.2f} degC".format("Temperature (ext)", data[0]))
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} degC".format("Temperature (int)", data[1]))
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} V".format("V_in", data[2]))
+        # Measurement of the input current is not supported on the CM demonstrator.
+        #print(self.prefixStatus + "{0:18s}: {1:5.2f} A".format("I_in", data[3]))
+        for channel in range(i2cDevice.hwChannels):
+            print(self.prefixStatus + "Channel {0:d}: {1:7s}: {2:5.2f} V".format(channel, "V_out", data[4][channel]))
+            print(self.prefixStatus + "Channel {0:d}: {1:7s}: {2:5.2f} A".format(channel, "I_out", data[5][channel]))
+        return 0
+
+
+
+    # Print the status of an LTM4700 regulator with digital power system management IC.
+    def power_ltm4700_status(self, i2cDevice, measurementNames):
+        if len(measurementNames) != i2cDevice.hwChannels:
+            self.errorCount += 1
+            print(self.prefixError + "Error reading the status of the power module {0:s} on I2C port {1:d}: {2:d} measurement names must be provided, but only {3:d} were given!".format(i2cDevice.deviceName, i2cDevice.mcuI2C.port, i2cDevice.hwChannels, len(measurementNames)))
+            return -1
+        if self.debugLevel >= 1:
+            print(self.prefixDebug + "Reading the status of the power module {0:s} on I2C port {1:d}.".format(i2cDevice.deviceName, i2cDevice.mcuI2C.port))
+        ret, data = i2cDevice.read_status()
+        if ret:
+            self.errorCount += 1
+            print(self.prefixError + "Error reading the status of the power module {0:s} on I2C port {1:d}!".format(i2cDevice.deviceName, i2cDevice.mcuI2C.port))
+            return -1
+        print("Status of the power module {0:s} on I2C port {1:d}:".format(i2cDevice.deviceName, i2cDevice.mcuI2C.port))
+        # Measurement of the external temperature is not supported on the CM demonstrator.
+        #print(self.prefixStatus + "{0:18s}: {1:5.2f} degC".format("Temperature (ext)", data[0]))
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} degC".format("Temperature (int)", data[1]))
+        print(self.prefixStatus + "{0:18s}: {1:5.2f} V".format("V_in", data[2]))
+        # Measurement of the input current is not supported on the CM demonstrator.
+        #print(self.prefixStatus + "{0:18s}: {1:5.2f} A".format("I_in", data[3]))
+        for channel in range(i2cDevice.hwChannels):
+            print(self.prefixStatus + "{0:d}: {1:23s}: {2:5.2f} V".format(channel, measurementNames[channel], data[4][channel]))
+            print(self.prefixStatus + "{0:d}: {1:23s}: {2:5.2f} A".format(channel, measurementNames[channel], data[5][channel]))
+        return 0
+
+
+
     # Print the raw status of all power modules.
     def power_module_status_raw(self):
         self.power_ltc2977_status_raw(self.i2cDevice_IC26_LTC2977)
@@ -478,6 +545,10 @@ class MdtTp_CM:
         self.power_ltc2977_status_raw(self.i2cDevice_IC50_LTC2977)
         self.power_ltc2977_status_raw(self.i2cDevice_IC51_LTC2977)
         self.power_ltc2977_status_raw(self.i2cDevice_IC52_LTC2977)
+        self.power_ltm4700_status_raw(self.i2cDevice_IC76_LTM4700)
+        self.power_ltm4700_status_raw(self.i2cDevice_IC77_LTM4700)
+        self.power_ltm4700_status_raw(self.i2cDevice_IC78_LTM4700)
+        self.power_ltm4700_status_raw(self.i2cDevice_IC79_LTM4700)
 
 
 
@@ -489,6 +560,10 @@ class MdtTp_CM:
         self.power_ltc2977_status(self.i2cDevice_IC50_LTC2977, self.IC50_LTC2977_measurementNames, self.IC50_LTC2977_currentSenseShunts)
         self.power_ltc2977_status(self.i2cDevice_IC51_LTC2977, self.IC51_LTC2977_measurementNames, self.IC51_LTC2977_currentSenseShunts)
         self.power_ltc2977_status(self.i2cDevice_IC52_LTC2977, self.IC52_LTC2977_measurementNames, self.IC52_LTC2977_currentSenseShunts)
+        self.power_ltm4700_status(self.i2cDevice_IC76_LTM4700, self.IC76_LTM4700_measurementNames)
+        self.power_ltm4700_status(self.i2cDevice_IC77_LTM4700, self.IC77_LTM4700_measurementNames)
+        self.power_ltm4700_status(self.i2cDevice_IC78_LTM4700, self.IC78_LTM4700_measurementNames)
+        self.power_ltm4700_status(self.i2cDevice_IC79_LTM4700, self.IC79_LTM4700_measurementNames)
 
 
 

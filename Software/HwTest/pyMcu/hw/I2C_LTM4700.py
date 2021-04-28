@@ -1,14 +1,14 @@
-# File: I2C_LTC2977.py
+# File: I2C_LTM4700.py
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
-# Date: 15 Jun 2020
+# Date: 28 Apr 2021
 # Rev.: 28 Apr 2021
 #
-# Python class for communicating with the LTC2977 8-channel PMBus power system
-# manager IC.
+# Python class for communicating with the LTM4700 dual 50A or single 100A
+# uModule regulator with digital power system management IC.
 #
 # Hints:
-# - See datasheet "ltc2977.pdf" for details.
+# - See datasheet "ltm4700.pdf" for details.
 #
 
 
@@ -18,7 +18,7 @@ import I2CDevice
 
 
 
-class I2C_LTC2977:
+class I2C_LTM4700:
 
     # Message prefixes and separators.
     prefixDetails       = " - "
@@ -36,16 +36,18 @@ class I2C_LTC2977:
     hwCmdCodeClearFaults    = 0x03
     hwCmdCodeWriteProtect   = 0x10
     hwCmdCodeReadVin        = 0x88
+    hwCmdCodeReadIin        = 0x89
     hwCmdCodeReadVout       = 0x8b
-    hwCmdCodeReadTemp       = 0x8d
+    hwCmdCodeReadIout       = 0x8c
+    hwCmdCodeReadTempExt    = 0x8d
+    hwCmdCodeReadTempInt    = 0x8e
     hwCmdCodeMfrConfigChan  = 0xd0
-    hwCmdCodeMfrPageFfMask  = 0xe4
     hwDataLenMin            = 1
     hwDataLenMax            = 2
     hwPageMin               = 0     # Lowest hardware channel/page number.
-    hwPageMax               = 7     # Highest hardware channel/page number.
+    hwPageMax               = 1     # Highest hardware channel/page number.
     hwPage                  = 0     # Current hardware channel/page number.
-    hwChannels              = 8
+    hwChannels              = 2
 
 
 
@@ -77,14 +79,18 @@ class I2C_LTC2977:
             cmdName = "WRITE_PROTECT"
         elif cmdCode == cls.hwCmdCodeReadVin:
             cmdName = "READ_VIN"
+        elif cmdCode == cls.hwCmdCodeReadIin:
+            cmdName = "READ_IIN"
         elif cmdCode == cls.hwCmdCodeReadVout:
             cmdName = "READ_VOUT"
-        elif cmdCode == cls.hwCmdCodeReadTemp:
+        elif cmdCode == cls.hwCmdCodeReadIout:
+            cmdName = "READ_IOUT"
+        elif cmdCode == cls.hwCmdCodeReadTempExt:
             cmdName = "READ_TEMPERATURE_1"
+        elif cmdCode == cls.hwCmdCodeReadTempInt:
+            cmdName = "READ_TEMPERATURE_2"
         elif cmdCode == cls.hwCmdCodeMfrConfigChan:
-            cmdName = "MFR_CONFIG_LTC2977"
-        elif cmdCode == hwCmdCodeMfrPageFfMask:
-            cmdName = "MFR_PAGE_FF_MASK"
+            cmdName = "MFR_CHAN_CONFIG"
         elif cmdCode <= 0xfd:
             cmdName = "unknown"
         else:
@@ -239,7 +245,7 @@ class I2C_LTC2977:
         # where Y = b[15:0] is an unsigned integer
         #   and N = Vout_mode_parameter is a 5-bit two’s complement exponent that is hardwired to –13 decimal.
         y = b & 0xffff
-        return float(y * 2**(-13))
+        return float(y * 2**(-12))
 
 
 
@@ -259,17 +265,27 @@ class I2C_LTC2977:
 
 
     # Set the write protection to level 1:
-    # Disable all writes except to the WRITE_PROTECT, PAGE, MFR_EE_UNLOCK, and STORE_USER_ALL commands.
+    # Disable all writes except to the WRITE_PROTECT, PAGE, MFR_EE_UNLOCK, and
+    # STORE_USER_ALL commands.
     def wp_level_1(self):
         return self.write(self.hwCmdCodeWriteProtect, [0x80])
 
 
 
     # Set the write protection to level 2:
-    # Disable all writes except to the WRITE_PROTECT, PAGE, MFR_EE_UNLOCK, STORE_USER_ALL, OPERATION,
-    # MFR_COMMAND_PLUS, MFR_PAGE_FF_MASK and CLEAR_FAULTS commands.
+    # Disable all writes except to the WRITE_PROTECT, PAGE, MFR_EE_UNLOCK,
+    # MFR_CLEAR_PEAKS, STORE_USER_ALL, OPERATION and CLEAR_FAULTS command.
     def wp_level_2(self):
         return self.write(self.hwCmdCodeWriteProtect, [0x40])
+
+
+
+    # Set the write protection to level 3:
+    # Disable all writes except to the WRITE_PROTECT, OPERATION, MFR_EE_UNLOCK,
+    # MFR_CLEAR_PEAKS, CLEAR_FAULTS, PAGE, ON_OFF_CONFIG, VOUT_COMMAND and
+    # STORE_USER_ALL.
+    def wp_level_2(self):
+        return self.write(self.hwCmdCodeWriteProtect, [0x20])
 
 
 
@@ -279,16 +295,12 @@ class I2C_LTC2977:
         ret, wpSave = self.read_wp()
         # Set the write protection level to 2.
         ret |= self.wp_level_2()
-        # Make all channels respond to global page commands.
-        ret |= self.write(self.hwCmdCodeMfrPageFfMask, [0xff])
         # Write to all channels simultaneously.
         ret |= self.write(self.hwCmdCodePage, [0xff])
         # Configure the on/off behavior.
         ret |= self.write(self.hwCmdCodeOnOffConfig, [0x1e])
         # Switch on all channels.
         ret |= self.write(self.hwCmdCodeOperation, [0x00])
-        # Make all channels ignore global page commands.
-        ret |= self.write(self.hwCmdCodeMfrPageFfMask, [0x00])
         # Restore the original write protection level.
         ret |= self.write(self.hwCmdCodeWriteProtect, [wpSave])
         return ret
@@ -301,41 +313,47 @@ class I2C_LTC2977:
         ret, wpSave = self.read_wp()
         # Set the write protection level to 2.
         ret |= self.wp_level_2()
-        # Make all channels respond to global page commands.
-        ret |= self.write(self.hwCmdCodeMfrPageFfMask, [0xff])
         # Write to all channels simultaneously.
         ret |= self.write(self.hwCmdCodePage, [0xff])
         # Configure the on/off behavior.
         ret |= self.write(self.hwCmdCodeOnOffConfig, [0x1e])
         # Switch on all channels.
         ret |= self.write(self.hwCmdCodeOperation, [0x80])
-        # Make all channels ignore global page commands.
-        ret |= self.write(self.hwCmdCodeMfrPageFfMask, [0x00])
         # Restore the original write protection level.
         ret |= self.write(self.hwCmdCodeWriteProtect, [wpSave])
         return ret
 
 
 
-    # Read the input voltage measured at VIN_SNS pin.
+    # Read the measured input supply voltage.
     def read_vin(self):
         ret, data = self.read(self.hwCmdCodeReadVin, 2)
         if ret:
             self.errorCount += 1
-            print(self.prefixErrorDevice + "Error reading the input voltage. Error code: 0x{0:02x}: ".format(ret))
+            print(self.prefixErrorDevice + "Error reading the input supply voltage. Error code: 0x{0:02x}: ".format(ret))
             return -1, float(-1)
         vinRaw = (data[1] << 8) + data[0]
         return 0, self.l11_to_float(vinRaw)
 
 
 
-    # Read the most recent ADC measured value of the channel's output voltage. 
+    # Read the measured input supply current.
+    def read_iin(self):
+        ret, data = self.read(self.hwCmdCodeReadIin, 2)
+        if ret:
+            self.errorCount += 1
+            print(self.prefixErrorDevice + "Error reading the input supply current. Error code: 0x{0:02x}: ".format(ret))
+            return -1, float(-1)
+        iinRaw = (data[1] << 8) + data[0]
+        return 0, self.l11_to_float(iinRaw)
+
+
+
+    # Read the measured output voltage.
     def read_vout(self, channel):
         if self.set_page(channel):
             self.errorCount += 1
             return -1, float(-1)
-        # Read the channel specific configuration register.
-        ret, mfrConfig = self.read_mfr_config(channel)
         # Read the VOUT value.
         ret, data = self.read(self.hwCmdCodeReadVout, 2)
         if ret:
@@ -343,27 +361,51 @@ class I2C_LTC2977:
             print(self.prefixErrorDevice + "Error reading the output voltage of channel {0:d}. Error code: 0x{0:02x}: ".format(channel, ret))
             return -1, float(-1)
         voutRaw = (data[1] << 8) + data[0]
-        # High resoltuion only for odd channels and only if bit 9 of the configuration register of the channel is set.
-        if channel & 0x1 == 0x1 and mfrConfig & (0x1 << 9):
-            return 0, self.l11_to_float(voutRaw) / 1000     # This value is in mV!
-        else:
-            return 0, self.l16_to_float(voutRaw)
+        return 0, self.l16_to_float(voutRaw)
 
 
 
-    # Read the internal junction temperature.
-    def read_temp(self):
-        ret, data = self.read(self.hwCmdCodeReadTemp, 2)
+    # Read the average output current in amperes.
+    def read_iout(self, channel):
+        if self.set_page(channel):
+            self.errorCount += 1
+            return -1, float(-1)
+        # Read the IOUT value.
+        ret, data = self.read(self.hwCmdCodeReadIout, 2)
         if ret:
             self.errorCount += 1
-            print(self.prefixErrorDevice + "Error reading the internal junction temperature. Error code: 0x{0:02x}: ".format(ret))
+            print(self.prefixErrorDevice + "Error reading the output current of channel {0:d}. Error code: 0x{0:02x}: ".format(channel, ret))
+            return -1, float(-1)
+        ioutRaw = (data[1] << 8) + data[0]
+        return 0, self.l11_to_float(ioutRaw)
+
+
+
+    # Read the external temperature sensor temperature.
+    def read_temp_ext(self):
+        ret, data = self.read(self.hwCmdCodeReadTempExt, 2)
+        if ret:
+            self.errorCount += 1
+            print(self.prefixErrorDevice + "Error reading the external temperature sensor temperature. Error code: 0x{0:02x}: ".format(ret))
             return -1, float(-1)
         temperatureRaw = (data[1] << 8) + data[0]
         return 0, self.l11_to_float(temperatureRaw)
 
 
 
-    # Read the channel specific configuration register MFR_CONFIG_LTC2977.
+    # Read the internal die junction temperature.
+    def read_temp_int(self):
+        ret, data = self.read(self.hwCmdCodeReadTempInt, 2)
+        if ret:
+            self.errorCount += 1
+            print(self.prefixErrorDevice + "Error reading the internal die junction temperature. Error code: 0x{0:02x}: ".format(ret))
+            return -1, float(-1)
+        temperatureRaw = (data[1] << 8) + data[0]
+        return 0, self.l11_to_float(temperatureRaw)
+
+
+
+    # Read the channel specific configuration register MFR_CONFIG_LTM4700.
     def read_mfr_config(self, channel):
         if self.set_page(channel):
             self.errorCount += 1
@@ -379,20 +421,35 @@ class I2C_LTC2977:
 
     # Read status information.
     def read_status(self):
-        # Temperature.
-        ret, temperature = self.read_temp()
+        # External temperature.
+        ret, temperatureExt = self.read_temp_ext()
+        if ret:
+            return -1, [-1]
+        # Internal temperature.
+        ret, temperatureInt = self.read_temp_int()
         if ret:
             return -1, [-1]
         # Vin.
         ret, vin = self.read_vin()
         if ret:
             return -1, [-1]
-        # Output voltages.
+        # Iin.
+        ret, iin = self.read_iin()
+        if ret:
+            return -1, [-1]
+        # Output voltages and currents.
         vout = []
         for channel in range(self.hwChannels):
             ret, voutChannel = self.read_vout(channel)
             if ret:
                 return -1, [-1]
             vout.append(voutChannel)
-        return 0, [temperature, vin, vout]
+        # Output currents.
+        iout = []
+        for channel in range(self.hwChannels):
+            ret, ioutChannel = self.read_iout(channel)
+            if ret:
+                return -1, [-1]
+            iout.append(ioutChannel)
+        return 0, [temperatureExt, temperatureInt, vin, iin, vout, iout]
 
