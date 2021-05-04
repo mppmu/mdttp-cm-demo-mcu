@@ -3,7 +3,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 23 Mar 2021
-# Rev.: 21 Apr 2021
+# Rev.: 04 May 2021
 #
 # Simple script to set up the ATLAS MDT Trigger Processor (TP) Command Module
 # for Xilinx IBERT tests, using the recovered clock from the FELIX IBERT module
@@ -63,7 +63,10 @@ echo "Program the clock synthesizer chip IC82 (Si5344A) for the FELIX communicat
 ${PY_MCU_CM} -d ${SERIAL_DEVICE} -v ${VERBOSITY} -c clk_setup -p IC82 config/clock/IBERT-Test/IC82_h6A_IN0-40M_O-240M_No-OOF-Registers.txt
 
 echo "Set up the multiplexer for the recovered LHC clock to use the recovered LHC clock from the KU15P."
-${PY_MCU_CM} -d ${SERIAL_DEVICE} -v ${VERBOSITY} -c mcu_cmd_raw -p gpio mux-clk-sel 0
+# Hint:
+# Recovered LHC clock from the KU15P:  mux-clk-sel = 0x0?
+# Recovered LHC clock from the ZU11EG: mux-clk-sel = 0x1?
+${PY_MCU_CM} -d ${SERIAL_DEVICE} -v ${VERBOSITY} -c mcu_cmd_raw -p gpio mux-clk-sel 0x00
 
 #echo "Program the clock synthesizer chip IC56 (Si5345A) to generate a 40 MHz LHC clock from the 120 MHz recovered clock from the FELIX IBERT on its input 3."
 #echo "CAUTION: This is only valid for the CM demonstrator V1!"
