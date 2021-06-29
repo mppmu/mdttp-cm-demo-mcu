@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 26 Aug 2020
-// Rev.: 28 Aug 2020
+// Rev.: 29 Jun 2021
 //
 // User hook functions of the boot loader running on the ATLAS MDT Trigger
 // Processor (TP) Command Module (CM) MCU.
@@ -123,6 +123,9 @@ unsigned long BL_UserCheckUpdateHook(void)
     }
     // Enter the boot loader menu.
     if (UARTCharsAvail(UARTx_BASE)) {
+        // Turn on the LED red 1 to indicate that the boot loader is active.
+        GpioSet_LedMcuUser(g_ui8Led = LED_USER_RED_1);
+
         // A return value of 1 freezes the boot loader. The reason is unknown.
         //return BL_UserMenu(UARTx_BASE);
 
