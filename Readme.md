@@ -1,9 +1,9 @@
-# ATLAS MDT Trigger Processor (TP) Command Module (CM) Microcontroller (MCU)
+# ATLAS MDT Trigger Processor (TP) Command Module (CM) Demonstrator Microcontroller (MCU)
 
 Auth: M. Fras, Electronics Division, MPI for Physics, Munich  
 Mod.: M. Fras, Electronics Division, MPI for Physics, Munich  
 Date: 09 Apr 2020  
-Rev.: 01 Sep 2020  
+Rev.: 22 Mar 2022  
 
 
 

@@ -2,10 +2,10 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 26 Aug 2020
-// Rev.: 29 Jun 2021
+// Rev.: 22 Mar 2022
 //
 // Header file of the user functions of the boot loader running on the ATLAS
-// MDT Trigger Processor (TP) Command Module (CM) MCU.
+// MDT Trigger Processor (TP) Command Module (CM) demonstrator MCU.
 //
 
 
@@ -20,8 +20,8 @@
 // ******************************************************************
 
 #define BL_NAME                     "boot loader"
-#define BL_VERSION                  "0.0.4"
-#define BL_RELEASEDATE              "29 Jun Aug 2021"
+#define BL_VERSION                  "0.0.5"
+#define BL_RELEASEDATE              "22 Mar 2022"
 // Timeout in seconds to enter the boot loader at startup.
 #define BL_ACTIVATION_TIMEOUT       5
 // Command prompt of the boot loader.

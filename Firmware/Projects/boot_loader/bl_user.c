@@ -2,10 +2,10 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 26 Aug 2020
-// Rev.: 28 Aug 2020
+// Rev.: 22 Mar 2022
 //
 // User functions of the boot loader running on the ATLAS MDT Trigger Processor
-// (TP) Command Module (CM) MCU.
+// (TP) Command Module (CM) demonstrator MCU.
 //
 
 
@@ -74,7 +74,7 @@ void UARTprint(uint32_t ui32UartBase, const char* pcStr)
 void UARTprintBlInfo(uint32_t ui32UartBase)
 {
     UARTprint(ui32UartBase, "\r\n\r\n");
-    UARTprint(ui32UartBase, "\r\n***** MDT-TP CM MCU " BL_NAME " version " BL_VERSION ", release date: " BL_RELEASEDATE " *****\r\n");
+    UARTprint(ui32UartBase, "\r\n***** MDT-TP CM demonstrator MCU " BL_NAME " version " BL_VERSION ", release date: " BL_RELEASEDATE " *****\r\n");
     // Wait some time for the UART to send out the message.
     DelayUs(1e4);
 }
