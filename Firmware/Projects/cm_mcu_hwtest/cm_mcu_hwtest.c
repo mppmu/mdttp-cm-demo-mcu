@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 08 Apr 2020
-// Rev.: 22 Mar 2022
+// Rev.: 23 Mar 2022
 //
 // Hardware test firmware running on the ATLAS MDT Trigger Processor (TP)
 // Command Module (CM) demonstrator MCU.
@@ -153,7 +153,8 @@ int main(void)
 
     // Send initial information to the UART UI.
     UARTprintf("\n\n*******************************************************************************\n");
-    UARTprintf("MDT-TP CM demonstrator MCU `%s' firmware version %s, release date: %s\n", FW_NAME, FW_VERSION, FW_RELEASEDATE);
+    UARTprintf("MDT-TP CM demonstrator MCU `%s' firmware version %s.\n", FW_NAME, FW_VERSION);
+    UARTprintf("Release date: %s\n", FW_RELEASEDATE);
     UARTprintf("*******************************************************************************\n\n");
     UARTprintf("Type `help' to get an overview of available commands.\n");
 
@@ -237,7 +238,8 @@ void Help(void)
 // Show information.
 void Info(void)
 {
-    UARTprintf("MDT-TP CM MCU `%s' firmware version %s, release date: %s\n", FW_NAME, FW_VERSION, FW_RELEASEDATE);
+    UARTprintf("MDT-TP CM demonstrator MCU `%s' firmware version %s.\n", FW_NAME, FW_VERSION);
+    UARTprintf("Release date: %s\n", FW_RELEASEDATE);
     UARTprintf("It was compiled using gcc %s at %s on %s.", __VERSION__, __TIME__, __DATE__);
 }
 
