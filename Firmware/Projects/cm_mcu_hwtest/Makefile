@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 08 Apr 2020
-# Rev.: 19 Sep 2022
+# Rev.: 20 Sep 2022
 #
 # Makefile for the firmware running on the ATLAS MDT Trigger Processor (TP)
 # Command Module (CM) MCU.
@@ -40,6 +40,7 @@ SOURCE_FILES  = cm_mcu_hwtest.c                     \
                 $(COMMON_LINK)/hw/i2c/i2c.c         \
                 $(COMMON_LINK)/hw/qssi/qssi.c       \
                 $(COMMON_LINK)/hw/uart/uart.c       \
+                $(COMMON_LINK)/utils/uartstdio.c    \
 
 HEADER_FILES  = cm_mcu_hwtest.h                     \
                 cm_mcu_hwtest_aux.h                 \
@@ -57,11 +58,11 @@ HEADER_FILES  = cm_mcu_hwtest.h                     \
                 $(COMMON_LINK)/hw/i2c/i2c.h         \
                 $(COMMON_LINK)/hw/qssi/qssi.h       \
                 $(COMMON_LINK)/hw/uart/uart.h       \
+                $(COMMON_LINK)/utils/uartstdio.h    \
 
 LINKER_FILE   = cm_mcu_hwtest.ld
 
-EXTRA_SOURCES = uartstdio.c                         \
-                ustdlib.c                           \
+EXTRA_SOURCES = ustdlib.c                           \
 
 
 
@@ -100,6 +101,7 @@ IPATH += $(COMMON_LINK)/hw/gpio
 IPATH += $(COMMON_LINK)/hw/i2c
 IPATH += $(COMMON_LINK)/hw/qssi
 IPATH += $(COMMON_LINK)/hw/uart
+IPATH += $(COMMON_LINK)/utils
 
 # Rules for building the project.
 SCATTERgcc_$(PROJECT)=$(PROJECT).ld
