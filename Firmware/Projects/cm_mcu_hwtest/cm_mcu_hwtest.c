@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 08 Apr 2020
-// Rev.: 19 Sep 2022
+// Rev.: 20 Sep 2022
 //
 // Hardware test firmware running on the ATLAS MDT Trigger Processor (TP)
 // Command Module (CM) demonstrator MCU.
@@ -237,7 +237,8 @@ void Help(void)
     UARTprintf("  i2c-det PORT [MODE]                 I2C detect devices (MODE: 0 = auto,\n");
     UARTprintf("                                          1 = quick command, 2 = read).\n");
     UARTprintf("  info                                Show information about this firmware.\n");
-    UARTprintf("  qssi    PORT R/W NUM|DATA           QSSI/QSPI access (R/W: 0 = write, 1 = read).\n");
+    UARTprintf("  qssi    PORT MODE RW END NUM|DATA   QSSI/QSPI access (MODE: 0 = SSI, 1 = QSSI;\n");
+    UARTprintf("                                      END: 0 = no, 1 = yes; RW: 0 = wr, 1 = rd).\n");
     UARTprintf("  qssi-s  PORT FREQ                   Set up the QSSI port.\n");
     UARTprintf("  reset                               Reset the MCU.\n");
     UARTprintf("  temp-a  [COUNT]                     Read analog temperatures.\n");
