@@ -1,0 +1,108 @@
+Changelog for the MDT-TP CM Demonstrator MCU Firmware for Hardware Testing
+==========================================================================
+Auth: M. Fras, Electronics Division, MPI for Physics, Munich
+Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
+Date: 06 Oct 2022
+Rev.: 06 Oct 2022
+
+
+
+Firmware Versions
+=================
+* 0.0.1 - 11 Apr 2020
+  - Initial firmware for the ATLAS MDT Trigger Processor (TP) Command
+    Module (CM) demonstrator MCU.
+* 0.0.2 - 15 Apr 2020
+  - Advanced I2C mode implemented to support SMBus and PMBus features.
+* 0.0.3 - 21 Apr 2020
+  - Added function to set up the UARTs.
+  - Some improvements and fixes.
+* 0.0.4 - 24 Apr 2020
+  - Implemented support for MCU user LEDs.
+* 0.0.5 - 27 Apr 2020
+  - Implemented all GPIO pins.
+* 0.0.6 - 28 Apr 2020
+  - Added initialization of all GPIO pins.
+  - Fixed mistake and added missing GPIO pins.
+  - Added command to reset the muxes and the I2C port expanders.
+  - Added command to read the interrupt signals of the I2C port expanders.
+* 0.0.7 - 28 Apr 2020
+  - Reading of the temperatures of the LTM4644 devices via the MCU ADCs
+    implemented.
+* 0.0.7 - 29 Apr 2020
+  - Changed the default value of the HS mux PD signals from low to high, as the
+    power down (PD) pin of the muxes is active low.
+* 0.1.0 - 08 May 2020
+  - Switched to use the interal oscillator of the MCU, as no external crystal
+    is installed on the Command Module demonstrator.
+  - This is the first version that can actually run on the hardware!
+* 0.1.1 - 14 May 2020
+  - Fixed reading/writing the GPIO pins.
+* 0.1.2 - 15 May 2020
+  - Fixed mistake in pin assignment of I2C port 7 and calculation of analogue
+    temperature values.
+* 0.1.3 - 20 May 2020
+  - Fixes after test of GPIO pins by Mr. Stacheter from Pro Design.
+* 0.1.4 - 25 May 2020
+  - Implemented unlocking of locked GPIO pins (like JTAG/SWD and NMI pins)
+    during initialization of the GPIO pin. To support this function, the
+    TivaWare has been updated to version 2.2.0.295.
+* 0.1.5 - 29 May 2020
+  - Fixed swapped pins 'ZUP_PS_PROG_B' and 'ZUP_PS_INIT_B' (mistake in label
+    positions in schematic) and added support for open-drain outputs to GPIO
+    functions.
+* 0.1.6 - 24 Jun 2020
+  - Changes after Command Module operation with KU15P and ZU11EG at Pro Design.
+  - Use spare/reserved MCU pins PH1, PH2 and PH3 to control the logical power
+    domains on the board.
+  - Added commands to power on/off the KU15P and the ZU11EG.
+* 0.1.7 - 29 Jun 2020
+  - Re-ordered bits for power domains: 0 = clock, 1 = KU15P, 2 = ZU11EG.
+* 0.1.8 - 23 Jul 2020
+  - Improved power up/down/status routines for the KU15P and the ZU11EG.
+* 0.1.9 - 24 Jul 2020
+  - Improved power control functions.
+  - Added clock and FireFly domains.
+* 0.1.10 - 28 Jul 2020
+  - Implemented a weak pull-up for the SM_PWR_EN pin.
+  - The clock power domain stays on when both the KU15P and the ZU11EG power
+    domain are switched off.
+  - Bit positions of status LEDs now defined in header file.
+  - Analog temperature reading in degC instead of raw hex.
+* 0.1.11 - 30 Jul 2020
+  - Automatic selection of UART UI port at boot time.
+* 0.1.12 - 31 Jul 2020
+  - Bit positions of user LEDs now defined in header file.
+  - Blinking LED while waiting for any key pressed on the front-panel USB UART.
+* 0.1.13 - 04 Aug 2020
+  - Handshaking between SM and CM implemented.
+  - The SM UART is now correctly selected if no cable is plugged in the
+    front-panel mini-USB UART port.
+* 0.1.14 - 06 Aug 2020
+  - Status LEDs updated when the power is switched by the PWR_ENA pin.
+  - Choice of user UARTs now depends on which UART is used as UART UI.
+* 0.2.0 - 27 Aug 2020
+  - Restructured the project according to peripherals.
+* 0.2.1 - 15 Sep 2020
+  - Fixed the default value (polarity) of the power down (PD) signal for the
+    Diodes PI3DBS16212XUAEX mux/de-mux switches.
+* 0.2.2 - 19 Nov 2020
+  - Changed the default value of GPIO mux-hs-sel to 0x1, so that the SM RX/TX 1
+    is connected to the CM KU15P TX/RX and the SM RX/TX 2 is connected to the
+    CM ZU11EG TX/RX.
+* 0.3.0 - 21 Jan 2021
+   Changed the pin type of the reserved GPIO pins from OD (open drain) to
+   STD (standard push-pull). This is required for the CM demonstrator V2, which
+   has pull-down resistors on the attached nets, so that the MCU outputs must
+   be actively driven high.
+* 0.3.1 - 22 Mar 2022
+  - Explicitly marked that this firmware is made for the MDT-TP CM
+    demonstrator.
+* 0.3.2 - 23 Mar 2022
+  - Update info message format.
+* 0.4.0 - 19 Sep 2022
+  - Added QSSI support in the firmware for access to the IS25LP064A-JBLA3
+    64 Mbit SPI and quad SPI flash memory device.
+* 0.4.0 - 20 Sep 2022
+  - Updated the QSSI functions for better flexibility.
+

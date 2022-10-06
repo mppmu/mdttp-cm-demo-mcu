@@ -1,0 +1,23 @@
+Changelog for the MDT-TP CM Demonstrator MCU Bootloader
+=======================================================
+Auth: M. Fras, Electronics Division, MPI for Physics, Munich
+Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
+Date: 06 Oct 2022
+Rev.: 06 Oct 2022
+
+
+
+Bootloader Versions
+===================
+* 0.0.1 .. 0.0.2
+  - Early versions ported from the Tiva TM4C1294 Connected LaunchPad.
+  - Not included in the Git repository.
+* 0.0.3 - 28 Aug 2020
+  - First functional version of the serial bootloader on the MDT-TP CM
+    demonstrator MCU.
+- 0.0.4 - 29 Jun 2021
+  - Ensure that the LED red 1 is on when the boot loader is active.
+* 0.0.5 - 22 Mar 2022
+  - Explicitly marked that this bootloader is made for the MDT-TP CM
+    demonstrator.
+
