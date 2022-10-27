@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 26 Oct 2022
-# Rev.: 26 Oct 2022
+# Rev.: 27 Oct 2022
 #
 # Python script to automatically update the firmware of the ATLAS MDT Trigger
 # Processor (TP) Command Module (CM) MCU from the SM SoM Zynq via the CM MCU
@@ -37,26 +37,34 @@ prefixError = "ERROR: "
 # Get command line arguments.
 import argparse
 parser = argparse.ArgumentParser(description='Update the firmware of the CM MCU from the SM SoM Zynq.')
+parser.add_argument('-a', '--BUTool_args', action='store', type=str,
+                    dest='BUTool_arguments', default=BUTool_arguments, metavar='BUTOOL_ARGS',
+                    help='Arguments for the BUTool.')
 parser.add_argument('-b', '--BUTool', action='store', type=str,
                     dest='BUTool_exe', default=BUTool_exe_default, metavar='BUTOOL',
                     help='BUTool used to invoke the CM MCU bootloader.')
 parser.add_argument('-d', '--device', action='store', type=str,
                     dest='serialDevice', default='/dev/ttyUL1', metavar='SERIAL_DEVICE',
                     help='Serial device to access the CM MCU.')
+parser.add_argument('-e', '--BUTool_env', action='store', type=str,
+                    dest='BUTool_environment', default=BUTool_environment, metavar='BUTOOL_ENV',
+                    help='Environment for the BUTool.')
 parser.add_argument('-f', '--firmware', action='store', type=str,
                     dest='mcuFirmwareFile', default=None, metavar='FIRMWARE_FILE',
-                    help='Parameter(s) for the selected command.')
+                    help='CM MCU firmware binary file.')
 parser.add_argument('-s', '--sflash', action='store', type=str,
                     dest='sflash_exe', default=sflash_exe_default, metavar='SFLASH',
-                    help='BUTool used to invoke the CM MCU bootloader.')
+                    help='TI sflash tool to download the firmware via the CM MCU bootloader.')
 parser.add_argument('-v', '--verbosity', action='store', type=int,
                     dest='verbosity', default="1", choices=range(0, 3),
                     help='Set the verbosity level. The default is 1.')
 args = parser.parse_args()
 
+BUTool_arguments = args.BUTool_arguments
 BUTool_exe = args.BUTool_exe
-mcuFirmwareFile = args.mcuFirmwareFile
+BUTool_environment = args.BUTool_environment
 serialDevice = args.serialDevice
+mcuFirmwareFile = args.mcuFirmwareFile
 sflash_exe = args.sflash_exe
 if sflash_exe == sflash_exe_default:
     sflash_exe = os.path.join(os.path.dirname(sys.argv[0]), sflash_exe)
