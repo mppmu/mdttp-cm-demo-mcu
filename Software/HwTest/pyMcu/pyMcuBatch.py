@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 24 Apr 2020
-# Rev.: 08 May 2020
+# Rev.: 28 Oct 2022
 #
 # Python script to load and execute a batch of MCU commands from a file on the
 # TI Tiva TM4C1290 MCU on the ATLAS MDT Trigger Processor (TP) Command Module
@@ -191,7 +191,7 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description='Execute an MCU command batch file.')
     parser.add_argument('-d', '--device', action='store', type=str,
-                        dest='serialDevice', default='/dev/ttyUSB0',
+                        dest='serialDevice', default='/dev/ttyUL1',
                         help='Serial device to access the MCU.')
     parser.add_argument('-f', '--file', action='store', type=str,
                         dest='batchFileName', default='mcu.cmd', required=True,

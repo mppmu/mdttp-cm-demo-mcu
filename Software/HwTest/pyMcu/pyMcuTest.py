@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 30 Apr 2020
-# Rev.: 24 Jul 2020
+# Rev.: 28 Oct 2022
 #
 # Python script to test hardware features of the TI Tiva TM4C1290 MCU on the
 # ATLAS MDT Trigger Processor (TP) Command Module (CM) over a serial port
@@ -302,7 +302,7 @@ if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description='Run an automated set of MCU tests.')
     parser.add_argument('-d', '--device', action='store', type=str,
-                        dest='serialDevice', default='/dev/ttyUSB0',
+                        dest='serialDevice', default='/dev/ttyUL1',
                         help='Serial device to access the MCU.')
     parser.add_argument('-v', '--verbosity', action='store', type=int,
                         dest='verbosity', default="1", choices=range(0, 5),
