@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 24 Apr 2020
-# Rev.: 04 May 2020
+# Rev.: 28 Oct 2022
 #
 # MCU command file for testing all availabel MCU commands.
 #
@@ -16,8 +16,10 @@ help
 delay 100000            # Delay for 100,000 us.
 
 # I2C access.
-i2c 2 0x70 0x8          # Quick command.
-i2c 2 0x70 0x0 0x1      # Set pointer register of FireFly.
+i2c 4 0x50 0x4 0x00     # Read device family code from DS28CM00 serial number chip.
+i2c 4 0x50 0x3 1
+#i2c 2 0x70 0x8          # Quick command.
+#i2c 2 0x70 0x0 0x1      # Set pointer register of FireFly.
 
 # Detect I2C devices on port 0.
 i2c-det 0
@@ -25,25 +27,25 @@ i2c-det 0
 # Firmware information.
 info
 
-# Set the LEDs.
-gpio led                # Get the current value of the user LEDs.
-gpio led 0x1            # Set the user LEDs to 0x1.
+# Set the user LEDs.
+gpio led-user           # Get the current value of the user LEDs.
+gpio led-user 0x1       # Set the user LEDs to 0x1.
 delay 100000
-gpio led 0x2
+gpio led-user 0x2
 delay 100000
-gpio led 0x4
+gpio led-user 0x4
 delay 100000
-gpio led 0x8
+gpio led-user 0x8
 delay 100000
-gpio led 0x0
+gpio led-user 0x0
 
 # UART access.
-uart-s 5 115200 0 1     # Set up the UART port 5: 115200 baud, no parity,
+uart-s 1 115200 0 1     # Set up the UART port 5: 115200 baud, no parity,
                         # internal loopback mode enabled.
-uart 5 0 0x12 0x34 0x56 0x78    # Send data bytes.
-uart 5 1 2              # Read 2 data bytes.
-uart 5 1                # Read all data bytes.
-uart 5 1                # This will issue a warning, as no more data are
+uart 1 0 0x12 0x34 0x56 0x78    # Send data bytes.
+uart 1 1 2              # Read 2 data bytes.
+uart 1 1                # Read all data bytes.
+uart 1 1                # This will issue a warning, as no more data are
                         # available.
 
 # Stop execution of this MCU command batch file.
