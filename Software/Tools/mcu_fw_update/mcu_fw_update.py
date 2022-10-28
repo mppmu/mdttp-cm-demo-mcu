@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 26 Oct 2022
-# Rev.: 27 Oct 2022
+# Rev.: 28 Oct 2022
 #
 # Python script to automatically update the firmware of the ATLAS MDT Trigger
 # Processor (TP) Command Module (CM) MCU from the SM SoM Zynq via the CM MCU
@@ -106,8 +106,9 @@ if verbosity >= 2:
     print("Opening the serial device `" + serialDevice + "'.")
 try:
     serMcu = serial.Serial(serialDevice, baudrate=115200, timeout=0.5, exclusive=True)
-except:
+except Exception as e:
     print(prefixError + "Cannot open the serial device `" + serialDevice + "'!")
+    print(str(e))
     sys.exit(7)
 
 
@@ -124,7 +125,7 @@ while True:
     choice = input().lower()
     if choice == 'yes':
         break
-    if choice == 'n' or choice == 'no' or choice == '':
+    if choice in {'', 'n', 'no'}:
         print()
         print("CM MCU firmware update aborted!")
         sys.exit(8)
