@@ -2,12 +2,12 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 20 Apr 2020
-# Rev.: 20 Apr 2020
+# Rev.: 28 Oct 2022
 #
 # Configuration file for pylint3.
 #
-# Purpose: Check the front-end code for accessing the TM4C1294NCPDT MCU on the
-# TM4C1294 Connected LaunchPad Evaluation Kit over a serial port (UART).
+# Purpose: Check the front-end code for accessing the TM4C1290NCPDT MCU on the
+# L0MDT Command Module Demonstrator over a serial port (UART).
 #
 
 
@@ -142,12 +142,12 @@ disable=print-statement,
         dict-keys-not-iterating,
         dict-values-not-iterating,
         # Additional to default:
-        C0330,                      # bad-continuation
-        C0413,                      # wrong-import-position
         C0111,                      # missing-docstring
 #        C0301,                      # line-too-long
         C0305,                      # trailing-newlines
         C0326,                      # bad-whitespace
+        C0330,                      # bad-continuation
+        C0413,                      # wrong-import-position
         E0401,                      # import-error
         R0801,                      # duplicate-code
         W0611,                      # unused-import
