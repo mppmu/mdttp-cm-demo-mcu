@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 24 Apr 2020
-# Rev.: 04 Aug 2020
+# Rev.: 28 Oct 2022
 #
 # Python class for communicating with the TM4C1290NCPDT MCU over a serial port
 # (UART).
@@ -59,6 +59,7 @@ class McuSerial:
         self.ser.rtscts = False             # Disable hardware (RTS/CTS) flow control.
         self.ser.dsrdtr = False             # Disable hardware (DSR/DTR) flow control.
         self.ser.writeTimeout = 2           # Timeout for write.
+        self.ser.exclusive = True           # Set exclusive access mode.
         self.errorCount = 0
         self.accessRead = 0
         self.accessWrite = 0
