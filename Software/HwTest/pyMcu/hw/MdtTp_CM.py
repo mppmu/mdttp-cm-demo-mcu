@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 04 Aug 2020
-# Rev.: 28 Apr 2021
+# Rev.: 14 Feb 2023
 #
 # Python class for accessing the ATLAS MDT Trigger Processor (TP) Command
 # Module (CM) via the TI Tiva TM4C1290 MCU UART.
@@ -55,13 +55,20 @@ class MdtTp_CM:
         self.debugLevel = debugLevel
         self.warningCount = 0
         self.errorCount = 0
-        self.init_hw()
+        self.define_hw()
+
+
+
+    # Define the hardware components.
+    def define_hw(self):
+        # Define the MCU I2C peripherals.
+        self.define_hw_i2c()
 
 
 
     # Initialize the hardware components.
     def init_hw(self):
-        # Define the MCU peripherals.
+        # Initialize the MCU I2C peripherals.
         self.init_hw_i2c()
 
 
@@ -196,15 +203,13 @@ class MdtTp_CM:
     # I2C bus.
     # ===============================================================
 
-    # Initialize the I2C busses and devices.
-    def init_hw_i2c(self):
+    # Define the I2C buses and devices.
+    def define_hw_i2c(self):
         # I2C buses.
         self.mcuI2C = []
         for i in range(0, self.i2cBusNum):
             self.mcuI2C.append(McuI2C.McuI2C(self.mcuSer, i))
             self.mcuI2C[i].debugLevel = self.debugLevel
-            # Reset the I2C bus.
-            self.mcuI2C[i].ms_reset_bus()
 
         # IC114: DS28CM00 silicon serial number IC.
         # I2C port 4, slave address 0x50.
@@ -227,26 +232,11 @@ class MdtTp_CM:
         # IC38 (MCP9808): I2C port 4, slave address 0x1c
         self.i2cDevice_IC38_MCP9808 = I2C_MCP9808.I2C_MCP9808(self.mcuI2C[4], 0x1c, "IC38 (MCP9808)")
         self.i2cDevice_IC38_MCP9808.debugLevel = self.debugLevel
-        # Set up the configuration registers.
-        self.i2cDevice_IC34_MCP9808.write_config(0x0000)
-        self.i2cDevice_IC35_MCP9808.write_config(0x0000)
-        self.i2cDevice_IC36_MCP9808.write_config(0x0000)
-        self.i2cDevice_IC37_MCP9808.write_config(0x0000)
-        self.i2cDevice_IC38_MCP9808.write_config(0x0000)
-        # Set up the resolution registers.
-        self.i2cDevice_IC34_MCP9808.write_resolution(0x0003)
-        self.i2cDevice_IC35_MCP9808.write_resolution(0x0003)
-        self.i2cDevice_IC36_MCP9808.write_resolution(0x0003)
-        self.i2cDevice_IC37_MCP9808.write_resolution(0x0003)
-        self.i2cDevice_IC38_MCP9808.write_resolution(0x0003)
 
         # IC39: MCP9903 multi-channel low-temperature remote diode sensor IC.
         # I2C port 4, slave address 0x5c
         self.i2cDevice_IC39_MCP9903 = I2C_MCP9903.I2C_MCP9903(self.mcuI2C[4], 0x5c, "IC39 (MCP9903)")
         self.i2cDevice_IC39_MCP9903.debugLevel = self.debugLevel
-        # Set up the configuration registers.
-        self.i2cDevice_IC39_MCP9903.write_config_0(0x00)
-        self.i2cDevice_IC39_MCP9903.write_config_1(0x00)
 
         # Power modules.
         # IC26: LTC2977 8-channel PMBus power system manager IC (KU15P).
@@ -271,18 +261,6 @@ class MdtTp_CM:
         self.i2cDevice_IC79_LTM4700 = I2C_LTM4700.I2C_LTM4700(self.mcuI2C[0], 0x43, "IC79 (LTM4700)")
         # IC80: LTM4675 regulator with digital power system management IC (FireFly modules).
         self.i2cDevice_IC80_LTM4675 = I2C_LTM4675.I2C_LTM4675(self.mcuI2C[2], 0x44, "IC80 (LTM4675)")
-        # Set write protection for all power ICs.
-        self.i2cDevice_IC26_LTC2977.wp_level_1()
-        self.i2cDevice_IC27_LTC2977.wp_level_1()
-        self.i2cDevice_IC49_LTC2977.wp_level_1()
-        self.i2cDevice_IC50_LTC2977.wp_level_1()
-        self.i2cDevice_IC51_LTC2977.wp_level_1()
-        self.i2cDevice_IC52_LTC2977.wp_level_1()
-        self.i2cDevice_IC76_LTM4700.wp_level_1()
-        self.i2cDevice_IC77_LTM4700.wp_level_1()
-        self.i2cDevice_IC78_LTM4700.wp_level_1()
-        self.i2cDevice_IC79_LTM4700.wp_level_1()
-        self.i2cDevice_IC80_LTM4675.wp_level_1()
 
         # I2C mux for clock I2C bus:
         # IC55 (PCA9547PW): I2C port 3, slave address 0x70
@@ -369,8 +347,50 @@ class MdtTp_CM:
 
 
 
+    # Initialize the I2C buses and devices.
+    def init_hw_i2c(self):
+        # Reset all active I2C buses.
+        for i in self.i2cBusActive:
+            self.mcuI2C[i].ms_reset_bus()
+
+        # MCP9808 digital temperature sensor ICs.
+        # Set up the configuration registers.
+        self.i2cDevice_IC34_MCP9808.write_config(0x0000)
+        self.i2cDevice_IC35_MCP9808.write_config(0x0000)
+        self.i2cDevice_IC36_MCP9808.write_config(0x0000)
+        self.i2cDevice_IC37_MCP9808.write_config(0x0000)
+        self.i2cDevice_IC38_MCP9808.write_config(0x0000)
+        # Set up the resolution registers.
+        self.i2cDevice_IC34_MCP9808.write_resolution(0x0003)
+        self.i2cDevice_IC35_MCP9808.write_resolution(0x0003)
+        self.i2cDevice_IC36_MCP9808.write_resolution(0x0003)
+        self.i2cDevice_IC37_MCP9808.write_resolution(0x0003)
+        self.i2cDevice_IC38_MCP9808.write_resolution(0x0003)
+
+        # IC39: MCP9903 multi-channel low-temperature remote diode sensor IC.
+        # Set up the configuration registers.
+        self.i2cDevice_IC39_MCP9903.write_config_0(0x00)
+        self.i2cDevice_IC39_MCP9903.write_config_1(0x00)
+
+        # Set write protection for all power ICs.
+        self.i2cDevice_IC26_LTC2977.wp_level_1()
+        self.i2cDevice_IC27_LTC2977.wp_level_1()
+        self.i2cDevice_IC49_LTC2977.wp_level_1()
+        self.i2cDevice_IC50_LTC2977.wp_level_1()
+        self.i2cDevice_IC51_LTC2977.wp_level_1()
+        self.i2cDevice_IC52_LTC2977.wp_level_1()
+        self.i2cDevice_IC76_LTM4700.wp_level_1()
+        self.i2cDevice_IC77_LTM4700.wp_level_1()
+        self.i2cDevice_IC78_LTM4700.wp_level_1()
+        self.i2cDevice_IC79_LTM4700.wp_level_1()
+        self.i2cDevice_IC80_LTM4675.wp_level_1()
+
+
+
     # Reset all I2C busses.
     def i2c_reset(self):
+        if self.debugLevel >= 1:
+            print(self.prefixDebug + "Resetting all I2C buses.")
         for i in range(0, self.i2cBusNum):
             self.mcuI2C[i].ms_reset_bus()
 
