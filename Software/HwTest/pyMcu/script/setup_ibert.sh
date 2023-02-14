@@ -3,7 +3,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 23 Mar 2021
-# Rev.: 26 Mar 2021
+# Rev.: 14 Feb 2023
 #
 # Simple script to set up the ATLAS MDT Trigger Processor (TP) Command Module
 # for Xilinx IBERT tests.
@@ -24,6 +24,8 @@ VERBOSITY="0"
 
 echo "Power up the Command Module."
 ${PY_MCU_CM} -d ${SERIAL_DEVICE} -v ${VERBOSITY} -c power_up
+# Wait some time so that the newly powered devices are ready for operation.
+sleep 0.2
 
 echo "Program the clock synthesizer chip IC60 (Si5345A) for the sector logic (SL) communication."
 ${PY_MCU_CM} -d ${SERIAL_DEVICE} -v ${VERBOSITY} -c clk_setup -p IC60 config/clock/IBERT-Test/IC60_h6B_FreeRun_O-100M-Registers.txt
