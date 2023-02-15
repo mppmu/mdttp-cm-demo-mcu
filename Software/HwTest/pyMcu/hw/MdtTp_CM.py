@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 04 Aug 2020
-# Rev.: 14 Feb 2023
+# Rev.: 15 Feb 2023
 #
 # Python class for accessing the ATLAS MDT Trigger Processor (TP) Command
 # Module (CM) via the TI Tiva TM4C1290 MCU UART.
@@ -13,6 +13,7 @@
 
 
 import os
+import time
 import McuGpio
 import McuI2C
 import McuSerial
@@ -87,6 +88,8 @@ class MdtTp_CM:
         if ret:
             self.errorCount += 1
             print(self.prefixError + "CM power up failed!")
+        # Wait some time so that the newly powered devices are ready for operation.
+        time.sleep(0.2)
         return ret
 
 

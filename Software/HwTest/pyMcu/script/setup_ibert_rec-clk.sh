@@ -3,7 +3,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 23 Mar 2021
-# Rev.: 14 Feb 2023
+# Rev.: 15 Feb 2023
 #
 # Simple script to set up the ATLAS MDT Trigger Processor (TP) Command Module
 # for Xilinx IBERT tests, using the recovered clock from the FELIX IBERT module
@@ -38,8 +38,6 @@ VERBOSITY="0"
 
 echo "Power up the Command Module."
 ${PY_MCU_CM} -d ${SERIAL_DEVICE} -v ${VERBOSITY} -c power_up
-# Wait some time so that the newly powered devices are ready for operation.
-sleep 0.2
 
 echo "Program the clock synthesizer chip IC54 (SI5341A) to generate a fixed 40 MHz clock used as source for the 240 MHz reference clock for the FELIX IBERT."
 ${PY_MCU_CM} -d ${SERIAL_DEVICE} -v ${VERBOSITY} -c clk_setup -p IC54 config/clock/IBERT-Test/IC54_h74_FreeRun_O-40M-Registers.txt
