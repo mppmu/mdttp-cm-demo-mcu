@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 28 Apr 2021
-# Rev.: 28 Apr 2021
+# Rev.: 24 Feb 2023
 #
 # Python class for communicating with the LTM4675 dual 9A or single 18A uModule
 # regulator with digital power system management IC.
@@ -213,17 +213,18 @@ class I2C_LTM4675:
             self.errorCount += 1
             print(self.prefixErrorDevice + "Error reading the page number. Error code: 0x{0:02x}: ".format(ret))
             return -1, 0xff
+        page = data[0]
         if self.check_page_number(page):
             self.errorCount += 1
             return -1, 0xff
-        page = data[0]
         self.hwPage = page
         return 0, page
 
 
 
     # Calculate a float value from an L11 (Linear_5s_11s) value.
-    def l11_to_float(self, b):
+    @classmethod
+    def l11_to_float(cls, b):
         # PMBus data field b[15:0]
         # Value = Y * 2**N
         # where N = b[15:11] is a 5-bit two’s complement integer
@@ -239,13 +240,23 @@ class I2C_LTM4675:
 
 
     # Calculate a float value from an L16 (Linear_16u) value.
-    def l16_to_float(self, b):
+    @classmethod
+    def l16_to_float(cls, b):
         # PMBus data field b[15:0]
         # Value = Y * 2**N
         # where Y = b[15:0] is an unsigned integer
         #   and N = Vout_mode_parameter is a 5-bit two’s complement exponent that is hardwired to –13 decimal.
         y = b & 0xffff
         return float(y * 2**(-12))
+
+
+
+    # Read the write protection status.
+    def read_wp(self):
+        ret, data = self.read(self.hwCmdCodeWriteProtect, 1)
+        if ret:
+            return -1, 0xff
+        return 0, data[0]
 
 
 
@@ -275,7 +286,7 @@ class I2C_LTM4675:
     # Disable all writes except to the WRITE_PROTECT, OPERATION, MFR_EE_UNLOCK,
     # MFR_CLEAR_PEAKS, CLEAR_FAULTS, PAGE, ON_OFF_CONFIG, VOUT_COMMAND and
     # STORE_USER_ALL.
-    def wp_level_2(self):
+    def wp_level_3(self):
         return self.write(self.hwCmdCodeWriteProtect, [0x20])
 
 
@@ -289,7 +300,7 @@ class I2C_LTM4675:
         # Write to all channels simultaneously.
         ret |= self.write(self.hwCmdCodePage, [0xff])
         # Configure the on/off behavior.
-        ret |= self.write(self.hwCmdCodeOnOffConfig, [0x1f])
+        ret |= self.write(self.hwCmdCodeOnOffConfig, [0x1e])
         # Switch on all channels.
         ret |= self.write(self.hwCmdCodeOperation, [0x00])
         # Restore the original write protection level.
@@ -307,7 +318,7 @@ class I2C_LTM4675:
         # Write to all channels simultaneously.
         ret |= self.write(self.hwCmdCodePage, [0xff])
         # Configure the on/off behavior.
-        ret |= self.write(self.hwCmdCodeOnOffConfig, [0x1f])
+        ret |= self.write(self.hwCmdCodeOnOffConfig, [0x1e])
         # Switch on all channels.
         ret |= self.write(self.hwCmdCodeOperation, [0x80])
         # Restore the original write protection level.
@@ -349,7 +360,7 @@ class I2C_LTM4675:
         ret, data = self.read(self.hwCmdCodeReadVout, 2)
         if ret:
             self.errorCount += 1
-            print(self.prefixErrorDevice + "Error reading the output voltage of channel {0:d}. Error code: 0x{0:02x}: ".format(channel, ret))
+            print(self.prefixErrorDevice + "Error reading the output voltage of channel {0:d}. Error code: 0x{1:02x}: ".format(channel, ret))
             return -1, float(-1)
         voutRaw = (data[1] << 8) + data[0]
         return 0, self.l16_to_float(voutRaw)
@@ -365,7 +376,7 @@ class I2C_LTM4675:
         ret, data = self.read(self.hwCmdCodeReadIout, 2)
         if ret:
             self.errorCount += 1
-            print(self.prefixErrorDevice + "Error reading the output current of channel {0:d}. Error code: 0x{0:02x}: ".format(channel, ret))
+            print(self.prefixErrorDevice + "Error reading the output current of channel {0:d}. Error code: 0x{1:02x}: ".format(channel, ret))
             return -1, float(-1)
         ioutRaw = (data[1] << 8) + data[0]
         return 0, self.l11_to_float(ioutRaw)

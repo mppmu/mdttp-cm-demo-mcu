@@ -4,7 +4,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 04 Aug 2020
-# Rev.: 15 Feb 2023
+# Rev.: 24 Feb 2023
 #
 # Python class for accessing the ATLAS MDT Trigger Processor (TP) Command
 # Module (CM) via the TI Tiva TM4C1290 MCU UART.
@@ -34,8 +34,8 @@ import I2C_FireFly
 class MdtTp_CM:
 
     # Message prefixes and separators.
-    prefixStatus        = " - "
-    prefixDetails       = " - "
+    prefixStatus        = "    "
+    prefixDetails       = "    "
     separatorDetails    = " - "
     prefixWarning       = "WARNING: {0:s}: ".format(__file__)
     prefixError         = "ERROR: {0:s}: ".format(__file__)
@@ -72,6 +72,23 @@ class MdtTp_CM:
         # Initialize the MCU I2C peripherals.
         self.init_hw_i2c()
 
+
+
+    # ===============================================================
+    # Auxiliary functions.
+    # ===============================================================
+
+    # Extract the integer value from an MCU answer string.
+    @classmethod
+    def mcu_str2int(cls, mcuStr):
+        data = mcuStr.split(' ')
+        if not data:
+            return -1, 0x0
+        if len(data) < 2:
+            return -1, 0x0
+        if data[0].strip(':') != "OK":
+            return -1, 0x0
+        return 0, int(data[-1].strip(), 0)
 
 
 
@@ -127,17 +144,22 @@ class MdtTp_CM:
 
 
 
-    # Read the serial number of the board
+    # Read the serial number of the board.
     def serial_number(self):
         if self.debugLevel >= 1:
-            print(self.prefixDebug + "Reading the serial number from the DS28CM00 device.")
+            print(self.prefixDebug + "Reading the serial number from {0:s}.", self.i2cDevice_IC114_DS28CM00.deviceName)
         ret, deviceFamilyCode, serialNumber, crc, crcError = self.i2cDevice_IC114_DS28CM00.read_all()
+        if ret:
+            print(self.prefixError + "Error reading the serial number from {0:s}!", self.i2cDevice_IC114_DS28CM00.deviceName)
+            return ret
         print("Device family code: 0x{0:02x}".format(deviceFamilyCode))
         print("Serial number: 0x{0:012x}".format(serialNumber))
         print("CRC: 0x{0:02x}".format(crc))
         if crcError:
             self.errorCount += 1
             print(self.prefixError + "CRC error detected!")
+            return 1
+        return 0
 
 
 
@@ -353,7 +375,7 @@ class MdtTp_CM:
     # Initialize the I2C buses and devices.
     def init_hw_i2c(self):
         # Reset all active I2C buses.
-        for i in self.i2cBusActive:
+        for i in range(0, self.i2cBusNum):
             self.mcuI2C[i].ms_reset_bus()
 
         # MCP9808 digital temperature sensor ICs.
@@ -390,7 +412,7 @@ class MdtTp_CM:
 
 
 
-    # Reset all I2C busses.
+    # Reset all I2C buses.
     def i2c_reset(self):
         if self.debugLevel >= 1:
             print(self.prefixDebug + "Resetting all I2C buses.")
@@ -437,6 +459,38 @@ class MdtTp_CM:
                 print(self.mcuSer.get_full())
             return ret, ""
         return 0, self.mcuSer.get()
+
+
+
+    # Get the MCU user LEDs.
+    def mcu_led_user_get(self):
+        if self.debugLevel >= 1:
+            print(self.prefixDebug + "Reading the MCU user LEDs.")
+        # Send command.
+        self.mcuSer.send("gpio led-user")
+        # Evaluate response.
+        ret = self.mcuSer.eval()
+        if ret:
+            self.errorCount += 1
+            print(self.prefixError + "Error reading the MCU user LEDs!")
+            return ret, 0
+        return 0, self.mcu_str2int(self.mcuSer.get())[1]
+
+
+
+    # Set the MCU user LEDs.
+    def mcu_led_user_set(self, value):
+        if self.debugLevel >= 1:
+            print(self.prefixDebug + "Setting the MCU user LEDs to 0x{0:03x}.".format(value))
+        # Send command.
+        self.mcuSer.send("gpio led-user 0x{0:03x}".format(value))
+        # Evaluate response.
+        ret = self.mcuSer.eval()
+        if ret:
+            self.errorCount += 1
+            print(self.prefixError + "Error setting the MCU user LEDs!")
+            return ret
+        return 0
 
 
 
@@ -681,7 +735,7 @@ class MdtTp_CM:
         ret, kup1V8IoCurrent    = self.pm_get_current(self.i2cDevice_IC27_LTC2977, 3, self.IC27_LTC2977_currentSenseShunts[3])
         ret, kupMgtAuxVoltage   = self.i2cDevice_IC27_LTC2977.read_vout(4)
         ret, kupMgtAuxCurrent   = self.pm_get_current(self.i2cDevice_IC27_LTC2977, 5, self.IC27_LTC2977_currentSenseShunts[5])
-        # IC49: LTC2977 8-channel PMBus power system manager IC (ZU11EG). 
+        # IC49: LTC2977 8-channel PMBus power system manager IC (ZU11EG).
         ret, zupMgtAvccVoltage  = self.i2cDevice_IC49_LTC2977.read_vout(0)
         ret, zupMgtAvccCurrent  = self.pm_get_current(self.i2cDevice_IC49_LTC2977, 1, self.IC49_LTC2977_currentSenseShunts[1])
         ret, zupMgtAvttVoltage  = self.i2cDevice_IC49_LTC2977.read_vout(2)
@@ -706,7 +760,7 @@ class MdtTp_CM:
         ret, zupMgtRVttCurrent  = self.pm_get_current(self.i2cDevice_IC51_LTC2977, 3, self.IC51_LTC2977_currentSenseShunts[3])
         ret, zupMgtAuxVoltage   = self.i2cDevice_IC51_LTC2977.read_vout(4)
         ret, zupMgtAuxCurrent   = self.pm_get_current(self.i2cDevice_IC51_LTC2977, 5, self.IC51_LTC2977_currentSenseShunts[5])
-        # IC52: LTC2977 8-channel PMBus power system manager IC (clock).  
+        # IC52: LTC2977 8-channel PMBus power system manager IC (clock).
         ret, clock1V8Voltage    = self.i2cDevice_IC52_LTC2977.read_vout(0)
         ret, clock1V8Current    = self.pm_get_current(self.i2cDevice_IC52_LTC2977, 1, self.IC52_LTC2977_currentSenseShunts[1])
         ret, clock2V5Voltage    = self.i2cDevice_IC52_LTC2977.read_vout(2)
@@ -904,6 +958,7 @@ class MdtTp_CM:
         if fireFlyNum < 1 or fireFlyNum > self.fireFlyNum:
             print(self.prefixError + "FireFly number {0:d} out of range {1:d}..{2:d}!".format(fireFlyNum, 1, self.fireFlyNum))
             return -1
+        return 0
 
 
 
@@ -942,6 +997,7 @@ class MdtTp_CM:
         print("    Vendor Name          : {0:s}".format(vendorName))
         print("    Vendor Part Number   : {0:s}".format(vendorPartNumber))
         print("    Vendor Serial Number : {0:s}".format(vendorSerialNumber))
+        return 0
 
 
 
@@ -974,4 +1030,5 @@ class MdtTp_CM:
             else:
                 print("{0:3d} .. {1:3d} degC".format((i - 1) * 5, i * 5), end='')
             print(" : {0:10.2f} hours".format(timeAtTemperature))
+        return 0
 

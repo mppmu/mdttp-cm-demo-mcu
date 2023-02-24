@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 24 Apr 2020
-# Rev.: 28 Oct 2022
+# Rev.: 09 Sep 2022
 #
 # Python class for communicating with the TM4C1290NCPDT MCU over a serial port
 # (UART).
@@ -10,6 +10,7 @@
 
 
 
+import sys
 import serial
 
 
@@ -59,7 +60,6 @@ class McuSerial:
         self.ser.rtscts = False             # Disable hardware (RTS/CTS) flow control.
         self.ser.dsrdtr = False             # Disable hardware (DSR/DTR) flow control.
         self.ser.writeTimeout = 2           # Timeout for write.
-        self.ser.exclusive = True           # Set exclusive access mode.
         self.errorCount = 0
         self.accessRead = 0
         self.accessWrite = 0
@@ -77,7 +77,7 @@ class McuSerial:
         except Exception as e:
             self.errorCount += 1
             print(self.prefixError + "Error opening serial port `" + port + "': " + str(e))
-            exit(-1)
+            sys.exit(-1)
 
 
 
@@ -227,9 +227,9 @@ class McuSerial:
                 self.bytesRead += len(line)
                 if line == self.mcuCmdPrompt:
                     return 0
-                elif cnt > self.mcuReadLineMax:
+                if cnt > self.mcuReadLineMax:
                     return 1
-                elif line != "":
+                if line != "":
                     self.mcuResponse += line.rstrip('\n\r')
                     if line.find('\n') > 0:
                         self.mcuResponse += '\n'
