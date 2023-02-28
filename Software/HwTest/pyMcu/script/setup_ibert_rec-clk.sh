@@ -3,13 +3,13 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 23 Mar 2021
-# Rev.: 15 Feb 2023
+# Rev.: 27 Feb 2023
 #
 # Simple script to set up the ATLAS MDT Trigger Processor (TP) Command Module
 # for Xilinx IBERT tests, using the recovered clock from the FELIX IBERT module
 # for the front-end IBERT module.
 #
-# Reference clock path on the CM cemonstrator V1:
+# Reference clock path on the CM demonstrator V1/V2:
 #   IC54, free-running mode, OUT: 40 MHz
 #   -> IC82, IN0: 40 MHz, OUT: 240 MHz
 #   -> KU15P FELIX IBERT, MGTREFCLK0: 240 MHz -> rxoutclock: 120 MHz
@@ -36,6 +36,28 @@ VERBOSITY="0"
 
 
 
+# Parse command line arguments.
+usage() {
+    echo "Usage: `basename $0` [-d SERIAL_DEVICE] [-v VERBOSITY]" 1>&2; exit 1;
+}
+
+while getopts ":d:v:" o; do
+    case "${o}" in
+        d)
+            SERIAL_DEVICE=${OPTARG}
+            ;;
+        v)
+            VERBOSITY=${OPTARG}
+            ;;
+        *)
+            usage
+            ;;
+    esac
+done
+
+
+
+# Power up the Command Module.
 echo "Power up the Command Module."
 ${PY_MCU_CM} -d ${SERIAL_DEVICE} -v ${VERBOSITY} -c power_up
 
