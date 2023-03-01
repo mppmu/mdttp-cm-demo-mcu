@@ -3,7 +3,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 23 Mar 2021
-# Rev.: 28 Feb 2023
+# Rev.: 01 Mar 2023
 #
 # Simple script to set up the ATLAS MDT Trigger Processor (TP) SM-CM AXI
 # Chip2Chip communication.
@@ -57,7 +57,9 @@ ${PY_MCU_CM} -d ${SERIAL_DEVICE} -v ${VERBOSITY} -c power_up
 # - 0x2: SM B2B link 1 connected to ZU11EG, link 2 connected to KU15P.
 # - 0x3: Both SM B2B links 1 and 2 connected to KU15P.
 echo "Set up the AXI bus switches."
-${PY_MCU_CM} -d ${SERIAL_DEVICE} -v ${VERBOSITY} -c mcu_cmd_raw -p gpio mux-hs-sel 0x1
+#${PY_MCU_CM} -d ${SERIAL_DEVICE} -v ${VERBOSITY} -c mcu_cmd_raw -p gpio mux-hs-sel 0x0
+#${PY_MCU_CM} -d ${SERIAL_DEVICE} -v ${VERBOSITY} -c mcu_cmd_raw -p gpio mux-hs-sel 0x1
+${PY_MCU_CM} -d ${SERIAL_DEVICE} -v ${VERBOSITY} -c mcu_cmd_raw -p gpio mux-hs-sel 0x3
 # Info on mux-hs-pd:
 # - 0x0: Both SM B2B links 1 and 2 active.
 # - 0x1: SM B2B link 1 inactive, link 2 active.
