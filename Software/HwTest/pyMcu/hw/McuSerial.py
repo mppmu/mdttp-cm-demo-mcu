@@ -2,7 +2,7 @@
 # Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 # Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 # Date: 24 Apr 2020
-# Rev.: 17 Mar 2023
+# Rev.: 03 Apr 2023
 #
 # Python class for communicating with the TM4C1290NCPDT MCU over a serial port
 # (UART).
@@ -196,7 +196,9 @@ class McuSerial:
         try:
             if self.debugLevel >= 2:
                 print(self.prefixDebug + "Sending MCU command: " + cmd)
-            self.ser.write((cmd + "\r").encode('utf-8'))
+            self.ser.write(cmd.encode('utf-8'))
+            self.ser.flush()
+            self.ser.write("\r".encode('utf-8'))
             self.ser.flush()
             self.accessWrite += 1
             self.bytesWritten += len(cmd) + 1
@@ -212,7 +214,7 @@ class McuSerial:
             serTimeoutBackup = self.ser.timeout
             # Temporarily set a longer timeout.
             self.ser.timeout = 0.05
-            while line == "":
+            while line.find('\n') < 0:
                 cnt += 1
                 line = self.ser.readline().decode('utf-8')
                 self.bytesRead += len(line)
@@ -228,6 +230,8 @@ class McuSerial:
                 if line == self.mcuCmdPrompt:
                     return 0
                 if cnt > self.mcuReadLineMax:
+                    self.errorCount += 1
+                    print(self.prefixError + "Incomplete response received from the MCU!")
                     return 1
                 if line != "":
                     self.mcuResponse += line.rstrip('\n\r')
