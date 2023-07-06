@@ -32,13 +32,15 @@ class I2C_Si53xx:
     hwAdrMin            = 0x0C
     hwAdrMax            = 0x12
     
-    #definition
+    #definition common for chips
     SYSINCAL_b = 0x1
     LOSXAXB_b = 0x2
-    LOSREF_b = 0x4
-    LOL_b = 0x8
-    SMBUS_TIMEOUT_b = 0x20
     LOSIN_b = 0xF #Loss of Signal for the FB_IN, IN2, IN1, IN0 inputs
+
+# these are only for 5340-41
+#    LOSREF_b = 0x4
+#    LOL_b = 0x8
+#    SMBUS_TIMEOUT_b = 0x20
 
     # Initialize the I2C device.
     def __init__(self, mcuI2C, slaveAddr, deviceName):
@@ -195,9 +197,9 @@ class I2C_Si53xx:
         string = ""
         string += "\t" + str((stats & self.SYSINCAL_b)==self.SYSINCAL_b)
         string += "\t" + str((stats & self.LOSXAXB_b)==self.LOSXAXB_b)
-        string += "\t" + str((stats & self.LOSREF_b)==self.LOSREF_b)
-        string += "\t" + str((stats & self.LOL_b)==self.LOL_b)
-        string += "\t" + str((stats & self.SMBUS_TIMEOUT_b)==self.SMBUS_TIMEOUT_b)
+#        string += "\t" + str((stats & self.LOSREF_b)==self.LOSREF_b)
+#        string += "\t" + str((stats & self.LOL_b)==self.LOL_b)
+#        string += "\t" + str((stats & self.SMBUS_TIMEOUT_b)==self.SMBUS_TIMEOUT_b)
         string += "\t\t" + str(LOSIN)
         return 0, string
         
@@ -211,7 +213,7 @@ class I2C_Si53xx:
         string = ""
         string += " " + str((s_stats & self.SYSINCAL_b)==self.SYSINCAL_b)
         string += " " + str((s_stats & self.LOSXAXB_b)==self.LOSXAXB_b)
-        string += " " + str((s_stats & self.LOSREF_b)==self.LOSREF_b)
-        string += " " + str((s_stats & self.LOL_b)==self.LOL_b)
-        string += " " + str((s_stats & self.SMBUS_TIMEOUT_b)==self.SMBUS_TIMEOUT_b)
+#        string += " " + str((s_stats & self.LOSREF_b)==self.LOSREF_b)
+#        string += " " + str((s_stats & self.LOL_b)==self.LOL_b)
+#        string += " " + str((s_stats & self.SMBUS_TIMEOUT_b)==self.SMBUS_TIMEOUT_b)
         string += " " + str(s_LOSIN)

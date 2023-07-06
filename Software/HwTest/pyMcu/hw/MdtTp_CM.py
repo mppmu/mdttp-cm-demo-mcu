@@ -952,7 +952,8 @@ class MdtTp_CM:
     def clk_print_status_all(self):
         if self.debugLevel >= 1:
             print(self.prefixDebug + "printing status for all clock chips.")
-        print("status are:                                        \tSYSINCAL LOSXAXB LOSREF LOL \tSMBUS_TIMEOUT LOSIN")
+#        print("status are:                                        \tSYSINCAL LOSXAXB LOSREF LOL \tSMBUS_TIMEOUT LOSIN")
+        print("status are:                                        \tSYSINCAL LOSXAXB LOSIN")
         self.clk_print_status(self.i2cDevice_IC54_Si5341A)
         self.clk_print_status(self.i2cDevice_IC56_Si5345A)
         self.clk_print_status(self.i2cDevice_IC60_Si5345A)
