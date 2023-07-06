@@ -937,7 +937,7 @@ class MdtTp_CM:
         i2cDevice.debugLevel = self.debugLevel
         muxChannel = i2cDevice.muxChannel
         if self.debugLevel >= 2:
-            print(self.prefixDebug + "Setting I2C mux for clock chips {0:s} to channel {1:d}.".format(self.i2cDevice_IC36_PCA9545APW.deviceName, muxChannel))
+            print(self.prefixDebug + "Setting I2C mux for clock chips {0:s} to channel {1:d}.".format(self.i2cDevice_IC55_PCA9547PW.deviceName, muxChannel))
         self.i2cDevice_IC55_PCA9547PW.set_channel(muxChannel)
         self.i2cDevice_IC55_PCA9547PW.debugLevel = self.debugLevel
         i2cDevice.debugLevel = self.debugLevel
