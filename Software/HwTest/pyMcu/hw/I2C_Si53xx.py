@@ -59,7 +59,7 @@ class I2C_Si53xx:
         self.prefixErrorDevice = self.prefixError + self.deviceName + ": "
         pos = deviceName.find('Si')
         self.ICtype = deviceName[pos:pos+7]
-        if self.ICtype is "Si5341A":
+        if self.ICtype == "Si5341A":
             self.LOL_reg = 0x0C
             self.LOL_b = 0x8
 
@@ -216,8 +216,8 @@ class I2C_Si53xx:
         string += "\t" + str((stats & self.SYSINCAL_b)==self.SYSINCAL_b)
         string += "\t" + str((stats & self.LOSXAXB_b)==self.LOSXAXB_b)
         string += "\t" + str(LOL == self.LOL_b)
-        string += "\t\t" + str(LOSIN)
-        if self.ICtype is "Si5341A":
+        string += "\t" + str(LOSIN)
+        if self.ICtype == "Si5341A":
             string += "\t" + str((stats & self.LOSREF_b)==self.LOSREF_b)
             string += "\t" + str((stats & self.SMBUS_TIMEOUT_b)==self.SMBUS_TIMEOUT_b)
         return 0, string
@@ -236,7 +236,7 @@ class I2C_Si53xx:
         string += " " + str((s_stats & self.LOSXAXB_b)==self.LOSXAXB_b)
         string += "\t" + str(S_LOL == self.LOL_b)
         string += " " + str(s_LOSIN)
-        if self.ICtype is "Si5341A":
+        if self.ICtype == "Si5341A":
             string += "\t" + str((s_stats & self.LOSREF_b)==self.LOSREF_b)
             string += "\t" + str((s_stats & self.SMBUS_TIMEOUT_b)==self.SMBUS_TIMEOUT_b)
         return 0, string
