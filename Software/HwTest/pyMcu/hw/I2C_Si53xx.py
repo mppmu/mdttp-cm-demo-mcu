@@ -41,7 +41,7 @@ class I2C_Si53xx:
 
     # in reg 0x000E
     LOL_reg = 0x0E
-    LOL_b = 0x1
+    LOL_b = 0x2
 # these are only for 5340-41
     # in reg 0x000C
     LOSREF_b = 0x4
