@@ -196,13 +196,13 @@ class I2C_Si53xx:
     def read_status_regs(self):
         ret1, stats = self.read_reg(0xC)
         ret2, LOSIN = self.read_reg(0xD)
-        ret3, LOL = self.read_reg(0xE)
+        ret3, LOL = self.read_reg(self.LOL_reg)
         return ret1+ret2+ret3, stats & 0x2F, LOSIN & 0x0F, LOL & self.LOL_b
     
     def read_sticky_status_regs(self):
         ret1, s_stats = self.read_reg(0x11)
         ret2, s_LOSIN = self.read_reg(0x12)
-        ret3, s_LOL = self.read_reg(LOL_reg)
+        ret3, s_LOL = self.read_reg(self.LOL_reg)
         return ret1+ret2+ret3, s_stats & 0x2F, s_LOSIN & 0x0F, LOL & self.LOL_b
 
     def print_status_str(self):
