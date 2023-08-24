@@ -52,10 +52,10 @@ void SmCm_IntHandlerSmPowerEna(void)
         // CM power up requested by SM.
         if (GpioGet_SmPowerEna()) {
             // Turn on the CM power domains.
-//            PowerControl_All(true, 1);
-            PowerControl_Clock(true, 1);
-            PowerControl_KU15P(true, 1);
-            PowerControl_ZU11EG(true, 1);
+            PowerControl_All(true, 1);
+//            PowerControl_Clock(true, 1);
+//            PowerControl_KU15P(true, 1);
+//            PowerControl_ZU11EG(true, 1);
 //            PowerControl_FireFly(true, 1);
             // Drive the CM_READY output high.
             GpioSet_CmReady(1);
