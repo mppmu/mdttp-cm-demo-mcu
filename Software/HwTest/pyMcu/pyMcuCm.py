@@ -49,7 +49,7 @@ if __name__ == "__main__":
                                  'i2c_reset', 'i2c_detect',
                                  'pm_status', 'pm_status_raw',
                                  'clk_setup',
-                                 'firefly_temp', 'firefly_temp_time', 'firefly_status'],
+                                 'firefly_temp', 'firefly_temp_time', 'firefly_status', 'clk_status_regs'],
                         dest='command', default='status',
                         help='Command to execute on the CM.')
     parser.add_argument('-d', '--device', action='store', type=str,
@@ -139,6 +139,8 @@ if __name__ == "__main__":
             for i in range(1, mdtTp_CM.fireFlyNum + 1):
                 mdtTp_CM.firefly_status(i)
                 print()
+    elif command == "clk_status_regs":
+        mdtTp_CM.clk_print_status_all()    
     else:
         print(prefixError + "Command `{0:s}' not supported!".format(command))
 

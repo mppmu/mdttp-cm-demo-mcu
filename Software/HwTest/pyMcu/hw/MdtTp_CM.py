@@ -932,6 +932,40 @@ class MdtTp_CM:
         self.clk_prog_device_file(self.i2cDevice_IC85_Si5345A)
 
 
+    # get status bits for a single clock chip.
+    def clk_print_status(self, i2cDevice):
+        i2cDevice.debugLevel = self.debugLevel
+        muxChannel = i2cDevice.muxChannel
+        if self.debugLevel >= 2:
+            print(self.prefixDebug + "Setting I2C mux for clock chips {0:s} to channel {1:d}.".format(self.i2cDevice_IC55_PCA9547PW.deviceName, muxChannel))
+        self.i2cDevice_IC55_PCA9547PW.set_channel(muxChannel)
+        self.i2cDevice_IC55_PCA9547PW.debugLevel = self.debugLevel
+        i2cDevice.debugLevel = self.debugLevel
+        ret, status = i2cDevice.print_status_str()
+        if ret:
+            print("Failed reading status of {0:s} on I2C port {1:d} ".\
+            format(i2cDevice.deviceName, i2cDevice.mcuI2C.port))
+        else:
+            print("reading status of {0:s} on I2C port {1:d} is {2:s}".\
+            format(i2cDevice.deviceName, i2cDevice.mcuI2C.port, status))
+
+    def clk_print_status_all(self):
+        if self.debugLevel >= 1:
+            print(self.prefixDebug + "printing status for all clock chips.")
+#        print("status are:                                        \tSYSINCAL LOSXAXB LOSREF LOL \tSMBUS_TIMEOUT LOSIN")
+        print("status are:                                        \tSYSINCAL LOSXAXB LOL   \tLOSIN LOSREF SMBUS_TIMEOUT")
+        self.clk_print_status(self.i2cDevice_IC54_Si5341A)
+        self.clk_print_status(self.i2cDevice_IC56_Si5345A)
+        self.clk_print_status(self.i2cDevice_IC60_Si5345A)
+        self.clk_print_status(self.i2cDevice_IC61_Si5342A)
+        self.clk_print_status(self.i2cDevice_IC62_Si5345A)
+        self.clk_print_status(self.i2cDevice_IC63_Si5345A)
+        self.clk_print_status(self.i2cDevice_IC81_Si5342A)
+        self.clk_print_status(self.i2cDevice_IC82_Si5344A)
+        self.clk_print_status(self.i2cDevice_IC83_Si5342A)
+        self.clk_print_status(self.i2cDevice_IC84_Si5345A)
+        self.clk_print_status(self.i2cDevice_IC85_Si5345A)
+
 
     # ===============================================================
     # FireFly modules.
