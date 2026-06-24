@@ -2,10 +2,10 @@
  * Auth: M. Fras, Electronics Division, MPI for Physics, Munich
  * Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
  * Date: 08 Apr 2020
- * Rev.: 27 Aug 2020
+ * Rev.: 24 Jun 2026
  *
  * Linker configuration file of the firmware running on the ATLAS MDT Trigger
- * Processor (TP) Command Module (CM) MCU.
+ * Processor (TP) Command Module (CM) demonstrator MCU.
  */
 
 
@@ -26,6 +26,7 @@ SECTIONS
         KEEP(*(.isr_vector))
         *(.text*)
         *(.rodata*)
+        *(.ARM.exidx*)
         _etext = .;
     } > FLASH
 
