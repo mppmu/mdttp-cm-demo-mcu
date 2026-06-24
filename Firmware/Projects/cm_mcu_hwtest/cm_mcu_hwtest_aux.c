@@ -2,10 +2,10 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 27 Aug 2020
-// Rev.: 27 Aug 2020
+// Rev.: 24 Jun 2026
 //
 // Auxiliary functions of the hardware test firmware running on the ATLAS MDT
-// Trigger Processor (TP) Command Module (CM) MCU.
+// Trigger Processor (TP) Command Module (CM) demonstrator MCU.
 //
 
 
@@ -18,6 +18,7 @@
 #include "inc/hw_nvic.h"
 #include "inc/hw_types.h"
 #include "driverlib/i2c.h"
+#include "driverlib/interrupt.h"
 #include "driverlib/rom.h"
 #include "driverlib/rom_map.h"
 #include "driverlib/sysctl.h"
@@ -96,6 +97,10 @@ int McuReset(char *pcCmd, char *pcParam)
         // Wait some time for the UART to send out the last message.
         SysCtlDelay((g_ui32SysClock / 3e6) * 1e5);
 
+        // Disable all global interrupts to prevent accidental FaultISRs.
+        IntMasterDisable();
+
+        // Reset the MCU.
         SysCtlReset();
     } else {
         UARTprintf("Reset aborted.");
@@ -137,7 +142,7 @@ int JumpToBootLoader(char *pcCmd, char *pcParam)
 
         // Return control to the boot loader.  This is a call to the SVC
         // handler in the boot loader.
-        (*((void (*)(void))(*(uint32_t *)0x2c)))();
+        ROM_UpdateUART();
     } else {
         UARTprintf("Operation aborted.");
     }
