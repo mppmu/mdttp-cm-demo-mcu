@@ -2,7 +2,7 @@
 // Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 // Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 // Date: 08 Apr 2020
-// Rev.: 20 Sep 2022
+// Rev.: 24 Jun 2026
 //
 // Header file of the firmware running on the ATLAS MDT Trigger Processor (TP)
 // Command Module (CM) demonstrator MCU.
@@ -20,8 +20,8 @@
 // ******************************************************************
 
 #define FW_NAME                     "cm_mcu_hwtest"
-#define FW_VERSION                  "0.4.0"
-#define FW_RELEASEDATE              "20 Sep 2022"
+#define FW_VERSION                  "0.5.0"
+#define FW_RELEASEDATE              "24 Jun 2024"
 
 
 
@@ -45,6 +45,7 @@
 #define UI_COMMAND_PROMPT           "> "
 #define UI_STR_BUF_SIZE             256
 #define UI_STR_DELIMITER            " \t"
+#define UI_STR_DELIMITER_DATABLOCK  ",;"
 #define UI_STR_OK                   "OK"
 #define UI_STR_WARNING              "WARNING"
 #define UI_STR_ERROR                "ERROR"
