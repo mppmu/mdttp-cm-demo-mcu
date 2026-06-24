@@ -3,7 +3,7 @@ Changelog for the MDT-TP CM Demonstrator MCU Firmware for Hardware Testing
 Auth: M. Fras, Electronics Division, MPI for Physics, Munich
 Mod.: M. Fras, Electronics Division, MPI for Physics, Munich
 Date: 06 Oct 2022
-Rev.: 06 Oct 2022
+Rev.: 24 Jun 2026
 
 
 
@@ -105,4 +105,12 @@ Firmware Versions
     64 Mbit SPI and quad SPI flash memory device.
 * 0.4.0 - 20 Sep 2022
   - Updated the QSSI functions for better flexibility.
+* 0.5.0 - 24 Jun 2026
+  - Resolved linker issue with newer gcc versions.
+  - Resolved potential use of uninitialized variables for the UART
+    configuration.
+  - Implemented I2C burst write command (i2c-bw) to speed up larger data
+    transfers via the I2C bus like for programming the clock chips.
+  - Improved the function to reset the MCU.
+  - Improved the function to jump into the bootloader.
 
